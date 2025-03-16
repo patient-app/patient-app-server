@@ -23,22 +23,25 @@ public class Patient implements Serializable {
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String name;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String gender;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private int age;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = true)
     private String phoneNumber;
 
     @Column(nullable = false, unique = true)
     private String email;
 
     @Column(nullable = false)
+    private String password;
+
+    @Column(nullable = true)
     private String address;
 
     @Column(nullable = true)
@@ -93,6 +96,14 @@ public class Patient implements Serializable {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public String getAddress() {
