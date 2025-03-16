@@ -30,7 +30,7 @@ jobs:
   build-backend:
     name: Build Backend Docker Image
     runs-on: [self-hosted, k3s]
-    needs: [backend-format-check]
+    # needs: [backend-format-check]
     env:
       HUSKY: 0
     steps:
