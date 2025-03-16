@@ -31,6 +31,14 @@ dependencies {
 	implementation 'org.postgresql:postgresql:42.6.0'
 }
 
+bootJar {
+	archiveBaseName.set("app")
+	archiveVersion.set("")
+	archiveFileName.set("app.jar")
+}
+
+defaultTasks 'bootJar', 'build'
+
 tasks.named('test') {
 	useJUnitPlatform()
 }
