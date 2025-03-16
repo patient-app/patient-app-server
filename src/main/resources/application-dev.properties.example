@@ -1,0 +1,7 @@
+spring.datasource.url=jdbc:postgresql://localhost:5433/patient-app-db
+spring.datasource.username=patient-app-user
+spring.datasource.password=patient-app-password
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+
+JWT_SECRET_KEY=ThisIsTheDevelopmentJWTSecretKeyItDoesNotHaveToBeSuperSecretButLongEnough

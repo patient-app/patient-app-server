@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: patient-app-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: patient-app-backend
+  template:
+    metadata:
+      labels:
+        app: patient-app-backend
+    spec:
+      containers:
+        - name: patient-app-backend
+          image: jonasblum/patient-app-backend-main
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: patient-app-backend-config
+            - secretRef:
+                name: patient-app-backend-secret
+      nodeName: pc147

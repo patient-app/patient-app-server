@@ -1,0 +1,65 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+      - production
+
+jobs:
+  build-and-restart:
+    runs-on: [self-hosted, k3s]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set Environment Variables
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+
+            echo "BRANCH=main" >> $GITHUB_ENV
+            echo "BACKEND_IMAGE=jonasblum/patient-app-backend-main:latest" >> $GITHUB_ENV
+
+          elif [[ "${{ github.ref }}" == "refs/heads/production" ]]; then
+
+            echo "BRANCH=production" >> $GITHUB_ENV
+            echo "BACKEND_IMAGE=jonasblum/patient-app-backend-production:latest" >> $GITHUB_ENV
+
+          fi
+
+      - name: Build Backend Image
+        run: |
+          docker build -t ${{ env.BACKEND_IMAGE }} .
+
+      - name: Push Backend Image
+        run: |
+          docker push ${{ env.BACKEND_IMAGE }}
+
+      - name: Restart Kubernetes Deployments
+        env:
+          DB_PASSWORD_MAIN: ${{ secrets.DB_PASSWORD_MAIN }}
+          DB_PASSWORD_PRODUCTION: ${{ secrets.DB_PASSWORD_PRODUCTION }}
+          JWT_SECRET_KEY_MAIN: ${{ secrets.JWT_SECRET_KEY_MAIN }}
+          JWT_SECRET_KEY_PRODUCTION: ${{ secrets.JWT_SECRET_KEY_PRODUCTION }}
+
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            
+            echo "DB_PASSWORD=$DB_PASSWORD_MAIN" > .kubernetes/overlays/main/env.secrets
+            echo "JWT_SECRET_KEY=$JWT_SECRET_KEY_MAIN" >> .kubernetes/overlays/main/env.secrets
+            
+            kubectl apply -k .kubernetes/overlays/main
+
+            kubectl rollout restart deployment/patient-app-backend -n patient-app-main
+
+          elif [[ "${{ github.ref }}" == "refs/heads/production" ]]; then 
+            
+            echo "DB_PASSWORD=$DB_PASSWORD_PRODUCTION" > .kubernetes/overlays/production/env.secrets
+            echo "JWT_SECRET_KEY=$JWT_SECRET_KEY_PRODUCTION" >> .kubernetes/overlays/production/env.secrets
+            
+            kubectl apply -k .kubernetes/overlays/production
+
+            kubectl rollout restart deployment/patient-app-backend -n patient-app-production
+            
+          fi
