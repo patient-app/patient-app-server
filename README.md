@@ -62,4 +62,6 @@
 
 ## How to update the production branch
 
-`git push --force origin main:production`
+1. `git checkout main`
+2. `git pull` (or `git reset --hard origin/main` if you have some local changes)
+3. `git push --force origin main:production`
