@@ -1,0 +1,41 @@
+name: PR Checks
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  backend-format-check:
+    if: false # This disables the job
+    name: Check Java Formatting
+    runs-on: [self-hosted, k3s]
+    env:
+      HUSKY: 0
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: "temurin"
+          java-version: "21"
+
+      - name: Run Formatting Check
+        run: |
+          ./gradlew spotlessCheck
+
+
+  build-backend:
+    name: Build Backend Docker Image
+    runs-on: [self-hosted, k3s]
+    needs: [backend-format-check]
+    env:
+      HUSKY: 0
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Build Backend Image with Cache
+        run: docker build -t backend-patient-app-test-build .
