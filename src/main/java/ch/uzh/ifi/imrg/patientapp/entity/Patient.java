@@ -23,16 +23,16 @@ public class Patient implements Serializable {
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String name;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String gender;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private int age;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = true)
     private String phoneNumber;
 
     @Column(nullable = false, unique = true)
@@ -41,7 +41,7 @@ public class Patient implements Serializable {
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String address;
 
     @Column(nullable = true)
