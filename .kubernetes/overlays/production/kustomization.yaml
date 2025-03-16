@@ -10,7 +10,7 @@ configMapGenerator:
       - DB_HOST=192.168.1.147
       - DB_PORT=5432
       - DB_NAME=patient_app_production_db
-      - DB_USERNAME=postgres
+      - DB_USERNAME=therapist-user
 
 secretGenerator:
   - name: patient-app-backend-secret
