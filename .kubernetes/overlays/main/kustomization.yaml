@@ -1,0 +1,29 @@
+resources:
+  - ../../base
+  - namespace.yaml
+
+namespace: patient-app-main
+
+configMapGenerator:
+  - name: patient-app-backend-config
+    literals:
+      - DB_HOST=192.168.1.147
+      - DB_PORT=5432
+      - DB_NAME=patient_app_main_db
+      - DB_USERNAME=postgres
+
+secretGenerator:
+  - name: patient-app-backend-secret
+    envs:
+      - env.secrets
+    type: Opaque
+
+images:
+  - name: jonasblum/patient-app-backend-main
+    newTag: latest
+
+patches:
+  - target:
+      kind: Ingress
+      name: patient-app-backend-ingress
+    path: patch-ingress.json

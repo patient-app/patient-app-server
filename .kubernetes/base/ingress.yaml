@@ -1,0 +1,16 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: patient-app-backend-ingress
+spec:
+  rules:
+    - host: this-host-will-be-overwritten-in-the-overlays.jonas-blum.ch
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: patient-app-backend-service
+                port:
+                  number: 80
