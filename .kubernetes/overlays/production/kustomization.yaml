@@ -19,7 +19,8 @@ secretGenerator:
     type: Opaque
 
 images:
-  - name: jonasblum/patient-app-backend-production
+  - name: jonasblum/image-to-be-replaced-depending-on-environment
+    newName: jonasblum/patient-app-backend-production
     newTag: latest
 
 patches:

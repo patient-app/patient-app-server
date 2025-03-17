@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: patient-app-backend
-          image: jonasblum/patient-app-backend-main
+          image: jonasblum/image-to-be-replaced-depending-on-environment
           ports:
             - containerPort: 8080
           envFrom:
