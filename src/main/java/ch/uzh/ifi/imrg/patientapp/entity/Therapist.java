@@ -36,7 +36,7 @@ public class Therapist implements Serializable {
     @Column(nullable = false)
     private String password;
 
-    @Column(unique = true)
+    @Column(name = "workspace_id", unique = true)
     private String workspaceId = UUID.randomUUID().toString();
 
     @OneToMany(mappedBy = "therapist", fetch = FetchType.EAGER)

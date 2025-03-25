@@ -1,5 +1,6 @@
 package ch.uzh.ifi.imrg.patientapp.service;
 
+import ch.uzh.ifi.imrg.patientapp.entity.Conversation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
@@ -36,6 +37,12 @@ public class PatientService {
                 HttpStatus.UNAUTHORIZED, "Patient could not be found for the provided JWT");
     }
 
+    public void addConversationToPatient(Patient patient, Conversation conversation) {
+        // encrypt conversation Id with private key of patient
+        String encryptedConversationId = PasswordUtil.encryptPassword(conversation.getId());
+        // and store it in the patient entity
+        patientRepository.save(patient);
+    }
     // Registering patients is not necessary in the patient app (this is done via
     // the therapist app) but for testing purposes it might be usefule
     public Patient registerPatient(

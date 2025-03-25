@@ -3,6 +3,7 @@ package ch.uzh.ifi.imrg.patientapp.entity;
 import jakarta.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import lombok.Getter;
@@ -37,7 +38,7 @@ public class Patient implements Serializable {
     @Column(nullable = true)
     private int age;
 
-    @Column(nullable = true)
+    @Column(name = "phone_number", nullable = true)
     private String phoneNumber;
 
     @Column(nullable = false, unique = true)
@@ -58,4 +59,9 @@ public class Patient implements Serializable {
 
     @Column(unique = true)
     private String workspaceId = UUID.randomUUID().toString();
+
+    @Column(name = "private_key", unique = true)
+    private String privateKey;
+    @OneToMany(mappedBy = "conversation_id", fetch = FetchType.LAZY)
+    private List<Conversation> conversations;
 }

@@ -19,9 +19,6 @@ public class Conversation implements Serializable {
     @Column(unique = true)
     private String id = UUID.randomUUID().toString();
 
-    @Column(name = "access_token", unique = true, nullable = false, updatable = false)
-    private String accessToken;
-
     @Column(name = "created_at", updatable = false)
     @CreationTimestamp
     private LocalDateTime createdAt;
@@ -33,12 +30,12 @@ public class Conversation implements Serializable {
     @OneToOne(mappedBy = "chatbotTemplate_id", fetch = FetchType.EAGER)
     private ChatbotTemplate chatbotTemplate;
 
-    @Column(unique = true)
+    @Column(name = "conversation_summary", unique = true)
     private String conversationSummary;
 
-    @Column(unique = true)
+    @Column(name = "conversation_context", unique = true)
     private String conversationContext;
 
-    @Column(unique = true)
+    @Column(name = "conversation_instruction", unique = true)
     private String conversationInstruction;
 }
