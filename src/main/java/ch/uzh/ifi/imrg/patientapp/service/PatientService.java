@@ -1,6 +1,7 @@
 package ch.uzh.ifi.imrg.patientapp.service;
 
 import ch.uzh.ifi.imrg.patientapp.entity.Conversation;
+import ch.uzh.ifi.imrg.patientapp.utils.CryptographyUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
@@ -14,6 +15,8 @@ import ch.uzh.ifi.imrg.patientapp.utils.JwtUtil;
 import ch.uzh.ifi.imrg.patientapp.utils.PasswordUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
+import static ch.uzh.ifi.imrg.patientapp.utils.CryptographyUtil.decrypt;
 
 @Service
 @Transactional
@@ -37,11 +40,10 @@ public class PatientService {
                 HttpStatus.UNAUTHORIZED, "Patient could not be found for the provided JWT");
     }
 
-    public void addConversationToPatient(Patient patient, Conversation conversation) {
-        // encrypt conversation Id with private key of patient
-        String encryptedConversationId = PasswordUtil.encryptPassword(conversation.getId());
-        // and store it in the patient entity
+    public Patient addConversationToPatient(Patient patient, Conversation conversation) {
+        patient.getConversations().add(conversation);
         patientRepository.save(patient);
+        return patient;
     }
     // Registering patients is not necessary in the patient app (this is done via
     // the therapist app) but for testing purposes it might be usefule
@@ -69,6 +71,7 @@ public class PatientService {
         }
 
         patient.setPassword(PasswordUtil.encryptPassword(patient.getPassword()));
+        patient.setPrivateKey(CryptographyUtil.encrypt(CryptographyUtil.generatePrivateKey()));
 
         Patient createdPatient = this.patientRepository.save(patient);
         String jwt = JwtUtil.createJWT(patient.getEmail());

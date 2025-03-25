@@ -11,7 +11,7 @@ public class ConversationService {
         this.conversationRepository = conversationRepository;
     }
 
-    public Conversation createConversation(Patient patient) {
+    public Conversation createConversation() {
         Conversation conversation = new Conversation();
         Conversation savedConversation = this.conversationRepository.save(conversation);
         return savedConversation;

@@ -8,12 +8,15 @@ import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PatientOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.ConversationMapper;
 import ch.uzh.ifi.imrg.patientapp.service.ConversationService;
 import ch.uzh.ifi.imrg.patientapp.service.PatientService;
+import ch.uzh.ifi.imrg.patientapp.utils.CryptographyUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+
+import static ch.uzh.ifi.imrg.patientapp.utils.CryptographyUtil.decrypt;
 
 public class ConversationController {
     private final PatientService patientService;
@@ -29,9 +32,10 @@ public class ConversationController {
     @ResponseStatus(HttpStatus.CREATED)
     public CreateConversationOutputDTO createConversation(HttpServletRequest httpServletRequest) {
         Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
-        Conversation createdConversation = conversationService.createConversation(loggedInPatient);
+        Conversation createdConversation = conversationService.createConversation();
         // add the conversation to the patient
         patientService.addConversationToPatient(loggedInPatient, createdConversation);
-        return ConversationMapper.INSTANCE.convertEntityToCreateChatbotOutputDTO(createdConversation);
+        String encryptedConversationId = CryptographyUtil.encrypt(createdConversation.getId(), decrypt(loggedInPatient.getPrivateKey()));
+        return new CreateConversationOutputDTO(encryptedConversationId);
     }
 }
