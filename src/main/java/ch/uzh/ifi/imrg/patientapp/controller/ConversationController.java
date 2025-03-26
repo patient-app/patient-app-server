@@ -1,10 +1,12 @@
 package ch.uzh.ifi.imrg.patientapp.controller;
 
 import ch.uzh.ifi.imrg.patientapp.entity.Conversation;
+import ch.uzh.ifi.imrg.patientapp.entity.Message;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreateMessageDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.CreateConversationOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.MessageOutputDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.mapper.MessageMapper;
 import ch.uzh.ifi.imrg.patientapp.service.ConversationService;
 import ch.uzh.ifi.imrg.patientapp.service.MessageService;
 import ch.uzh.ifi.imrg.patientapp.service.PatientService;
@@ -34,8 +36,7 @@ public class ConversationController {
         Conversation createdConversation = conversationService.createConversation();
         // add the conversation to the patient
         patientService.addConversationToPatient(loggedInPatient, createdConversation);
-        String encryptedConversationId = CryptographyUtil.encrypt(createdConversation.getId(), decrypt(loggedInPatient.getPrivateKey()));
-        return new CreateConversationOutputDTO(encryptedConversationId);
+        return new CreateConversationOutputDTO(createdConversation.getExternalId());
     }
 
     @PostMapping("/patients/conversations/{conversationId}")
@@ -44,12 +45,11 @@ public class ConversationController {
                                         @RequestBody CreateMessageDTO createMessageDTO,
                                         @PathVariable String conversationId) {
         Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
-        Conversation createdConversation = messageService.generateAnswer(loggedInPatient, conversationId, createMessageDTO.getMessage());
-        // add the conversation to the patient
-        patientService.addConversationToPatient(loggedInPatient, createdConversation);
-        String encryptedConversationId = CryptographyUtil.encrypt(createdConversation.getId(), decrypt(loggedInPatient.getPrivateKey()));
-        return new CreateConversationOutputDTO(encryptedConversationId);
+        Message answeredMessage = messageService.generateAnswer(loggedInPatient, conversationId, createMessageDTO.getMessage());
+
+        return MessageMapper.INSTANCE.convertEntityToMessageOutputDTO(answeredMessage);
     }
+
     @GetMapping("/patients/conversations/{conversationId}")
     @ResponseStatus(HttpStatus.OK)
     public CreateConversationOutputDTO getAllMessages(HttpServletRequest httpServletRequest,

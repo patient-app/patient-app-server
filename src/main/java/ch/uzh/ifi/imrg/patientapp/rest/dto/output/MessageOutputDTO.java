@@ -6,6 +6,8 @@ import lombok.Setter;
 @Getter
 @Setter
 public class MessageOutputDTO {
+    private String timestamp;
+    private String id;
     private String conversationId;
     private String message;
 }

@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ConversationRepository extends JpaRepository<Conversation, String> {
     Conversation getConversationById(String id);
+    Conversation getConversationByExternalId(String externalId);
 }

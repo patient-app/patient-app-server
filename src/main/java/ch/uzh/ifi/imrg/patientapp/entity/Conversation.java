@@ -8,6 +8,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -18,6 +19,9 @@ public class Conversation implements Serializable {
     @Id
     @Column(unique = true)
     private String id = UUID.randomUUID().toString();
+
+    @Column(name = "external_id", unique = true, nullable = false, updatable = false)
+    private String externalId = UUID.randomUUID().toString();
 
     @Column(name = "created_at", updatable = false)
     @CreationTimestamp
@@ -38,4 +42,7 @@ public class Conversation implements Serializable {
 
     @Column(name = "conversation_instruction", unique = true)
     private String conversationInstruction;
+
+    @OneToMany(mappedBy = "message_id", fetch = FetchType.LAZY)
+    private List <Message> messages;
 }
