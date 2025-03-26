@@ -5,6 +5,7 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.Base64;
 
@@ -41,7 +42,8 @@ public class CryptographyUtil {
         }
     }
     public static String encrypt(String plaintext){
-        return encrypt(plaintext, EnvironmentVariables.getJwtSecretKey());
+        byte[] keyBytes = EnvironmentVariables.getJwtSecretKey().substring(0, 64).getBytes(StandardCharsets.UTF_8);
+        return encrypt(plaintext, Base64.getEncoder().encodeToString(keyBytes));
     }
 
     public static String decrypt(String base64Encrypted, String base64Key) {
@@ -67,7 +69,8 @@ public class CryptographyUtil {
         }
     }
     public static String decrypt(String base64Encrypted){
-        return decrypt(base64Encrypted, EnvironmentVariables.getJwtSecretKey());
+        byte[] keyBytes = EnvironmentVariables.getJwtSecretKey().substring(0, 64).getBytes(StandardCharsets.UTF_8);
+        return decrypt(base64Encrypted, Base64.getEncoder().encodeToString(keyBytes));
     }
     public static String generatePrivateKey() {
         try {
