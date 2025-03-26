@@ -62,6 +62,7 @@ public class Patient implements Serializable {
 
     @Column(name = "private_key", unique = true)
     private String privateKey;
-    @OneToMany(mappedBy = "conversation_id", fetch = FetchType.LAZY)
+
+    @OneToMany(mappedBy = "patient", fetch = FetchType.LAZY)
     private List<Conversation> conversations;
 }

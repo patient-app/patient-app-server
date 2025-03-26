@@ -14,4 +14,7 @@ public class ConversationService {
         Conversation conversation = new Conversation();
         return this.conversationRepository.save(conversation);
     }
+    public Conversation getAllMessagesFromConversation(String externalConversationId) {
+        return this.conversationRepository.getConversationByExternalId(externalConversationId);
+    }
 }

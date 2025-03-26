@@ -31,7 +31,8 @@ public class Conversation implements Serializable {
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
-    @OneToOne(mappedBy = "chatbotTemplate_id", fetch = FetchType.EAGER)
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "chatbot_template_id", referencedColumnName = "id")
     private ChatbotTemplate chatbotTemplate;
 
     @Column(name = "conversation_summary", unique = true)
@@ -43,6 +44,10 @@ public class Conversation implements Serializable {
     @Column(name = "conversation_instruction", unique = true)
     private String conversationInstruction;
 
-    @OneToMany(mappedBy = "message_id", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "conversation", fetch = FetchType.EAGER)
     private List <Message> messages;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "patient_id", referencedColumnName = "id", nullable = false)
+    private Patient patient;
 }
