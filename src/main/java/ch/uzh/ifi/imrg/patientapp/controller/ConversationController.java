@@ -60,5 +60,6 @@ public class ConversationController {
         patientService.addConversationToPatient(loggedInPatient, createdConversation);
         String encryptedConversationId = CryptographyUtil.encrypt(createdConversation.getId(), decrypt(loggedInPatient.getPrivateKey()));
         return new CreateConversationOutputDTO(encryptedConversationId);
+
     }
 }
