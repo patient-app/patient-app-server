@@ -13,7 +13,8 @@ public interface MessageMapper {
 
     @Mapping(source ="externalId", target = "id")
     @Mapping(source = "externalConversationId", target = "conversationId")
-    @Mapping(source = "response", target = "message")
+    @Mapping(source = "response", target = "responseMessage")
+    @Mapping(source = "request", target = "requestMessage")
     @Mapping(source = "createdAt", target = "timestamp")
     MessageOutputDTO convertEntityToMessageOutputDTO(Message message);
 

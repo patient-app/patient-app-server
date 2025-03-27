@@ -22,7 +22,7 @@ public class Message implements Serializable {
     @Column(name = "external_id", unique = true, nullable = false, updatable = false)
     private String externalId = UUID.randomUUID().toString();
 
-    @Column(name = "created_at", updatable = false)
+    @Column(name = "created_at", updatable = false, nullable = false)
     @CreationTimestamp
     private LocalDateTime createdAt;
 

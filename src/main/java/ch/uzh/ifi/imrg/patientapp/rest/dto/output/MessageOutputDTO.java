@@ -9,5 +9,6 @@ public class MessageOutputDTO {
     private String timestamp;
     private String id;
     private String conversationId;
-    private String message;
+    private String responseMessage;
+    private String requestMessage;
 }

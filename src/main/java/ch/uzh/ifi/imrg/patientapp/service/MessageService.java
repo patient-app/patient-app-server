@@ -7,7 +7,12 @@ import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.repository.ConversationRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.MessageRepository;
 import ch.uzh.ifi.imrg.patientapp.utils.CryptographyUtil;
+import jakarta.transaction.Transactional;
+import org.springframework.stereotype.Service;
 
+
+@Service
+@Transactional
 public class MessageService {
 
     private final MessageRepository messageRepository;
@@ -19,28 +24,39 @@ public class MessageService {
         this.conversationRepository = conversationRepository;
     }
 
-    public Message generateAnswer(Patient patient, String message, String externalConversationId) {
+    public Message generateAnswer(Patient patient, String externalConversationId, String message) {
 
         Conversation conversation = conversationRepository.getConversationByExternalId(externalConversationId);
+
+        if (conversation == null) {
+            throw new IllegalArgumentException("Conversation with ID " + externalConversationId + " not found");
+        }
+
         String key = CryptographyUtil.decrypt(patient.getPrivateKey());
         //Make message persistent
         Message newMessage = new Message();
         newMessage.setRequest(CryptographyUtil.encrypt(message, key));
+
         String answer = "generated answer";
+
         newMessage.setResponse(CryptographyUtil.encrypt(answer, key));
         newMessage.setConversation(conversation);
-        Message savedMessage = this.messageRepository.save(newMessage);
 
-        //Make a frontend version
-        Message frontendMessage = new Message();
-        frontendMessage.setExternalId(savedMessage.getExternalId());
-        frontendMessage.setResponse(answer);
-        frontendMessage.setExternalConversationId(externalConversationId);
-        frontendMessage.setCreatedAt(savedMessage.getCreatedAt());
+        messageRepository.save(newMessage);
+        messageRepository.flush();
 
         // Add to conversation
         conversation.getMessages().add(newMessage);
-        conversationRepository.save(conversation);
-        return frontendMessage;
+        Conversation savedConversation = conversationRepository.save(conversation);
+        conversationRepository.flush();
+
+
+        //Make a frontend version
+        newMessage.setResponse(answer);
+        newMessage.setRequest(message);
+        newMessage.setExternalConversationId(savedConversation.getExternalId());
+        System.out.println("Timestamp: "+ newMessage.getCreatedAt());
+
+        return newMessage;
     }
 }

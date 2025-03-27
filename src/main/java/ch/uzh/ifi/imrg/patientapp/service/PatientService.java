@@ -71,9 +71,7 @@ public class PatientService {
         }
 
         patient.setPassword(PasswordUtil.encryptPassword(patient.getPassword()));
-        System.out.println("Before generating private key");
         patient.setPrivateKey(CryptographyUtil.encrypt(CryptographyUtil.generatePrivateKey()));
-        System.out.println("After generating private key");
 
         Patient createdPatient = this.patientRepository.save(patient);
         String jwt = JwtUtil.createJWT(patient.getEmail());

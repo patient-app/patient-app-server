@@ -23,7 +23,7 @@ public class Conversation implements Serializable {
     @Column(name = "external_id", unique = true, nullable = false, updatable = false)
     private String externalId = UUID.randomUUID().toString();
 
-    @Column(name = "created_at", updatable = false)
+    @Column(name = "created_at", updatable = false, nullable = false)
     @CreationTimestamp
     private LocalDateTime createdAt;
 
@@ -44,7 +44,7 @@ public class Conversation implements Serializable {
     @Column(name = "conversation_instruction", unique = true)
     private String conversationInstruction;
 
-    @OneToMany(mappedBy = "conversation", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, orphanRemoval = true)
     private List <Message> messages;
 
     @ManyToOne(fetch = FetchType.LAZY)

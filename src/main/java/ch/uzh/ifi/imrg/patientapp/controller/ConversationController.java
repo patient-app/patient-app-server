@@ -13,11 +13,12 @@ import ch.uzh.ifi.imrg.patientapp.service.ConversationService;
 import ch.uzh.ifi.imrg.patientapp.service.MessageService;
 import ch.uzh.ifi.imrg.patientapp.service.PatientService;
 
+import ch.uzh.ifi.imrg.patientapp.utils.CryptographyUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-
+@RestController
 public class ConversationController {
     private final PatientService patientService;
     private final ConversationService conversationService;
@@ -34,7 +35,7 @@ public class ConversationController {
     @ResponseStatus(HttpStatus.CREATED)
     public CreateConversationOutputDTO createConversation(HttpServletRequest httpServletRequest) {
         Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
-        Conversation createdConversation = conversationService.createConversation();
+        Conversation createdConversation = conversationService.createConversation(loggedInPatient);
         // add the conversation to the patient
         patientService.addConversationToPatient(loggedInPatient, createdConversation);
         return new CreateConversationOutputDTO(createdConversation.getExternalId());
@@ -61,6 +62,8 @@ public class ConversationController {
                 .convertEntityToCompleteConversationOutputDTO(completeConversation);
 
         for(Message message : completeConversation.getMessages()) {
+            message.setResponse(CryptographyUtil.decrypt(message.getResponse(),CryptographyUtil.decrypt(loggedInPatient.getPrivateKey())));
+            message.setRequest(CryptographyUtil.decrypt(message.getRequest(),CryptographyUtil.decrypt(loggedInPatient.getPrivateKey())));
             completeConversationOutputDTO.getMessages().add(MessageMapper.INSTANCE.convertEntityToMessageOutputDTO(message));
         }
         return completeConversationOutputDTO;
