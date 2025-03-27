@@ -18,6 +18,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+
 @RestController
 public class ConversationController {
     private final PatientService patientService;
@@ -58,13 +60,19 @@ public class ConversationController {
                                                        @PathVariable String conversationId) {
         Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
         Conversation completeConversation = conversationService.getAllMessagesFromConversation(conversationId);
-        CompleteConversationOutputDTO completeConversationOutputDTO = ConversationMapper.INSTANCE
-                .convertEntityToCompleteConversationOutputDTO(completeConversation);
+        CompleteConversationOutputDTO completeConversationOutputDTO = new CompleteConversationOutputDTO();
+        completeConversationOutputDTO.setId(completeConversation.getExternalId());
+        completeConversationOutputDTO.setMessages(new ArrayList<>());
+
+        for(Message message : completeConversation.getMessages()) {
+            System.out.println("message: " +message);
+        }
 
         for(Message message : completeConversation.getMessages()) {
             message.setResponse(CryptographyUtil.decrypt(message.getResponse(),CryptographyUtil.decrypt(loggedInPatient.getPrivateKey())));
             message.setRequest(CryptographyUtil.decrypt(message.getRequest(),CryptographyUtil.decrypt(loggedInPatient.getPrivateKey())));
             completeConversationOutputDTO.getMessages().add(MessageMapper.INSTANCE.convertEntityToMessageOutputDTO(message));
+            System.out.println("hi");
         }
         return completeConversationOutputDTO;
 

@@ -11,6 +11,5 @@ public interface ConversationMapper {
     ConversationMapper INSTANCE = Mappers.getMapper(ConversationMapper.class);
 
     @Mapping(source = "externalId", target = "id")
-    @Mapping(source = "messages", target = "messages")
     CompleteConversationOutputDTO convertEntityToCompleteConversationOutputDTO(Conversation conversation);
 }

@@ -33,6 +33,7 @@ public class MessageService {
         }
 
         String key = CryptographyUtil.decrypt(patient.getPrivateKey());
+
         //Make message persistent
         Message newMessage = new Message();
         newMessage.setRequest(CryptographyUtil.encrypt(message, key));
@@ -42,20 +43,22 @@ public class MessageService {
         newMessage.setResponse(CryptographyUtil.encrypt(answer, key));
         newMessage.setConversation(conversation);
 
-        messageRepository.save(newMessage);
+        Message savedMessage = messageRepository.save(newMessage);
         messageRepository.flush();
+        //Message extractedMessage = messageRepository.findById(savedMessage.getId()).orElseThrow(() -> new IllegalArgumentException("Message not found"));
 
+        Conversation refreshedConversation = conversationRepository.getConversationByExternalId(externalConversationId);
         // Add to conversation
-        conversation.getMessages().add(newMessage);
-        Conversation savedConversation = conversationRepository.save(conversation);
-        conversationRepository.flush();
+        //conversation.getMessages().add(newMessage);
+        //Conversation savedConversation = conversationRepository.save(conversation);
+        //conversationRepository.flush();
 
 
         //Make a frontend version
         newMessage.setResponse(answer);
         newMessage.setRequest(message);
-        newMessage.setExternalConversationId(savedConversation.getExternalId());
-        System.out.println("Timestamp: "+ newMessage.getCreatedAt());
+        newMessage.setExternalConversationId(refreshedConversation.getExternalId());
+        //System.out.println("Timestamp: "+ extractedMessage.getCreatedAt());
 
         return newMessage;
     }
