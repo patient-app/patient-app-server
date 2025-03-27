@@ -42,7 +42,7 @@ public class CryptographyUtil {
         }
     }
     public static String encrypt(String plaintext){
-        byte[] keyBytes = EnvironmentVariables.getJwtSecretKey().substring(0, 64).getBytes(StandardCharsets.UTF_8);
+        byte[] keyBytes = EnvironmentVariables.getJwtSecretKey().substring(0, 32).getBytes(StandardCharsets.UTF_8);
         return encrypt(plaintext, Base64.getEncoder().encodeToString(keyBytes));
     }
 
@@ -69,7 +69,7 @@ public class CryptographyUtil {
         }
     }
     public static String decrypt(String base64Encrypted){
-        byte[] keyBytes = EnvironmentVariables.getJwtSecretKey().substring(0, 64).getBytes(StandardCharsets.UTF_8);
+        byte[] keyBytes = EnvironmentVariables.getJwtSecretKey().substring(0, 32).getBytes(StandardCharsets.UTF_8);
         return decrypt(base64Encrypted, Base64.getEncoder().encodeToString(keyBytes));
     }
     public static String generatePrivateKey() {

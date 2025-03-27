@@ -12,12 +12,11 @@ import ch.uzh.ifi.imrg.patientapp.rest.mapper.MessageMapper;
 import ch.uzh.ifi.imrg.patientapp.service.ConversationService;
 import ch.uzh.ifi.imrg.patientapp.service.MessageService;
 import ch.uzh.ifi.imrg.patientapp.service.PatientService;
-import ch.uzh.ifi.imrg.patientapp.utils.CryptographyUtil;
+
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import static ch.uzh.ifi.imrg.patientapp.utils.CryptographyUtil.decrypt;
 
 public class ConversationController {
     private final PatientService patientService;
