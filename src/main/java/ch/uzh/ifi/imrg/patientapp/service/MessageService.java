@@ -10,6 +10,9 @@ import ch.uzh.ifi.imrg.patientapp.utils.CryptographyUtil;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.Optional;
+
 
 @Service
 @Transactional
@@ -26,8 +29,8 @@ public class MessageService {
 
     public Message generateAnswer(Patient patient, String externalConversationId, String message) {
 
-        Conversation conversation = conversationRepository.getConversationByExternalId(externalConversationId);
-
+        Optional<Conversation> OptionalConversation = conversationRepository.getConversationByExternalId(externalConversationId);
+        Conversation conversation = OptionalConversation.orElseThrow(() -> new IllegalArgumentException("Conversation not found"));
         if (conversation == null) {
             throw new IllegalArgumentException("Conversation with ID " + externalConversationId + " not found");
         }
@@ -45,20 +48,20 @@ public class MessageService {
 
         Message savedMessage = messageRepository.save(newMessage);
         messageRepository.flush();
-        //Message extractedMessage = messageRepository.findById(savedMessage.getId()).orElseThrow(() -> new IllegalArgumentException("Message not found"));
+        Message extractedMessage = messageRepository.findById(savedMessage.getId()).orElseThrow(() -> new IllegalArgumentException("Message not found"));
 
-        Conversation refreshedConversation = conversationRepository.getConversationByExternalId(externalConversationId);
-        // Add to conversation
-        //conversation.getMessages().add(newMessage);
-        //Conversation savedConversation = conversationRepository.save(conversation);
-        //conversationRepository.flush();
-
+        Conversation refreshedConversation = conversationRepository.getConversationByExternalId(externalConversationId).orElseThrow(() -> new IllegalArgumentException("Conversation not found"));
 
         //Make a frontend version
         newMessage.setResponse(answer);
         newMessage.setRequest(message);
         newMessage.setExternalConversationId(refreshedConversation.getExternalId());
-        //System.out.println("Timestamp: "+ extractedMessage.getCreatedAt());
+        System.out.println("Timestamp1: "+ newMessage.getCreatedAt());
+        if( newMessage.getCreatedAt() == null){
+            LocalDateTime now = LocalDateTime.now();
+            newMessage.setCreatedAt(now);
+        }
+        System.out.println("Timestamp2: "+ newMessage.getCreatedAt());
 
         return newMessage;
     }

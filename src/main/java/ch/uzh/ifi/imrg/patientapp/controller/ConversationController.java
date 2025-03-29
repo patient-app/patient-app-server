@@ -65,14 +65,9 @@ public class ConversationController {
         completeConversationOutputDTO.setMessages(new ArrayList<>());
 
         for(Message message : completeConversation.getMessages()) {
-            System.out.println("message: " +message);
-        }
-
-        for(Message message : completeConversation.getMessages()) {
             message.setResponse(CryptographyUtil.decrypt(message.getResponse(),CryptographyUtil.decrypt(loggedInPatient.getPrivateKey())));
             message.setRequest(CryptographyUtil.decrypt(message.getRequest(),CryptographyUtil.decrypt(loggedInPatient.getPrivateKey())));
             completeConversationOutputDTO.getMessages().add(MessageMapper.INSTANCE.convertEntityToMessageOutputDTO(message));
-            System.out.println("hi");
         }
         return completeConversationOutputDTO;
 
