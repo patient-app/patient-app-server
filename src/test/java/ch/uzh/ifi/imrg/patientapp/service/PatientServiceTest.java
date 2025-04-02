@@ -79,6 +79,7 @@ public class PatientServiceTest {
         assertTrue(patient.getConversations().contains(conversation));
         assertEquals(conversation, result.getConversations().get(0));
     }
+
     @Test
     void loginPatient_shouldReturnPatient_whenCredentialsAreCorrect() {
         // Arrange
