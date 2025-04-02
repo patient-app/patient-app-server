@@ -35,9 +35,6 @@ public class MessageService {
 
         Optional<Conversation> optionalConversation = conversationRepository.getConversationByExternalId(externalConversationId);
         Conversation conversation = optionalConversation.orElseThrow(() -> new IllegalArgumentException("Conversation not found"));
-        if (conversation == null) {
-            throw new IllegalArgumentException("Conversation with ID " + externalConversationId + " not found");
-        }
 
         String key = CryptographyUtil.decrypt(patient.getPrivateKey());
 

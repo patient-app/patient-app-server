@@ -2,6 +2,8 @@ package ch.uzh.ifi.imrg.patientapp.utils;
 
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.InvocationTargetException;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 
@@ -34,12 +36,16 @@ public class PasswordUtilTest {
     }
 
     @Test
-    void constructor_shouldThrowException() {
-        assertThrows(UnsupportedOperationException.class, () -> {
-            // Use reflection to try to call the private constructor
-            java.lang.reflect.Constructor<PasswordUtil> constructor = PasswordUtil.class.getDeclaredConstructor();
-            constructor.setAccessible(true);
+    void constructor_shouldThrowException() throws Exception {
+        var constructor = PasswordUtil.class.getDeclaredConstructor();
+        constructor.setAccessible(true);
+        try {
             constructor.newInstance();
-        });
+            fail("Expected UnsupportedOperationException");
+        } catch (InvocationTargetException e) {
+            assertTrue(e.getCause() instanceof UnsupportedOperationException);
+            assertEquals("Utility class", e.getCause().getMessage());
+        }
     }
+
 }
