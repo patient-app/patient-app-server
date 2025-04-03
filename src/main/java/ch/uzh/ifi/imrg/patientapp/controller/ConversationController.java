@@ -25,11 +25,13 @@ public class ConversationController {
     private final ConversationService conversationService;
     private final MessageService messageService;
 
+
     ConversationController(PatientService patientService,
                            ConversationService conversationService, MessageService messageService) {
         this.patientService = patientService;
         this.conversationService = conversationService;
         this.messageService = messageService;
+
     }
 
     @PostMapping("/patients/conversations")

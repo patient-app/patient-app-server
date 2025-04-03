@@ -2,9 +2,12 @@ package ch.uzh.ifi.imrg.patientapp.rest.mapper;
 
 import ch.uzh.ifi.imrg.patientapp.entity.Message;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.MessageOutputDTO;
+import org.hibernate.annotations.Comment;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
+import org.springframework.stereotype.Component;
+
 
 @Mapper
 public interface MessageMapper {
