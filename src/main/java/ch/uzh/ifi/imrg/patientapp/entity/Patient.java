@@ -53,6 +53,10 @@ public class Patient implements Serializable {
     @Column(nullable = true)
     private String description;
 
+    @Getter
+    @Column(nullable = false)
+    private boolean admin = false;
+
     @ManyToOne
     @JoinColumn(name = "therapist_id", referencedColumnName = "id")
     private Therapist therapist;
@@ -65,4 +69,5 @@ public class Patient implements Serializable {
 
     @OneToMany(mappedBy = "patient", fetch = FetchType.LAZY)
     private List<Conversation> conversations;
+
 }

@@ -21,14 +21,14 @@ public class PromptBuilderServiceTest {
         // Arrange
         String expectedPromptStart = "Act as a person, who cares about the other person";
         String mockResponse = "Hi there!";
-        when(chatGPTService.getResponse(anyString())).thenReturn(mockResponse);
+        when(chatGPTService.getResponse(anyString(),false)).thenReturn(mockResponse);
 
         // Act
-        String response = promptBuilderService.getResponse();
+        String response = promptBuilderService.getResponse(true);
 
         // Assert
         assertEquals(mockResponse, response);
         verify(chatGPTService, times(1)).getResponse(argThat(prompt ->
-                prompt.startsWith(expectedPromptStart) && prompt.length() < 1000));
+                prompt.startsWith(expectedPromptStart) && prompt.length() < 1000), eq(false));
     }
 }

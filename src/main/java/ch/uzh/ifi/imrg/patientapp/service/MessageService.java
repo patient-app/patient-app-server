@@ -42,7 +42,7 @@ public class MessageService {
         Message newMessage = new Message();
         newMessage.setRequest(CryptographyUtil.encrypt(message, key));
 
-        String answer = promptBuilderService.getResponse();
+        String answer = promptBuilderService.getResponse(patient.isAdmin());
 
         newMessage.setResponse(CryptographyUtil.encrypt(answer, key));
         newMessage.setConversation(conversation);

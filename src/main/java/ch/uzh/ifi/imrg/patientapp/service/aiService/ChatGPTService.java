@@ -30,8 +30,8 @@ public class ChatGPTService {
             "There's a lot to digest here. The topic you brought up connects to multiple other ideas in philosophy and logic.",
             "You're touching on a concept that has layers of nuance. Let's see if we can untangle them one at a time."
     );
-    public String getResponse(String message){
-        if (!USE_CHATGPT){
+    public String getResponse(String message, boolean isAdmin){
+        if (!USE_CHATGPT || !isAdmin){
             int randomIndex = ThreadLocalRandom.current().nextInt(predefinedResponses.size());
             return predefinedResponses.get(randomIndex);
         }
