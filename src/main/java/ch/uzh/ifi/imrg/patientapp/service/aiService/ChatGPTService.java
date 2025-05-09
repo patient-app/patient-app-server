@@ -14,7 +14,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class ChatGPTService {
     boolean USE_CHATGPT = false;
     private final RestTemplate restTemplate = new RestTemplate();
-    private static final String OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
+    private static final String LOCAL_AI_API_URL = "https://vllm-imrg.ifi.uzh.ch/v1";
     private static final List<String> predefinedResponses = List.of(
             "Sure, let's discuss it!",
             "That's an intriguing observation.",
@@ -31,6 +31,7 @@ public class ChatGPTService {
             "You're touching on a concept that has layers of nuance. Let's see if we can untangle them one at a time."
     );
     public String getResponse(String message, boolean isAdmin){
+        isAdmin = true;
         if (!USE_CHATGPT || !isAdmin){
             int randomIndex = ThreadLocalRandom.current().nextInt(predefinedResponses.size());
             return predefinedResponses.get(randomIndex);
@@ -42,10 +43,12 @@ public class ChatGPTService {
         String content = "content";
         // Prepare the request bodyRequest
         Map<String, Object> bodyRequest = new HashMap<>();
-        bodyRequest.put("model", "gpt-4o-mini");
-        bodyRequest.put("messages", List.of(
+        bodyRequest.put("model", "Qwen/Qwen2.5-1.5B-Instruct");
+        bodyRequest.put("prompt", List.of(
                 Map.of("role", "user", content, messageRequest)
         ));
+        bodyRequest.put("max_tokens", 30);
+        bodyRequest.put("temperature", 0);
 
         // Set headers
         HttpHeaders headers = new HttpHeaders();
@@ -55,7 +58,7 @@ public class ChatGPTService {
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(bodyRequest, headers);
 
         try {
-            ResponseEntity<Map> response = restTemplate.postForEntity(OPENAI_API_URL, request, Map.class);
+            ResponseEntity<Map> response = restTemplate.postForEntity(LOCAL_AI_API_URL, request, Map.class);
 
             if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
                 Map<String, Object> body = response.getBody();
@@ -68,7 +71,7 @@ public class ChatGPTService {
                         return (String) message.get(content);
                     }
                 }
-                return "No content found in OpenAI response.";
+                return "No content found in LLM response.";
             } else {
                 return "OpenAI API returned non-OK status: " + response.getStatusCode();
             }
