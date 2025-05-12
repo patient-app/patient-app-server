@@ -43,6 +43,7 @@ jobs:
           JWT_SECRET_KEY_MAIN: ${{ secrets.JWT_SECRET_KEY_MAIN }}
           JWT_SECRET_KEY_PRODUCTION: ${{ secrets.JWT_SECRET_KEY_PRODUCTION }}
           CHATGPT_APIKEY: ${{ secrets.CHATGPT_APIKEY }}
+          LOCAL_AI_API_KEY: ${{secrets.LOCAL_AI_API_KEY}}
 
         run: |
           if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then

@@ -10,12 +10,14 @@ public class EnvironmentVariablesTest {
     void constructor_shouldSetStaticFieldsCorrectly() {
         String jwtKey = "test-jwt-key";
         String gptKey = "test-chatgpt-key";
+        String localAIKey = "test-local-ai-key";
 
         // Simulate Spring injecting the values
-        new EnvironmentVariables(jwtKey, gptKey);
+        new EnvironmentVariables(jwtKey, gptKey, localAIKey);
 
         assertEquals(jwtKey, EnvironmentVariables.getJwtSecretKey());
         assertEquals(gptKey, EnvironmentVariables.getChatGptApiKey());
+        assertEquals(localAIKey, EnvironmentVariables.getLocalLlmApiKey());
     }
 
     @Test
