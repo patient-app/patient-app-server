@@ -2,11 +2,7 @@ package ch.uzh.ifi.imrg.patientapp.controller;
 
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.TermsOutputDTO;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreatePatientDTO;
@@ -31,6 +27,12 @@ public class PatientController {
     public PatientOutputDTO getCurrentlyLoggedInPatient(HttpServletRequest httpServletRequest) {
         Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
         return PatientMapper.INSTANCE.convertEntityToPatientOutputDTO(loggedInPatient);
+    }
+
+    @PutMapping("/patients/me")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void updatePatientSettings(){
+        //TODO: implement language settings (update)
     }
 
     @PostMapping("/patients/register")
@@ -100,5 +102,7 @@ public class PatientController {
                         """
         );
     }
+
+
 
 }
