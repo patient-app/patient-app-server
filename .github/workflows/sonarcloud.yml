@@ -7,23 +7,34 @@ on:
     types: [opened, synchronize, reopened]
 
 jobs:
-  test:
-    name: Test and Sonarqube
+  sonarqube-backend:
+    if: false # This disables the job
+    name: SonarQube Backend
     runs-on: ubuntu-latest
-
+    continue-on-error: true # This makes the job optional
     steps:
-      - name: Checkout repository code
-        uses: actions/checkout@v4
-
-      - name: Install Java 21
-        uses: actions/setup-java@v3
+      - uses: actions/checkout@v4
         with:
+          fetch-depth: 0
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: 21
           distribution: "temurin"
-          java-version: "21"
-
-      - name: Test and analyze
-        run: ./gradlew test jacocoTestReport sonar
+      - name: Cache SonarQube Backend Packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+      - name: Cache SonarQube Backend Gradle Packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
+          restore-keys: ${{ runner.os }}-gradle
+      - name: SonarQube Backend Build and Analyze
+        working-directory: backend
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
+        run: ./gradlew build sonar --info

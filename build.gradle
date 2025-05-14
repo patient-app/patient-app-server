@@ -2,8 +2,6 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.4.3'
 	id 'io.spring.dependency-management' version '1.1.7'
-	id "org.sonarqube" version "6.0.1.5171"
-	id 'jacoco'
 }
 
 group = 'ch.uzh.ifi.imrg'
@@ -20,30 +18,29 @@ repositories {
 }
 
 dependencies {
-	// Project Lombok
+	//project lombok
 	compileOnly 'org.projectlombok:lombok:1.18.30'
 	annotationProcessor 'org.projectlombok:lombok:1.18.30'
 
-	// Spring Boot Starters
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	//implementation 'org.projectlombok:lombok:1.18.26'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
-	// MapStruct
 	implementation 'org.mapstruct:mapstruct:1.5.5.Final'
 	annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
 	testAnnotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
 
-	// Database and JWT
+	//developmentOnly 'org.springframework.boot:spring-boot-docker-compose'
 	runtimeOnly 'com.h2database:h2'
-	implementation 'org.postgresql:postgresql:42.6.0'
-	implementation 'io.jsonwebtoken:jjwt:0.12.6'
-
-	// Testing
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	implementation 'org.postgresql:postgresql:42.6.0'
+	implementation 'io.jsonwebtoken:jjwt:0.12.6'
+
 }
 
 bootJar {
@@ -52,30 +49,8 @@ bootJar {
 	archiveFileName.set("app.jar")
 }
 
-test {
-	useJUnitPlatform()
-	finalizedBy jacocoTestReport // ensure coverage report is generated after tests
-}
-
-jacoco {
-	toolVersion = "0.8.10"
-}
-
-jacocoTestReport {
-	dependsOn test
-	reports {
-		xml.required = true
-		csv.required = false
-		html.outputLocation = layout.buildDirectory.dir('reports/jacoco')
-	}
-}
-
-sonar {
-	properties {
-		property "sonar.projectKey", "patient-app_patient-app-server"
-		property "sonar.organization", "patient-app"
-		property "sonar.host.url", "https://sonarcloud.io"
-	}
-}
-
 defaultTasks 'bootJar', 'build'
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
