@@ -8,7 +8,6 @@ on:
 
 jobs:
   sonarqube-backend:
-    if: false # This disables the job
     name: SonarQube Backend
     runs-on: ubuntu-latest
     continue-on-error: true # This makes the job optional
@@ -34,7 +33,6 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
           restore-keys: ${{ runner.os }}-gradle
       - name: SonarQube Backend Build and Analyze
-        working-directory: backend
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: ./gradlew build sonar --info
