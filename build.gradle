@@ -76,9 +76,6 @@ if (secretPropsFile.exists()) {
 }
 defaultTasks 'bootJar', 'build'
 
-
-defaultTasks 'bootJar', 'build'
-
 tasks.named('test') {
     useJUnitPlatform()
 }
