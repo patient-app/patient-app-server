@@ -2,6 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.4.3'
 	id 'io.spring.dependency-management' version '1.1.7'
+	id "org.sonarqube" version "6.0.1.5171"
 }
 
 group = 'ch.uzh.ifi.imrg'
@@ -47,6 +48,14 @@ bootJar {
 	archiveBaseName.set("app")
 	archiveVersion.set("")
 	archiveFileName.set("app.jar")
+}
+
+sonar {
+	properties {
+		property "sonar.projectKey", "patient-app_patient-app-server"
+		property "sonar.organization", "patient-app"
+		property "sonar.host.url", "https://sonarcloud.io"
+	}
 }
 
 defaultTasks 'bootJar', 'build'
