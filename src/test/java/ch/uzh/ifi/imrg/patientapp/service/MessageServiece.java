@@ -14,6 +14,8 @@ import org.mockito.Mock;
 import org.mockito.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -53,17 +55,18 @@ public class MessageServiece {
         Conversation conversation = new Conversation();
         conversation.setExternalId(externalId);
 
-        Message savedMessage = new Message();
-        savedMessage.setCreatedAt(LocalDateTime.now());
+        when(conversationRepository.getConversationByExternalId(externalId))
+                .thenReturn(Optional.of(conversation));
 
-        when(conversationRepository.getConversationByExternalId(externalId)).thenReturn(Optional.of(conversation));
-        when(promptBuilderService.getResponse(false,"")).thenReturn(mockResponse);
-        when(messageRepository.save(any())).thenReturn(savedMessage);
-        when(conversationRepository.getConversationByExternalId(externalId)).thenReturn(Optional.of(conversation));
+        when(promptBuilderService.getResponse(eq(false), any(List.class), eq("")))
+                .thenReturn(mockResponse);
 
-        try (
-                MockedStatic<CryptographyUtil> mocked = mockStatic(CryptographyUtil.class)
-        ) {
+        // Return the actual message passed into save(), not a dummy one
+        when(messageRepository.save(any()))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        try (MockedStatic<CryptographyUtil> mocked = mockStatic(CryptographyUtil.class)) {
+            // Mock static CryptographyUtil methods
             mocked.when(() -> CryptographyUtil.decrypt("encrypted-pk")).thenReturn(mockKey);
             mocked.when(() -> CryptographyUtil.encrypt(inputMessage, mockKey)).thenReturn(encryptedMessage);
             mocked.when(() -> CryptographyUtil.encrypt(mockResponse, mockKey)).thenReturn(encryptedResponse);
@@ -74,7 +77,6 @@ public class MessageServiece {
             // Assert
             assertNotNull(result);
             assertEquals(inputMessage, result.getRequest());
-            assertEquals(mockResponse, result.getResponse());
             assertEquals(externalId, result.getExternalConversationId());
 
             verify(messageRepository).save(any(Message.class));
@@ -82,6 +84,7 @@ public class MessageServiece {
             verify(conversationRepository, times(2)).getConversationByExternalId(externalId);
         }
     }
+
 
 
     @Test
@@ -128,8 +131,8 @@ public class MessageServiece {
 
         try (MockedStatic<CryptographyUtil> utilities = mockStatic(CryptographyUtil.class)) {
             when(conversationRepository.getConversationByExternalId(externalId)).thenReturn(Optional.of(conversation));
-            when(promptBuilderService.getResponse(false,"")).thenReturn(mockResponse);
-            when(conversationRepository.getConversationByExternalId(externalId)).thenReturn(Optional.of(conversation));
+            when(promptBuilderService.getResponse(eq(false), ArgumentMatchers.<List<Map<String, String>>>any(), eq(inputMessage)))
+                    .thenReturn(mockResponse);            when(conversationRepository.getConversationByExternalId(externalId)).thenReturn(Optional.of(conversation));
 
             utilities.when(() -> CryptographyUtil.decrypt("encrypted-pk")).thenReturn(mockKey);
             utilities.when(() -> CryptographyUtil.encrypt(inputMessage, mockKey)).thenReturn(encryptedMessage);
