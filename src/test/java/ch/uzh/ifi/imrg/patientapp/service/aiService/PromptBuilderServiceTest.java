@@ -24,7 +24,7 @@ public class PromptBuilderServiceTest {
         when(chatGPTService.getResponse(anyString(),false)).thenReturn(mockResponse);
 
         // Act
-        String response = promptBuilderService.getResponse(true);
+        String response = promptBuilderService.getResponse(true,"");
 
         // Assert
         assertEquals(mockResponse, response);

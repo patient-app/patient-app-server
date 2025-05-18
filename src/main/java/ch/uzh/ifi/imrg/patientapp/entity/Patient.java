@@ -70,4 +70,26 @@ public class Patient implements Serializable {
     @OneToMany(mappedBy = "patient", fetch = FetchType.LAZY)
     private List<Conversation> conversations;
 
+
+    @Override
+    public String toString() {
+        return "Patient{" +
+                "id='" + id + '\'' +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                ", name='" + name + '\'' +
+                ", gender='" + gender + '\'' +
+                ", age=" + age +
+                ", phoneNumber='" + phoneNumber + '\'' +
+                ", email='" + email + '\'' +
+                ", address='" + address + '\'' +
+                ", description='" + description + '\'' +
+                ", admin=" + admin +
+                ", therapistId=" + (therapist != null ? therapist.getId() : "null") +
+                ", workspaceId='" + workspaceId + '\'' +
+                ", privateKey=" + (privateKey != null ? privateKey : "null") +
+                ", conversationCount=" + (conversations != null ? conversations.size() : 0) +
+                '}';
+    }
+
 }

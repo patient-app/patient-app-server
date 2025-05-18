@@ -14,7 +14,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class ChatGPTService {
     boolean USE_CHATGPT = false;
     private final RestTemplate restTemplate = new RestTemplate();
-    private static final String LOCAL_AI_API_URL = "https://vllm-imrg.ifi.uzh.ch/v1/completions";
+    private static final String LOCAL_AI_API_URL = "https://vllm-imrg.ifi.uzh.ch/v1/chat/completions";
 
     private static final List<String> predefinedResponses = List.of(
             "Sure, let's discuss it!",
@@ -31,7 +31,7 @@ public class ChatGPTService {
             "There's a lot to digest here. The topic you brought up connects to multiple other ideas in philosophy and logic.",
             "You're touching on a concept that has layers of nuance. Let's see if we can untangle them one at a time."
     );
-    public String getResponse(String message, boolean isAdmin){
+    public String getResponse(List<Map<String, String>> messages, boolean isAdmin){
         /*isAdmin = true;
 
         if (!USE_CHATGPT || !isAdmin){
@@ -39,8 +39,56 @@ public class ChatGPTService {
             return predefinedResponses.get(randomIndex);
         }
         */
-        return callAPI(message);
+        return callAPI(messages);
     }
+    private String callAPI(List<Map<String, String>> messages) {
+        String content = "content";
+        // Prepare the request bodyRequest
+        Map<String, Object> bodyRequest = new HashMap<>();
+        bodyRequest.put("model", "Qwen/Qwen2.5-1.5B-Instruct");
+        bodyRequest.put("messages", messages);
+        bodyRequest.put("max_tokens", 70);
+        bodyRequest.put("temperature", 0);
+
+        // Set headers
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(EnvironmentVariables.getLocalLlmApiKey());
+
+        System.out.println("Chello?");
+        System.out.println(bodyRequest);
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(bodyRequest, headers);
+
+        try {
+            ResponseEntity<Map> response = restTemplate.postForEntity(LOCAL_AI_API_URL, request, Map.class);
+            System.out.println("Response:");
+            System.out.println(response);
+            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+                Map<String, Object> body = response.getBody();
+                List<Map<String, Object>> choices = (List<Map<String, Object>>) body.get("choices");
+
+                if (choices != null && !choices.isEmpty()) {
+                    Map<String, Object> firstChoice = choices.get(0);
+                    Map<String, Object> message = (Map<String, Object>) firstChoice.get("message");
+                    if (message != null) {
+                        String text = (String) message.get("content"); // ✅ FIXED
+                        if (text != null && !text.isEmpty()) {
+                            System.out.println("Returned response:");
+                            System.out.println(text);
+                            return text;
+                        }
+                    }
+                }
+                return "No content found in LLM response.";
+            } else {
+                return "OpenAI API returned non-OK status: " + response.getStatusCode();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "Error calling OpenAI API: " + e.getMessage();
+        }
+    }
+    /* Single string Implementation
     private String callAPI(String messageRequest){
         String content = "content";
         // Prepare the request bodyRequest
@@ -60,17 +108,16 @@ public class ChatGPTService {
 
         try {
             ResponseEntity<Map> response = restTemplate.postForEntity(LOCAL_AI_API_URL, request, Map.class);
-            System.out.println("Response:");
-            System.out.println(response);
             if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
                 Map<String, Object> body = response.getBody();
-                //System.out.println("Model used: " + body.get("model"));
                 List<Map<String, Object>> choices = (List<Map<String, Object>>) body.get("choices");
                 if (choices != null && !choices.isEmpty()) {
                     Map<String, Object> firstChoice = choices.get(0);
-                    Map<String, Object> message = (Map<String, Object>) firstChoice.get("text");
-                    if (message != null && message.containsKey(content)) {
-                        return (String) message.get(content);
+                    String text = (String) firstChoice.get("text"); // FIXED
+                    if (text != null && !text.isEmpty()) {
+                        System.out.println("Returned response:");
+                        System.out.println(text);
+                        return text;
                     }
                 }
                 return "No content found in LLM response.";
@@ -83,6 +130,9 @@ public class ChatGPTService {
         }
 
 
+
     }
+
+     */
 
 }

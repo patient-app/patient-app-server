@@ -31,7 +31,7 @@ public class CryptographyUtil {
             GCMParameterSpec gcmSpec = new GCMParameterSpec(TAG_LENGTH_BIT, ivBytes);
 
             cipher.init(Cipher.ENCRYPT_MODE, key, gcmSpec);
-            byte[] encrypted = cipher.doFinal(plaintext.getBytes());
+            byte[] encrypted = cipher.doFinal(plaintext.getBytes(StandardCharsets.UTF_8));
             //prepends the IV to the encrypted message
             byte[] ivPlusCipher = new byte[ivBytes.length + encrypted.length];
             System.arraycopy(ivBytes, 0, ivPlusCipher, 0, ivBytes.length);

@@ -12,6 +12,9 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 
@@ -31,36 +34,64 @@ public class MessageService {
         this.promptBuilderService = promptBuilderService;
     }
 
+    private static List<Map<String, String>> parseMessagesFromConversation(Conversation conversation, String key) {
+        List<Map<String, String>> priorMessages = new ArrayList<>();
+
+        for (Message msg : conversation.getMessages()) {
+            if (msg.getRequest() != null && !msg.getRequest().trim().isEmpty()) {
+                String decryptedRequest = CryptographyUtil.decrypt(msg.getRequest(), key);
+                priorMessages.add(Map.of(
+                        "role", "user",
+                        "content", decryptedRequest.trim()
+                ));
+            }
+            if (msg.getResponse() != null && !msg.getResponse().trim().isEmpty()) {
+                String decryptedResponse = CryptographyUtil.decrypt(msg.getResponse(), key);
+                priorMessages.add(Map.of(
+                        "role", "assistant",
+                        "content", decryptedResponse.trim()
+                ));
+            }
+        }
+
+        return priorMessages;
+    }
+
+
     public Message generateAnswer(Patient patient, String externalConversationId, String message) {
 
         Optional<Conversation> optionalConversation = conversationRepository.getConversationByExternalId(externalConversationId);
         Conversation conversation = optionalConversation.orElseThrow(() -> new IllegalArgumentException("Conversation not found"));
 
         String key = CryptographyUtil.decrypt(patient.getPrivateKey());
-
         //Make message persistent
         Message newMessage = new Message();
         newMessage.setRequest(CryptographyUtil.encrypt(message, key));
 
-        String answer = promptBuilderService.getResponse(patient.isAdmin());
+
+        List<Map<String, String>> priorMessages = parseMessagesFromConversation(conversation,key);
+        String answer = promptBuilderService.getResponse(patient.isAdmin(),priorMessages, message);
 
         newMessage.setResponse(CryptographyUtil.encrypt(answer, key));
         newMessage.setConversation(conversation);
-
-        Message savedMessage = messageRepository.save(newMessage);
+        if( newMessage.getCreatedAt() == null){
+            LocalDateTime now = LocalDateTime.now();
+            newMessage.setCreatedAt(now);
+        }
+        messageRepository.save(newMessage);
         messageRepository.flush();
 
         Conversation refreshedConversation = conversationRepository.getConversationByExternalId(externalConversationId).orElseThrow(() -> new IllegalArgumentException("Conversation not found"));
 
         //Make a frontend version
-        newMessage.setResponse(answer);
-        newMessage.setRequest(message);
-        newMessage.setExternalConversationId(refreshedConversation.getExternalId());
+        Message frontendMessage = new Message();
 
-        if( newMessage.getCreatedAt() == null){
-            LocalDateTime now = LocalDateTime.now();
-            newMessage.setCreatedAt(now);
-        }
-        return newMessage;
+        frontendMessage.setConversation(null);
+        frontendMessage.setResponse(answer);
+        frontendMessage.setRequest(message);
+        frontendMessage.setExternalConversationId(refreshedConversation.getExternalId());
+        frontendMessage.setExternalId(newMessage.getExternalId());
+        frontendMessage.setCreatedAt(newMessage.getCreatedAt());
+        return frontendMessage;
     }
 }

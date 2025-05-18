@@ -57,7 +57,7 @@ public class MessageServiece {
         savedMessage.setCreatedAt(LocalDateTime.now());
 
         when(conversationRepository.getConversationByExternalId(externalId)).thenReturn(Optional.of(conversation));
-        when(promptBuilderService.getResponse(false)).thenReturn(mockResponse);
+        when(promptBuilderService.getResponse(false,"")).thenReturn(mockResponse);
         when(messageRepository.save(any())).thenReturn(savedMessage);
         when(conversationRepository.getConversationByExternalId(externalId)).thenReturn(Optional.of(conversation));
 
@@ -128,7 +128,7 @@ public class MessageServiece {
 
         try (MockedStatic<CryptographyUtil> utilities = mockStatic(CryptographyUtil.class)) {
             when(conversationRepository.getConversationByExternalId(externalId)).thenReturn(Optional.of(conversation));
-            when(promptBuilderService.getResponse(false)).thenReturn(mockResponse);
+            when(promptBuilderService.getResponse(false,"")).thenReturn(mockResponse);
             when(conversationRepository.getConversationByExternalId(externalId)).thenReturn(Optional.of(conversation));
 
             utilities.when(() -> CryptographyUtil.decrypt("encrypted-pk")).thenReturn(mockKey);
