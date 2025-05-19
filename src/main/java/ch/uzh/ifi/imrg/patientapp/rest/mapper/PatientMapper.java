@@ -24,5 +24,5 @@ public interface PatientMapper {
 
     @Mapping(source = "email", target = "email")
     @Mapping(source = "password", target = "password")
-    Patient convertCreatePatientDtoToEntity(CreatePatientDTO createPatientDTO);
+    Patient convertCreatePatientDTOToEntity(CreatePatientDTO createPatientDTO);
 }

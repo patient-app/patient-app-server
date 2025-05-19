@@ -38,7 +38,7 @@ public class PatientController {
             @RequestBody CreatePatientDTO patientInputDTO,
             HttpServletRequest httpServletRequest,
             HttpServletResponse httpServletResponse) {
-        Patient patient = PatientMapper.INSTANCE.convertCreatePatientDtoToEntity(patientInputDTO);
+        Patient patient = PatientMapper.INSTANCE.convertCreatePatientDTOToEntity(patientInputDTO);
         Patient createdPatient = patientService.registerPatient(patient, httpServletRequest, httpServletResponse);
         return PatientMapper.INSTANCE.convertEntityToPatientOutputDTO(createdPatient);
     }
