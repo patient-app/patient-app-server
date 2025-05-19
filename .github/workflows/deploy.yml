@@ -42,7 +42,7 @@ jobs:
           DB_PASSWORD_PRODUCTION: ${{ secrets.DB_PASSWORD_PRODUCTION }}
           JWT_SECRET_KEY_MAIN: ${{ secrets.JWT_SECRET_KEY_MAIN }}
           JWT_SECRET_KEY_PRODUCTION: ${{ secrets.JWT_SECRET_KEY_PRODUCTION }}
-          CHATGPT_APIKEY: ${{ secrets.CHATGPT_APIKEY }}
+          CHATGPT_API_KEY: ${{ secrets.CHATGPT_API_KEY }}
           LOCAL_AI_API_KEY: ${{secrets.LOCAL_AI_API_KEY}}
 
         run: |
@@ -50,7 +50,8 @@ jobs:
             
             echo "DB_PASSWORD=$DB_PASSWORD_MAIN" > .kubernetes/overlays/main/env.secrets
             echo "JWT_SECRET_KEY=$JWT_SECRET_KEY_MAIN" >> .kubernetes/overlays/main/env.secrets
-            echo "CHATGPT_APIKEY=$CHATGPT_APIKEY" >> .kubernetes/overlays/main/env.secrets
+            echo "CHATGPT_API_KEY=$CHATGPT_API_KEY" >> .kubernetes/overlays/main/env.secrets
+            echo "LOCAL_AI_API_KEY" >> .kubernetes/overlays/main/env.secrets
             
             kubectl apply -k .kubernetes/overlays/main
 
@@ -60,7 +61,8 @@ jobs:
             
             echo "DB_PASSWORD=$DB_PASSWORD_PRODUCTION" > .kubernetes/overlays/production/env.secrets
             echo "JWT_SECRET_KEY=$JWT_SECRET_KEY_PRODUCTION" >> .kubernetes/overlays/production/env.secrets
-            echo "CHATGPT_APIKEY=$CHATGPT_APIKEY" >> .kubernetes/overlays/production/env.secrets
+            echo "CHATGPT_API_KEY=$CHATGPT_API_KEY" >> .kubernetes/overlays/production/env.secrets
+            echo "LOCAL_AI_API_KEY=$LOCAL_AI_API_KEY" >> .kubernetes/overlays/production/env.secrets
             
             kubectl apply -k .kubernetes/overlays/production
 
