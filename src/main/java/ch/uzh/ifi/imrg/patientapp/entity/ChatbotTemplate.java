@@ -46,4 +46,5 @@ public class ChatbotTemplate implements Serializable {
     @JoinColumn(name = "therapist_id", referencedColumnName = "id")
     private Therapist therapist;
 
+
    }
