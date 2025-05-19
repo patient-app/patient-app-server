@@ -63,7 +63,12 @@ sonar {
         property "sonar.projectKey", "patient-app_patient-app-server"
         property "sonar.organization", "patient-app"
         property "sonar.host.url", "https://sonarcloud.io"
-        property "sonar.coverage.exclusions", "=**/*"
+    }
+}
+
+jacocoTestReport {
+    reports {
+        xml.required = true
     }
 }
 
@@ -81,6 +86,9 @@ if (secretPropsFile.exists()) {
         ext[name] = value
     }
 }
+defaultTasks 'bootJar', 'build'
+
+
 defaultTasks 'bootJar', 'build'
 
 tasks.named('test') {
