@@ -66,6 +66,13 @@ sonar {
     }
 }
 
+jacocoTestReport {
+    reports {
+        xml.required = true // Important: SonarQube uses the XML report
+        html.required = false
+    }
+}
+
 test {
     useJUnitPlatform()
     testLogging.showStandardStreams = true
