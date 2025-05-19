@@ -56,7 +56,6 @@ sonar {
         property "sonar.projectKey", "patient-app_patient-app-server"
         property "sonar.organization", "patient-app"
         property "sonar.host.url", "https://sonarcloud.io"
-        property "sonar.coverage.exclusions", "=**/*"
     }
 }
 
