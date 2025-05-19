@@ -33,7 +33,7 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
           restore-keys: ${{ runner.os }}-gradle
       - name: Run Tests and Generate Coverage
-        run: ./gradlew test jacocoTestReport sonar
+        run: ./gradlew test jacocoTestReport
       - name: SonarQube Backend Build and Analyze
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
