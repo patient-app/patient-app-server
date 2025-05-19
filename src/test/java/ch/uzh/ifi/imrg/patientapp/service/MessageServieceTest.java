@@ -13,6 +13,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.*;
 
+import java.lang.reflect.Method;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +22,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-public class MessageServiece {
+public class MessageServieceTest {
     @Mock
     private MessageRepository messageRepository;
 
@@ -157,7 +158,38 @@ public class MessageServiece {
             assertEquals(presetTime, result.getCreatedAt(), "CreatedAt should not have been changed");
         }
     }
+    @Test
+    void testParseMessagesFromConversation_staticDecryptionMocked() throws Exception {
+        // Arrange
+        String key = "whateverKey";
+        Message msg = new Message();
+        msg.setRequest("encryptedRequest123");
+        msg.setResponse("encryptedResponse456");
 
+        Conversation conversation = new Conversation();
+        conversation.setMessages(List.of(msg));
+
+        try (MockedStatic<CryptographyUtil> mocked = org.mockito.Mockito.mockStatic(CryptographyUtil.class)) {
+            mocked.when(() -> CryptographyUtil.decrypt("encryptedRequest123", key))
+                    .thenReturn("Hello");
+            mocked.when(() -> CryptographyUtil.decrypt("encryptedResponse456", key))
+                    .thenReturn("Hi there!");
+
+            // Access private static method
+            Method method = MessageService.class.getDeclaredMethod("parseMessagesFromConversation", Conversation.class, String.class);
+            method.setAccessible(true);
+
+            // Act
+            List<Map<String, String>> result = (List<Map<String, String>>) method.invoke(null, conversation, key);
+
+            // Assert
+            assertEquals(2, result.size());
+            assertEquals("user", result.get(0).get("role"));
+            assertEquals("Hello", result.get(0).get("content"));
+            assertEquals("assistant", result.get(1).get("role"));
+            assertEquals("Hi there!", result.get(1).get("content"));
+        }
+    }
 
 
 }

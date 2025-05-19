@@ -40,4 +40,25 @@ public class PromptBuilderServiceTest {
 
 
     }
+
+    @Test
+    void getResponse_shouldCallChatGPTServiceWithNoPriorMessages() {
+        // Arrange
+        String expectedPromptStart = "Act as a person, who cares about the other person";
+        String mockResponse = "Hi there!";
+
+        List<Map<String, String>> messages = List.of(
+                Map.of("role", "user", "content", "Hello?")
+        );
+
+        when(chatGPTService.getResponse(anyList(), eq(false))).thenReturn(mockResponse);
+
+        // Act
+        String actualResponse = promptBuilderService.getResponse(false, null, "hi");
+
+        // Assert
+        assertEquals(mockResponse, actualResponse);
+
+
+    }
 }

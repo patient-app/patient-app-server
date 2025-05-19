@@ -13,7 +13,7 @@ import java.util.concurrent.ThreadLocalRandom;
 @Service
 public class ChatGPTService {
     boolean USE_CHATGPT = false;
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
     private static final String LOCAL_AI_API_URL = "https://vllm-imrg.ifi.uzh.ch/v1/chat/completions";
 
     private static final List<String> predefinedResponses = List.of(
@@ -31,6 +31,9 @@ public class ChatGPTService {
             "There's a lot to digest here. The topic you brought up connects to multiple other ideas in philosophy and logic.",
             "You're touching on a concept that has layers of nuance. Let's see if we can untangle them one at a time."
     );
+    public ChatGPTService(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
     public String getResponse(List<Map<String, String>> messages, boolean isAdmin){
         /*isAdmin = true;
 
@@ -41,7 +44,7 @@ public class ChatGPTService {
         */
         return callAPI(messages);
     }
-    private String callAPI(List<Map<String, String>> messages) {
+    public String callAPI(List<Map<String, String>> messages) {
         String content = "content";
         // Prepare the request bodyRequest
         Map<String, Object> bodyRequest = new HashMap<>();
