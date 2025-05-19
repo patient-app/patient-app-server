@@ -68,7 +68,7 @@ sonar {
 
 jacocoTestReport {
     reports {
-        xml.required = true // Important: SonarQube uses the XML report
+        xml.required = true
         html.required = false
     }
 }
