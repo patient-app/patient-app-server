@@ -3,6 +3,7 @@ package ch.uzh.ifi.imrg.patientapp.entity;
 import jakarta.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import lombok.Getter;
@@ -37,7 +38,7 @@ public class Patient implements Serializable {
     @Column(nullable = true)
     private int age;
 
-    @Column(nullable = true)
+    @Column(name = "phone_number", nullable = true)
     private String phoneNumber;
 
     @Column(nullable = false, unique = true)
@@ -52,10 +53,43 @@ public class Patient implements Serializable {
     @Column(nullable = true)
     private String description;
 
+    @Getter
+    @Column(nullable = false)
+    private boolean admin = false;
+
     @ManyToOne
     @JoinColumn(name = "therapist_id", referencedColumnName = "id")
     private Therapist therapist;
 
     @Column(unique = true)
     private String workspaceId = UUID.randomUUID().toString();
+
+    @Column(name = "private_key", unique = true)
+    private String privateKey;
+
+    @OneToMany(mappedBy = "patient", fetch = FetchType.LAZY)
+    private List<Conversation> conversations;
+
+
+    @Override
+    public String toString() {
+        return "Patient{" +
+                "id='" + id + '\'' +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                ", name='" + name + '\'' +
+                ", gender='" + gender + '\'' +
+                ", age=" + age +
+                ", phoneNumber='" + phoneNumber + '\'' +
+                ", email='" + email + '\'' +
+                ", address='" + address + '\'' +
+                ", description='" + description + '\'' +
+                ", admin=" + admin +
+                ", therapistId=" + (therapist != null ? therapist.getId() : "null") +
+                ", workspaceId='" + workspaceId + '\'' +
+                ", privateKey=" + (privateKey != null ? privateKey : "null") +
+                ", conversationCount=" + (conversations != null ? conversations.size() : 0) +
+                '}';
+    }
+
 }
