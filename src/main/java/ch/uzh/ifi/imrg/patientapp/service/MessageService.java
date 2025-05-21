@@ -10,7 +10,7 @@ import ch.uzh.ifi.imrg.patientapp.utils.CryptographyUtil;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -71,7 +71,7 @@ public class MessageService {
         newMessage.setResponse(CryptographyUtil.encrypt(answer, key));
         newMessage.setConversation(conversation);
         if (newMessage.getCreatedAt() == null) {
-            OffsetDateTime now = OffsetDateTime.now();
+            LocalDateTime now = LocalDateTime.now();
             newMessage.setCreatedAt(now);
         }
         messageRepository.save(newMessage);

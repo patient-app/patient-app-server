@@ -14,7 +14,7 @@ import org.mockito.Mock;
 import org.mockito.*;
 
 import java.lang.reflect.Method;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -139,7 +139,7 @@ public class MessageServieceTest {
 
             // The real object that is passed to save and returned
             Message newMessage = new Message();
-            OffsetDateTime presetTime = OffsetDateTime.of(2024, 1, 1, 10, 0);
+            LocalDateTime presetTime = LocalDateTime.of(2024, 1, 1, 10, 0);
             newMessage.setCreatedAt(presetTime);
 
             when(messageRepository.save(any(Message.class))).thenAnswer(invocation -> {

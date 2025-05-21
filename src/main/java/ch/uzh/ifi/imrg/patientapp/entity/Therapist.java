@@ -2,7 +2,7 @@ package ch.uzh.ifi.imrg.patientapp.entity;
 
 import jakarta.persistence.*;
 import java.io.Serializable;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -24,11 +24,11 @@ public class Therapist implements Serializable {
 
     @Column(name = "created_at", updatable = false)
     @CreationTimestamp
-    private OffsetDateTime createdAt;
+    private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
     @UpdateTimestamp
-    private OffsetDateTime updatedAt;
+    private LocalDateTime updatedAt;
 
     @Column(unique = true)
     private String email;

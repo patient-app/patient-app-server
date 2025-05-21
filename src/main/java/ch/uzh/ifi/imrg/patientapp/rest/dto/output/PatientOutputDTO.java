@@ -3,7 +3,7 @@ package ch.uzh.ifi.imrg.patientapp.rest.dto.output;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -11,8 +11,8 @@ public class PatientOutputDTO {
 
     private String id;
     private String name;
-    private OffsetDateTime createdAt;
-    private OffsetDateTime updatedAt;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
     private String phoneNumber;
     private String address;
     private String gender;
