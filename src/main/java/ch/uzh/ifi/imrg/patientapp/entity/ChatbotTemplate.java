@@ -2,7 +2,7 @@ package ch.uzh.ifi.imrg.patientapp.entity;
 
 import jakarta.persistence.*;
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 import lombok.Getter;
@@ -22,11 +22,11 @@ public class ChatbotTemplate implements Serializable {
 
     @Column(name = "created_at", updatable = false)
     @CreationTimestamp
-    private LocalDateTime createdAt;
+    private OffsetDateTime createdAt;
 
     @Column(name = "updated_at")
     @UpdateTimestamp
-    private LocalDateTime updatedAt;
+    private OffsetDateTime updatedAt;
 
     @Column(nullable = false)
     private String chatbotName;
@@ -46,5 +46,4 @@ public class ChatbotTemplate implements Serializable {
     @JoinColumn(name = "therapist_id", referencedColumnName = "id")
     private Therapist therapist;
 
-
-   }
+}

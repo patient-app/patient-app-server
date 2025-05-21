@@ -7,7 +7,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -26,11 +26,11 @@ public class Conversation implements Serializable {
 
     @Column(name = "created_at", updatable = false, nullable = false)
     @CreationTimestamp
-    private LocalDateTime createdAt;
+    private OffsetDateTime createdAt;
 
     @Column(name = "updated_last")
     @UpdateTimestamp
-    private LocalDateTime updatedAt;
+    private OffsetDateTime updatedAt;
 
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "chatbot_template_id", referencedColumnName = "id")
@@ -46,7 +46,7 @@ public class Conversation implements Serializable {
     private String conversationInstruction;
 
     @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List <Message> messages = new ArrayList<>(); ;
+    private List<Message> messages = new ArrayList<>();;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "patient_id", referencedColumnName = "id", nullable = false)

@@ -6,7 +6,7 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Getter
@@ -24,12 +24,10 @@ public class Message implements Serializable {
 
     @Column(name = "created_at", updatable = false, nullable = false)
     @CreationTimestamp
-    private LocalDateTime createdAt;
-
+    private OffsetDateTime createdAt;
 
     @Column(nullable = true, columnDefinition = "TEXT")
     private String request;
-
 
     @Column(nullable = true, columnDefinition = "TEXT")
     private String response;
@@ -50,8 +48,16 @@ public class Message implements Serializable {
                 "id='" + id + '\'' +
                 ", externalId='" + externalId + '\'' +
                 ", createdAt=" + createdAt +
-                ", request='" + (request != null ? request.replaceAll("\\s+", " ").substring(0, Math.min(30, request.length())) + "..." : "null") + '\'' +
-                ", response='" + (response != null ? response.replaceAll("\\s+", " ").substring(0, Math.min(30, response.length())) + "..." : "null") + '\'' +
+                ", request='"
+                + (request != null
+                        ? request.replaceAll("\\s+", " ").substring(0, Math.min(30, request.length())) + "..."
+                        : "null")
+                + '\'' +
+                ", response='"
+                + (response != null
+                        ? response.replaceAll("\\s+", " ").substring(0, Math.min(30, response.length())) + "..."
+                        : "null")
+                + '\'' +
                 ", messageContext='" + messageContext + '\'' +
                 ", externalConversationId='" + externalConversationId + '\'' +
                 '}';

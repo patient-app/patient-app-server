@@ -14,7 +14,7 @@ import org.mockito.Mock;
 import org.mockito.*;
 
 import java.lang.reflect.Method;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -86,8 +86,6 @@ public class MessageServieceTest {
         }
     }
 
-
-
     @Test
     void generateAnswer_shouldThrowIfConversationNotFoundInitially() {
         // Arrange
@@ -96,9 +94,8 @@ public class MessageServieceTest {
         when(conversationRepository.getConversationByExternalId(externalId)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(IllegalArgumentException.class, () ->
-                messageService.generateAnswer(patient, externalId, "message")
-        );
+        assertThrows(IllegalArgumentException.class,
+                () -> messageService.generateAnswer(patient, externalId, "message"));
     }
 
     @Test
@@ -109,9 +106,8 @@ public class MessageServieceTest {
         when(conversationRepository.getConversationByExternalId(externalId)).thenReturn(Optional.ofNullable(null));
 
         // Act & Assert
-        assertThrows(IllegalArgumentException.class, () ->
-                messageService.generateAnswer(patient, externalId, "message")
-        );
+        assertThrows(IllegalArgumentException.class,
+                () -> messageService.generateAnswer(patient, externalId, "message"));
     }
 
     @Test
@@ -132,8 +128,10 @@ public class MessageServieceTest {
 
         try (MockedStatic<CryptographyUtil> utilities = mockStatic(CryptographyUtil.class)) {
             when(conversationRepository.getConversationByExternalId(externalId)).thenReturn(Optional.of(conversation));
-            when(promptBuilderService.getResponse(eq(false), ArgumentMatchers.<List<Map<String, String>>>any(), eq(inputMessage)))
-                    .thenReturn(mockResponse);            when(conversationRepository.getConversationByExternalId(externalId)).thenReturn(Optional.of(conversation));
+            when(promptBuilderService.getResponse(eq(false), ArgumentMatchers.<List<Map<String, String>>>any(),
+                    eq(inputMessage)))
+                    .thenReturn(mockResponse);
+            when(conversationRepository.getConversationByExternalId(externalId)).thenReturn(Optional.of(conversation));
 
             utilities.when(() -> CryptographyUtil.decrypt("encrypted-pk")).thenReturn(mockKey);
             utilities.when(() -> CryptographyUtil.encrypt(inputMessage, mockKey)).thenReturn(encryptedMessage);
@@ -141,7 +139,7 @@ public class MessageServieceTest {
 
             // The real object that is passed to save and returned
             Message newMessage = new Message();
-            LocalDateTime presetTime = LocalDateTime.of(2024, 1, 1, 10, 0);
+            OffsetDateTime presetTime = OffsetDateTime.of(2024, 1, 1, 10, 0);
             newMessage.setCreatedAt(presetTime);
 
             when(messageRepository.save(any(Message.class))).thenAnswer(invocation -> {
@@ -158,6 +156,7 @@ public class MessageServieceTest {
             assertEquals(presetTime, result.getCreatedAt(), "CreatedAt should not have been changed");
         }
     }
+
     @Test
     void testParseMessagesFromConversation_staticDecryptionMocked() throws Exception {
         // Arrange
@@ -176,7 +175,8 @@ public class MessageServieceTest {
                     .thenReturn("Hi there!");
 
             // Access private static method
-            Method method = MessageService.class.getDeclaredMethod("parseMessagesFromConversation", Conversation.class, String.class);
+            Method method = MessageService.class.getDeclaredMethod("parseMessagesFromConversation", Conversation.class,
+                    String.class);
             method.setAccessible(true);
 
             // Act
@@ -190,6 +190,5 @@ public class MessageServieceTest {
             assertEquals("Hi there!", result.get(1).get("content"));
         }
     }
-
 
 }
