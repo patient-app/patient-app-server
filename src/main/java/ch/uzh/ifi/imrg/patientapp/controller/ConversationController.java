@@ -8,6 +8,7 @@ import ch.uzh.ifi.imrg.patientapp.rest.dto.output.CompleteConversationOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.CreateConversationOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.MessageOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.MessageMapper;
+import ch.uzh.ifi.imrg.patientapp.service.AuthorizationService;
 import ch.uzh.ifi.imrg.patientapp.service.ConversationService;
 import ch.uzh.ifi.imrg.patientapp.service.MessageService;
 import ch.uzh.ifi.imrg.patientapp.service.PatientService;
@@ -17,6 +18,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.file.AccessDeniedException;
 import java.util.ArrayList;
 
 @RestController
@@ -27,10 +29,12 @@ public class ConversationController {
 
 
     ConversationController(PatientService patientService,
-                           ConversationService conversationService, MessageService messageService) {
+                           ConversationService conversationService,
+                           MessageService messageService) {
         this.patientService = patientService;
         this.conversationService = conversationService;
         this.messageService = messageService;
+
 
     }
 
@@ -48,7 +52,7 @@ public class ConversationController {
     @ResponseStatus(HttpStatus.OK)
     public MessageOutputDTO sendMessage(HttpServletRequest httpServletRequest,
                                         @RequestBody CreateMessageDTO createMessageDTO,
-                                        @PathVariable String conversationId) {
+                                        @PathVariable String conversationId) throws AccessDeniedException {
         Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
         Message answeredMessage = messageService.generateAnswer(loggedInPatient, conversationId, createMessageDTO.getMessage());
 
@@ -60,7 +64,7 @@ public class ConversationController {
     public CompleteConversationOutputDTO getAllMessages(HttpServletRequest httpServletRequest,
                                                        @PathVariable String conversationId) {
         Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
-        Conversation completeConversation = conversationService.getAllMessagesFromConversation(conversationId);
+        Conversation completeConversation = conversationService.getAllMessagesFromConversation(conversationId, loggedInPatient);
         CompleteConversationOutputDTO completeConversationOutputDTO = new CompleteConversationOutputDTO();
         completeConversationOutputDTO.setId(completeConversation.getExternalId());
         completeConversationOutputDTO.setMessages(new ArrayList<>());

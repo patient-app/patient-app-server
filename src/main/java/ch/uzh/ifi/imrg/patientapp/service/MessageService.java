@@ -11,6 +11,7 @@ import ch.uzh.ifi.imrg.patientapp.utils.CryptographyUtil;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,12 +27,13 @@ public class MessageService {
     private final ConversationRepository conversationRepository;
 
     private final PromptBuilderService promptBuilderService;
+    private final AuthorizationService authorizationService;
 
-
-    public MessageService(MessageRepository messageRepository, ConversationRepository conversationRepository, PromptBuilderService promptBuilderService) {
+    public MessageService(MessageRepository messageRepository, ConversationRepository conversationRepository, PromptBuilderService promptBuilderService, AuthorizationService authorizationService) {
         this.messageRepository = messageRepository;
         this.conversationRepository = conversationRepository;
         this.promptBuilderService = promptBuilderService;
+        this.authorizationService = authorizationService;
     }
 
     private static List<Map<String, String>> parseMessagesFromConversation(Conversation conversation, String key) {
@@ -57,17 +59,15 @@ public class MessageService {
         return priorMessages;
     }
 
-
     public Message generateAnswer(Patient patient, String externalConversationId, String message) {
 
         Optional<Conversation> optionalConversation = conversationRepository.getConversationByExternalId(externalConversationId);
         Conversation conversation = optionalConversation.orElseThrow(() -> new IllegalArgumentException("Conversation not found"));
-
+        authorizationService.checkConversationAccess(conversation,patient, "You are trying to send a message to another persons chat.");
         String key = CryptographyUtil.decrypt(patient.getPrivateKey());
         //Make message persistent
         Message newMessage = new Message();
         newMessage.setRequest(CryptographyUtil.encrypt(message, key));
-
 
         List<Map<String, String>> priorMessages = parseMessagesFromConversation(conversation,key);
         String answer = promptBuilderService.getResponse(patient.isAdmin(),priorMessages, message);

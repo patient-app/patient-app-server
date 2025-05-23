@@ -8,6 +8,7 @@ import ch.uzh.ifi.imrg.patientapp.rest.dto.output.CompleteConversationOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.CreateConversationOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.MessageOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.MessageMapper;
+import ch.uzh.ifi.imrg.patientapp.service.AuthorizationService;
 import ch.uzh.ifi.imrg.patientapp.service.ConversationService;
 import ch.uzh.ifi.imrg.patientapp.service.MessageService;
 import ch.uzh.ifi.imrg.patientapp.service.PatientService;
@@ -21,6 +22,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.nio.file.AccessDeniedException;
 import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -36,6 +38,9 @@ public class ConversationControllerTest {
 
     @Mock
     private MessageService messageService;
+
+    @Mock
+    private AuthorizationService authorizationService;
 
     @Mock
     private MessageMapper messageMapper;
@@ -67,7 +72,7 @@ public class ConversationControllerTest {
     }
 
     @Test
-    void sendMessage_shouldReturnMessageOutputDTO() {
+    void sendMessage_shouldReturnMessageOutputDTO() throws AccessDeniedException {
         Patient patient = new Patient();
         CreateMessageDTO dto = new CreateMessageDTO();
         dto.setMessage("Hello");

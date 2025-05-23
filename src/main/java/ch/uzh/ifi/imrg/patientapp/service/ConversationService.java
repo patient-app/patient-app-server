@@ -13,9 +13,11 @@ import java.util.Optional;
 @Transactional
 public class ConversationService {
     private final ConversationRepository conversationRepository;
+    private final AuthorizationService authorizationService;
 
-    public ConversationService(ConversationRepository conversationRepository) {
+    public ConversationService(ConversationRepository conversationRepository, AuthorizationService authorizationService) {
         this.conversationRepository = conversationRepository;
+        this.authorizationService = authorizationService;
     }
 
     public Conversation createConversation(Patient patient) {
@@ -23,10 +25,11 @@ public class ConversationService {
         conversation.setPatient(patient);
         return this.conversationRepository.save(conversation);
     }
-    public Conversation getAllMessagesFromConversation(String externalConversationId) {
+    public Conversation getAllMessagesFromConversation(String externalConversationId, Patient patient) {
         Optional<Conversation> optionalConversation = this.conversationRepository.getConversationByExternalId(externalConversationId);
 
         if (optionalConversation.isPresent()) {
+            authorizationService.checkConversationAccess(optionalConversation.get(), patient, "You can't retrieve the messages of an other user.");
             return optionalConversation.get();
         } else {
             throw new NoSuchElementException("No conversation found with external ID: " + externalConversationId);
