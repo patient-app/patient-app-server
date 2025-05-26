@@ -56,6 +56,9 @@ public class Patient implements Serializable {
     @Column(nullable = true)
     private String language;
 
+    @Column(nullable = true)
+    private boolean onboarded;
+
     @Getter
     @Column(nullable = false)
     private boolean admin = false;
@@ -91,6 +94,7 @@ public class Patient implements Serializable {
                 ", therapistId=" + (therapist != null ? therapist.getId() : "null") +
                 ", workspaceId='" + workspaceId + '\'' +
                 ",language:"+ language + '\'' +
+                ",onboarded:"+ onboarded + '\'' +
                 ", privateKey=" + (privateKey != null ? privateKey : "null") +
                 ", conversationCount=" + (conversations != null ? conversations.size() : 0) +
                 '}';

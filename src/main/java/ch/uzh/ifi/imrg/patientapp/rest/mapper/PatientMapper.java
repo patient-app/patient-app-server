@@ -21,6 +21,7 @@ public interface PatientMapper {
     @Mapping(source = "address", target = "address")
     @Mapping(source = "description", target = "description")
     @Mapping(source = "language", target = "language")
+    @Mapping(source = "onboarded", target = "onboarded")
     PatientOutputDTO convertEntityToPatientOutputDTO(Patient patient);
 
     @Mapping(source = "email", target = "email")

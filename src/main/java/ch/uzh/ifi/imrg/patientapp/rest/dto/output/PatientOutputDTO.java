@@ -18,6 +18,7 @@ public class PatientOutputDTO {
     private int age;
     private String email;
     private String language;
+    private boolean onboarded;
 
     public PatientOutputDTO() {
     }

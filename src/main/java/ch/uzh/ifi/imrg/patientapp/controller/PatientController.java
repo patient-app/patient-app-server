@@ -1,6 +1,7 @@
 package ch.uzh.ifi.imrg.patientapp.controller;
 
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutLanguageDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutOnboardedDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -67,7 +68,7 @@ public class PatientController {
 
         Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
         loggedInPatient.setLanguage(putLanguageDTO.getLanguage());
-        patientService.setLanguage(loggedInPatient);
+        patientService.setField(loggedInPatient);
     }
     @GetMapping("patients/language")
     @ResponseStatus(HttpStatus.OK)
@@ -76,4 +77,21 @@ public class PatientController {
         return PatientMapper.INSTANCE.convertEntityToPatientOutputDTO(loggedInPatient);
     }
 
+    @PutMapping("patients/onboarded")
+    @ResponseStatus(HttpStatus.OK)
+    public void setOnboarded(@RequestBody PutOnboardedDTO putOnboardedDTO, HttpServletRequest httpServletRequest) throws IOException {
+
+        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
+        if(!loggedInPatient.isOnboarded()){
+            loggedInPatient.setOnboarded(putOnboardedDTO.isOnboarded());
+            patientService.setField(loggedInPatient);
+        }
+
+    }
+    @GetMapping("patients/onboarded")
+    @ResponseStatus(HttpStatus.OK)
+    public PatientOutputDTO getOnboarded(HttpServletRequest httpServletRequest){
+        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
+        return PatientMapper.INSTANCE.convertEntityToPatientOutputDTO(loggedInPatient);
+    }
 }
