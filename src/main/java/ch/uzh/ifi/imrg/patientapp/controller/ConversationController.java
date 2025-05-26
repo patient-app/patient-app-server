@@ -7,8 +7,9 @@ import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreateMessageDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.CompleteConversationOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.CreateConversationOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.MessageOutputDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.output.NameConversationOutputDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.mapper.ConversationMapper;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.MessageMapper;
-import ch.uzh.ifi.imrg.patientapp.service.AuthorizationService;
 import ch.uzh.ifi.imrg.patientapp.service.ConversationService;
 import ch.uzh.ifi.imrg.patientapp.service.MessageService;
 import ch.uzh.ifi.imrg.patientapp.service.PatientService;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.nio.file.AccessDeniedException;
 import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 public class ConversationController {
@@ -48,7 +50,15 @@ public class ConversationController {
         return new CreateConversationOutputDTO(createdConversation.getExternalId());
     }
 
-    @PostMapping("/patients/conversations/{conversationId}")
+    @GetMapping("/patients/conversations/{patientId}")
+    @ResponseStatus(HttpStatus.OK)
+    public List<NameConversationOutputDTO> nameConversationDTO(HttpServletRequest httpServletRequest){
+        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
+        List<Conversation> conversationList = conversationService.getAllConversationsFromPatient(loggedInPatient);
+        return ConversationMapper.INSTANCE.convertEntityListToNameConversationOutputDTOList(conversationList);
+    }
+
+    @PostMapping("/patients/conversations/messages/{conversationId}")
     @ResponseStatus(HttpStatus.OK)
     public MessageOutputDTO sendMessage(HttpServletRequest httpServletRequest,
                                         @RequestBody CreateMessageDTO createMessageDTO,
@@ -59,7 +69,7 @@ public class ConversationController {
         return MessageMapper.INSTANCE.convertEntityToMessageOutputDTO(answeredMessage);
     }
 
-    @GetMapping("/patients/conversations/{conversationId}")
+    @GetMapping("/patients/conversations/messages/{conversationId}")
     @ResponseStatus(HttpStatus.OK)
     public CompleteConversationOutputDTO getAllMessages(HttpServletRequest httpServletRequest,
                                                        @PathVariable String conversationId) {

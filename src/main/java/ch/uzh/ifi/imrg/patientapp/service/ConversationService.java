@@ -6,6 +6,7 @@ import ch.uzh.ifi.imrg.patientapp.repository.ConversationRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -34,6 +35,9 @@ public class ConversationService {
         } else {
             throw new NoSuchElementException("No conversation found with external ID: " + externalConversationId);
         }
+    }
+    public List<Conversation> getAllConversationsFromPatient(Patient patient){
+        return this.conversationRepository.getConversationByPatientId(patient.getId());
     }
 
 }
