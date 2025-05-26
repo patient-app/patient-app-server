@@ -17,6 +17,7 @@ public class PatientOutputDTO {
     private String description;
     private int age;
     private String email;
+    private String language;
 
     public PatientOutputDTO() {
     }

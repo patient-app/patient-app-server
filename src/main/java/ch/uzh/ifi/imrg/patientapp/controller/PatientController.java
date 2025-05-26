@@ -1,11 +1,8 @@
 package ch.uzh.ifi.imrg.patientapp.controller;
 
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutLanguageDTO;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreatePatientDTO;
@@ -15,6 +12,11 @@ import ch.uzh.ifi.imrg.patientapp.rest.mapper.PatientMapper;
 import ch.uzh.ifi.imrg.patientapp.service.PatientService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.stream.Collectors;
 
 @RestController
 public class PatientController {
@@ -58,6 +60,20 @@ public class PatientController {
     @ResponseStatus(HttpStatus.OK)
     public void logoutTherapist(HttpServletResponse httpServletResponse) {
         patientService.logoutPatient(httpServletResponse);
+    }
+    @PutMapping("patients/language")
+    @ResponseStatus(HttpStatus.OK)
+    public void setLanguage(@RequestBody PutLanguageDTO putLanguageDTO, HttpServletRequest httpServletRequest) throws IOException {
+
+        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
+        loggedInPatient.setLanguage(putLanguageDTO.getLanguage());
+        patientService.setLanguage(loggedInPatient);
+    }
+    @GetMapping("patients/language")
+    @ResponseStatus(HttpStatus.OK)
+    public PatientOutputDTO getLanguage(HttpServletRequest httpServletRequest){
+        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
+        return PatientMapper.INSTANCE.convertEntityToPatientOutputDTO(loggedInPatient);
     }
 
 }

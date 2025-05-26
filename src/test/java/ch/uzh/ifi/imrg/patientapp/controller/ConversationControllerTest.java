@@ -103,7 +103,7 @@ public class ConversationControllerTest {
         conversation.setMessages(Collections.singletonList(message));
 
         when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
-        when(conversationService.getAllMessagesFromConversation("cid123")).thenReturn(conversation);
+        when(conversationService.getAllMessagesFromConversation("cid123",patient)).thenReturn(conversation);
 
         try (var cryptoMock = mockStatic(CryptographyUtil.class)) {
             cryptoMock.when(() -> CryptographyUtil.decrypt("encKey")).thenReturn("plainKey");

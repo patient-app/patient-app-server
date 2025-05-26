@@ -20,6 +20,7 @@ public interface PatientMapper {
     @Mapping(source = "email", target = "email")
     @Mapping(source = "address", target = "address")
     @Mapping(source = "description", target = "description")
+    @Mapping(source = "language", target = "language")
     PatientOutputDTO convertEntityToPatientOutputDTO(Patient patient);
 
     @Mapping(source = "email", target = "email")
