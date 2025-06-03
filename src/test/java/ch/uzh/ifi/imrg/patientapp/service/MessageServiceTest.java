@@ -14,7 +14,7 @@ import org.mockito.Mock;
 import org.mockito.*;
 
 import java.lang.reflect.Method;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -95,8 +95,6 @@ public class MessageServiceTest {
         }
     }
 
-
-
     @Test
     void generateAnswer_shouldThrowIfConversationNotFoundInitially() {
         // Arrange
@@ -105,9 +103,8 @@ public class MessageServiceTest {
         when(conversationRepository.getConversationByExternalId(externalId)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(IllegalArgumentException.class, () ->
-                messageService.generateAnswer(patient, externalId, "message")
-        );
+        assertThrows(IllegalArgumentException.class,
+                () -> messageService.generateAnswer(patient, externalId, "message"));
     }
 
     @Test
@@ -118,9 +115,8 @@ public class MessageServiceTest {
         when(conversationRepository.getConversationByExternalId(externalId)).thenReturn(Optional.ofNullable(null));
 
         // Act & Assert
-        assertThrows(IllegalArgumentException.class, () ->
-                messageService.generateAnswer(patient, externalId, "message")
-        );
+        assertThrows(IllegalArgumentException.class,
+                () -> messageService.generateAnswer(patient, externalId, "message"));
     }
 
     @Test
@@ -153,7 +149,7 @@ public class MessageServiceTest {
 
             // The real object that is passed to save and returned
             Message newMessage = new Message();
-            LocalDateTime presetTime = LocalDateTime.of(2024, 1, 1, 10, 0);
+            Instant presetTime = Instant.ofEpochSecond(1704103200);
             newMessage.setCreatedAt(presetTime);
 
             when(messageRepository.save(any(Message.class))).thenAnswer(invocation -> {
@@ -170,6 +166,7 @@ public class MessageServiceTest {
             assertEquals(presetTime, result.getCreatedAt(), "CreatedAt should not have been changed");
         }
     }
+
     @Test
     void testParseMessagesFromConversation_staticDecryptionMocked() throws Exception {
         // Arrange
@@ -188,7 +185,8 @@ public class MessageServiceTest {
                     .thenReturn("Hi there!");
 
             // Access private static method
-            Method method = MessageService.class.getDeclaredMethod("parseMessagesFromConversation", Conversation.class, String.class);
+            Method method = MessageService.class.getDeclaredMethod("parseMessagesFromConversation", Conversation.class,
+                    String.class);
             method.setAccessible(true);
 
             // Act
