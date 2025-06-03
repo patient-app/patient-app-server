@@ -24,6 +24,9 @@ public class Conversation implements Serializable {
     @Column(name = "external_id", unique = true, nullable = false, updatable = false)
     private String externalId = UUID.randomUUID().toString();
 
+    @Column(nullable = true)
+    private String name;
+
     @Column(name = "created_at", updatable = false, nullable = false)
     @CreationTimestamp
     private Instant createdAt;

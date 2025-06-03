@@ -35,12 +35,6 @@ public class Patient implements Serializable {
     @Column(nullable = true)
     private String gender;
 
-    @Column(nullable = true)
-    private int age;
-
-    @Column(name = "phone_number", nullable = true)
-    private String phoneNumber;
-
     @Column(nullable = false, unique = true)
     private String email;
 
@@ -48,10 +42,13 @@ public class Patient implements Serializable {
     private String password;
 
     @Column(nullable = true)
-    private String address;
+    private String description;
 
     @Column(nullable = true)
-    private String description;
+    private String language;
+
+    @Column(nullable = true)
+    private boolean onboarded;
 
     @Getter
     @Column(nullable = false)
@@ -78,14 +75,13 @@ public class Patient implements Serializable {
                 ", updatedAt=" + updatedAt +
                 ", name='" + name + '\'' +
                 ", gender='" + gender + '\'' +
-                ", age=" + age +
-                ", phoneNumber='" + phoneNumber + '\'' +
                 ", email='" + email + '\'' +
-                ", address='" + address + '\'' +
                 ", description='" + description + '\'' +
                 ", admin=" + admin +
                 ", therapistId=" + (therapist != null ? therapist.getId() : "null") +
                 ", workspaceId='" + workspaceId + '\'' +
+                ",language:"+ language + '\'' +
+                ",onboarded:"+ onboarded + '\'' +
                 ", privateKey=" + (privateKey != null ? privateKey : "null") +
                 ", conversationCount=" + (conversations != null ? conversations.size() : 0) +
                 '}';

@@ -1,9 +1,12 @@
 package ch.uzh.ifi.imrg.patientapp.service.aiService;
 
+import ch.uzh.ifi.imrg.patientapp.utils.EnvironmentVariables;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
@@ -26,10 +29,15 @@ public class ChatGPTServiceTest {
     @Test
     void testCallAPI_validResponse_returnsContent() {
         // Arrange
+        try (MockedStatic<EnvironmentVariables> envMock = Mockito.mockStatic(EnvironmentVariables.class)) {
+            envMock.when(EnvironmentVariables::getLocalLlmApiKey).thenReturn("fake-key");
+
+        }
         Map<String, Object> message = Map.of("content", "Hello!");
         Map<String, Object> choice = Map.of("message", message);
         Map<String, Object> responseBody = Map.of("choices", List.of(choice));
         ResponseEntity<Map> response = new ResponseEntity<>(responseBody, HttpStatus.OK);
+
 
         when(restTemplate.postForEntity(anyString(), any(HttpEntity.class), eq(Map.class)))
                 .thenReturn(response);
