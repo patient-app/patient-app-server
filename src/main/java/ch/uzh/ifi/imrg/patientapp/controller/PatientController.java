@@ -62,6 +62,7 @@ public class PatientController {
     public void logoutTherapist(HttpServletResponse httpServletResponse) {
         patientService.logoutPatient(httpServletResponse);
     }
+
     @PutMapping("patients/language")
     @ResponseStatus(HttpStatus.OK)
     public void setLanguage(@RequestBody PutLanguageDTO putLanguageDTO, HttpServletRequest httpServletRequest) throws IOException {
@@ -70,6 +71,7 @@ public class PatientController {
         loggedInPatient.setLanguage(putLanguageDTO.getLanguage());
         patientService.setField(loggedInPatient);
     }
+
     @GetMapping("patients/language")
     @ResponseStatus(HttpStatus.OK)
     public PatientOutputDTO getLanguage(HttpServletRequest httpServletRequest){

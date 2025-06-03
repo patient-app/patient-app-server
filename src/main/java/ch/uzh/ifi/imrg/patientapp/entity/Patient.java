@@ -35,20 +35,11 @@ public class Patient implements Serializable {
     @Column(nullable = true)
     private String gender;
 
-    @Column(nullable = true)
-    private int age;
-
-    @Column(name = "phone_number", nullable = true)
-    private String phoneNumber;
-
     @Column(nullable = false, unique = true)
     private String email;
 
     @Column(nullable = false)
     private String password;
-
-    @Column(nullable = true)
-    private String address;
 
     @Column(nullable = true)
     private String description;
@@ -85,10 +76,7 @@ public class Patient implements Serializable {
                 ", updatedAt=" + updatedAt +
                 ", name='" + name + '\'' +
                 ", gender='" + gender + '\'' +
-                ", age=" + age +
-                ", phoneNumber='" + phoneNumber + '\'' +
                 ", email='" + email + '\'' +
-                ", address='" + address + '\'' +
                 ", description='" + description + '\'' +
                 ", admin=" + admin +
                 ", therapistId=" + (therapist != null ? therapist.getId() : "null") +
