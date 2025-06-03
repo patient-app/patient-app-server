@@ -4,12 +4,18 @@ package ch.uzh.ifi.imrg.patientapp.controller;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.*;
 import ch.uzh.ifi.imrg.patientapp.service.PatientService;
+import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -87,4 +93,31 @@ public class ExerciseController {
         exerciseOutputDTO.setElements(exerciseElementDTOList);
         return exerciseOutputDTO;
     }
+    @GetMapping("/patients/exercises/{exerciseId}/pictures/{pictureId}")
+    public ResponseEntity<ClassPathResource> getPicture(
+            @PathVariable String exerciseId,
+            @PathVariable String pictureId) throws IOException {
+
+        // For now, we ignore the actual IDs and just serve a static image
+        ClassPathResource imgFile = new ClassPathResource("placeholder.jpg");
+
+        return ResponseEntity
+                .ok()
+                .contentType(MediaType.IMAGE_PNG)
+                .body(imgFile);
+    }
+
+    @GetMapping("/patients/exercises/{exerciseId}/documents/{fileId}")
+    public ResponseEntity<ClassPathResource> getPdf(
+            @PathVariable String exerciseId,
+            @PathVariable String fileId) throws IOException {
+
+        ClassPathResource pdfFile = new ClassPathResource("placeholder.pdf");
+
+        return ResponseEntity
+                .ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdfFile);
+    }
+
 }
