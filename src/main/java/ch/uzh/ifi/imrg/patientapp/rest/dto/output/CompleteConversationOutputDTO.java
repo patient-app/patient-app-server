@@ -9,5 +9,6 @@ import java.util.List;
 @Setter
 public class CompleteConversationOutputDTO {
     private String id;
+    private String name;
     private List<MessageOutputDTO> messages;
 }
