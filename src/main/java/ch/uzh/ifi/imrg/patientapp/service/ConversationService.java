@@ -28,6 +28,17 @@ public class ConversationService {
         conversation.setPatient(patient);
         return this.conversationRepository.save(conversation);
     }
+    public void deleteConversation(String externalConversationId, Patient loggedInPatient ){
+        Optional<Conversation> optionalConversation = conversationRepository.getConversationByExternalId(externalConversationId);
+        Conversation conversation;
+        if (optionalConversation.isPresent()) {
+            conversation = optionalConversation.get();
+        }else {
+            throw new NoSuchElementException("No conversation found with external ID: " + externalConversationId);
+        }
+        authorizationService.checkConversationAccess(conversation, loggedInPatient, "You can't delete chats of a different user.");
+        conversationRepository.delete(conversation);
+    }
 
     public void updateSharing(PutSharingDTO putSharingDTO, String externalConversationId, Patient loggedInPatient) {
         Optional<Conversation> optionalConversation = conversationRepository.getConversationByExternalId(externalConversationId);
