@@ -14,7 +14,8 @@ import org.mockito.Mock;
 import org.mockito.*;
 
 import java.lang.reflect.Method;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -22,7 +23,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-public class MessageServieceTest {
+public class MessageServiceTest {
     @Mock
     private MessageRepository messageRepository;
 
@@ -32,12 +33,18 @@ public class MessageServieceTest {
     @Mock
     private PromptBuilderService promptBuilderService;
 
+    @Mock
+    private AuthorizationService authorizationService;
+
     @InjectMocks
     private MessageService messageService;
 
     @BeforeEach
     void setup() {
         MockitoAnnotations.openMocks(this);
+        doNothing().when(messageRepository).flush();
+        doNothing().when(authorizationService).checkConversationAccess(any(), any(), any());
+
     }
 
     @Test
@@ -52,14 +59,16 @@ public class MessageServieceTest {
 
         Patient patient = new Patient();
         patient.setPrivateKey("encrypted-pk");
-
+        patient.setId("123");
         Conversation conversation = new Conversation();
         conversation.setExternalId(externalId);
+        conversation.setMessages(new ArrayList<>());
+        conversation.setPatient(patient);
 
         when(conversationRepository.getConversationByExternalId(externalId))
                 .thenReturn(Optional.of(conversation));
 
-        when(promptBuilderService.getResponse(eq(false), any(List.class), eq("")))
+        when(promptBuilderService.getResponse(eq(false), any(List.class), eq(inputMessage)))
                 .thenReturn(mockResponse);
 
         // Return the actual message passed into save(), not a dummy one
@@ -86,8 +95,6 @@ public class MessageServieceTest {
         }
     }
 
-
-
     @Test
     void generateAnswer_shouldThrowIfConversationNotFoundInitially() {
         // Arrange
@@ -96,9 +103,8 @@ public class MessageServieceTest {
         when(conversationRepository.getConversationByExternalId(externalId)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(IllegalArgumentException.class, () ->
-                messageService.generateAnswer(patient, externalId, "message")
-        );
+        assertThrows(IllegalArgumentException.class,
+                () -> messageService.generateAnswer(patient, externalId, "message"));
     }
 
     @Test
@@ -109,9 +115,8 @@ public class MessageServieceTest {
         when(conversationRepository.getConversationByExternalId(externalId)).thenReturn(Optional.ofNullable(null));
 
         // Act & Assert
-        assertThrows(IllegalArgumentException.class, () ->
-                messageService.generateAnswer(patient, externalId, "message")
-        );
+        assertThrows(IllegalArgumentException.class,
+                () -> messageService.generateAnswer(patient, externalId, "message"));
     }
 
     @Test
@@ -126,14 +131,17 @@ public class MessageServieceTest {
 
         Patient patient = new Patient();
         patient.setPrivateKey("encrypted-pk");
+        patient.setId("123");
 
         Conversation conversation = new Conversation();
         conversation.setExternalId(externalId);
+        conversation.setMessages(new ArrayList<>());
+        conversation.setPatient(patient);
 
         try (MockedStatic<CryptographyUtil> utilities = mockStatic(CryptographyUtil.class)) {
             when(conversationRepository.getConversationByExternalId(externalId)).thenReturn(Optional.of(conversation));
-            when(promptBuilderService.getResponse(eq(false), ArgumentMatchers.<List<Map<String, String>>>any(), eq(inputMessage)))
-                    .thenReturn(mockResponse);            when(conversationRepository.getConversationByExternalId(externalId)).thenReturn(Optional.of(conversation));
+            when(promptBuilderService.getResponse(eq(false), any(List.class), eq(inputMessage)))
+                    .thenReturn(mockResponse);
 
             utilities.when(() -> CryptographyUtil.decrypt("encrypted-pk")).thenReturn(mockKey);
             utilities.when(() -> CryptographyUtil.encrypt(inputMessage, mockKey)).thenReturn(encryptedMessage);
@@ -141,7 +149,7 @@ public class MessageServieceTest {
 
             // The real object that is passed to save and returned
             Message newMessage = new Message();
-            LocalDateTime presetTime = LocalDateTime.of(2024, 1, 1, 10, 0);
+            Instant presetTime = Instant.ofEpochSecond(1704103200);
             newMessage.setCreatedAt(presetTime);
 
             when(messageRepository.save(any(Message.class))).thenAnswer(invocation -> {
@@ -158,6 +166,7 @@ public class MessageServieceTest {
             assertEquals(presetTime, result.getCreatedAt(), "CreatedAt should not have been changed");
         }
     }
+
     @Test
     void testParseMessagesFromConversation_staticDecryptionMocked() throws Exception {
         // Arrange
@@ -176,7 +185,8 @@ public class MessageServieceTest {
                     .thenReturn("Hi there!");
 
             // Access private static method
-            Method method = MessageService.class.getDeclaredMethod("parseMessagesFromConversation", Conversation.class, String.class);
+            Method method = MessageService.class.getDeclaredMethod("parseMessagesFromConversation", Conversation.class,
+                    String.class);
             method.setAccessible(true);
 
             // Act

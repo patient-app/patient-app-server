@@ -7,7 +7,10 @@ import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreateMessageDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.CompleteConversationOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.CreateConversationOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.MessageOutputDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.output.NameConversationOutputDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.mapper.ConversationMapper;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.MessageMapper;
+import ch.uzh.ifi.imrg.patientapp.service.AuthorizationService;
 import ch.uzh.ifi.imrg.patientapp.service.ConversationService;
 import ch.uzh.ifi.imrg.patientapp.service.MessageService;
 import ch.uzh.ifi.imrg.patientapp.service.PatientService;
@@ -19,9 +22,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.nio.file.AccessDeniedException;
 import java.util.Collections;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -36,6 +42,9 @@ public class ConversationControllerTest {
 
     @Mock
     private MessageService messageService;
+
+    @Mock
+    private AuthorizationService authorizationService;
 
     @Mock
     private MessageMapper messageMapper;
@@ -67,7 +76,7 @@ public class ConversationControllerTest {
     }
 
     @Test
-    void sendMessage_shouldReturnMessageOutputDTO() {
+    void sendMessage_shouldReturnMessageOutputDTO() throws AccessDeniedException {
         Patient patient = new Patient();
         CreateMessageDTO dto = new CreateMessageDTO();
         dto.setMessage("Hello");
@@ -98,7 +107,7 @@ public class ConversationControllerTest {
         conversation.setMessages(Collections.singletonList(message));
 
         when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
-        when(conversationService.getAllMessagesFromConversation("cid123")).thenReturn(conversation);
+        when(conversationService.getAllMessagesFromConversation("cid123",patient)).thenReturn(conversation);
 
         try (var cryptoMock = mockStatic(CryptographyUtil.class)) {
             cryptoMock.when(() -> CryptographyUtil.decrypt("encKey")).thenReturn("plainKey");
@@ -112,6 +121,30 @@ public class ConversationControllerTest {
             assertEquals("req", resultMessage.getRequestMessage());
             assertEquals("res", resultMessage.getResponseMessage());
         }
+    }
+
+
+    @Test
+    void nameConversationDTO_shouldReturnMappedConversationList() {
+        // Arrange
+        Patient mockPatient = new Patient();
+
+        Conversation conversation = new Conversation();
+        conversation.setExternalId("cid123");
+        conversation.setName("Test Conversation");
+
+        List<Conversation> conversationList = Collections.singletonList(conversation);
+
+        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
+        when(conversationService.getAllConversationsFromPatient(mockPatient)).thenReturn(conversationList);
+
+        // Act
+        List<NameConversationOutputDTO> result = conversationController.nameConversationDTO(request);
+
+        // Assert
+        assertEquals(1, result.size());
+        assertEquals("cid123", result.getFirst().getId());
+        assertEquals("Test Conversation", result.getFirst().getName());
     }
 
 }

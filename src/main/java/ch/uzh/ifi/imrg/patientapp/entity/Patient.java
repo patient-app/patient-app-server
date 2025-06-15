@@ -2,7 +2,7 @@ package ch.uzh.ifi.imrg.patientapp.entity;
 
 import jakarta.persistence.*;
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -23,23 +23,17 @@ public class Patient implements Serializable {
 
     @Column(name = "created_at", updatable = false)
     @CreationTimestamp
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     @Column(name = "updated_at")
     @UpdateTimestamp
-    private LocalDateTime updatedAt;
+    private Instant updatedAt;
 
     @Column(nullable = true)
     private String name;
 
     @Column(nullable = true)
     private String gender;
-
-    @Column(nullable = true)
-    private int age;
-
-    @Column(name = "phone_number", nullable = true)
-    private String phoneNumber;
 
     @Column(nullable = false, unique = true)
     private String email;
@@ -48,10 +42,13 @@ public class Patient implements Serializable {
     private String password;
 
     @Column(nullable = true)
-    private String address;
+    private String description;
 
     @Column(nullable = true)
-    private String description;
+    private String language;
+
+    @Column(nullable = true)
+    private boolean onboarded;
 
     @Getter
     @Column(nullable = false)
@@ -70,7 +67,6 @@ public class Patient implements Serializable {
     @OneToMany(mappedBy = "patient", fetch = FetchType.LAZY)
     private List<Conversation> conversations;
 
-
     @Override
     public String toString() {
         return "Patient{" +
@@ -79,14 +75,13 @@ public class Patient implements Serializable {
                 ", updatedAt=" + updatedAt +
                 ", name='" + name + '\'' +
                 ", gender='" + gender + '\'' +
-                ", age=" + age +
-                ", phoneNumber='" + phoneNumber + '\'' +
                 ", email='" + email + '\'' +
-                ", address='" + address + '\'' +
                 ", description='" + description + '\'' +
                 ", admin=" + admin +
                 ", therapistId=" + (therapist != null ? therapist.getId() : "null") +
                 ", workspaceId='" + workspaceId + '\'' +
+                ",language:"+ language + '\'' +
+                ",onboarded:"+ onboarded + '\'' +
                 ", privateKey=" + (privateKey != null ? privateKey : "null") +
                 ", conversationCount=" + (conversations != null ? conversations.size() : 0) +
                 '}';

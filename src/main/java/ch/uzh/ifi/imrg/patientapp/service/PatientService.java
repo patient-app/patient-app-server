@@ -45,6 +45,10 @@ public class PatientService {
         patientRepository.save(patient);
         return patient;
     }
+    public void setField(Patient patient){
+        patientRepository.save(patient);
+    }
+
     // Registering patients is not necessary in the patient app (this is done via
     // the therapist app) but for testing purposes it might be usefule
     public Patient registerPatient(
