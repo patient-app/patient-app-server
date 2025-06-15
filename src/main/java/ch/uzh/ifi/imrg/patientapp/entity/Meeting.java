@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import ch.uzh.ifi.imrg.patientapp.constant.MeetingStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -44,5 +45,9 @@ public class Meeting {
 
     @Column(nullable = true)
     private String location;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private MeetingStatus meetingStatus = MeetingStatus.PENDING;
 
 }

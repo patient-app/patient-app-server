@@ -19,7 +19,7 @@ public interface MeetingMapper {
     @Mapping(source = "startAt", target = "startAt")
     @Mapping(source = "endAt", target = "endAt")
     @Mapping(source = "location", target = "location")
-    @Mapping(source = "status", target = "status")
+    @Mapping(source = "meetingStatus", target = "meetingStatus")
     @Mapping(source = "createdAt", target = "createdAt")
     @Mapping(source = "updatedAt", target = "updatedAt")
     MeetingOutputDTO convertEntityToMeetingOutputDTO(Meeting meeting);
