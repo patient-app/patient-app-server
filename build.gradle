@@ -54,6 +54,9 @@ dependencies {
     // LLM
     implementation 'org.springframework.boot:spring-boot-starter-web'
 
+    //pw validation
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
 }
 
 bootJar {
