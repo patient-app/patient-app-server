@@ -4,6 +4,7 @@ import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreatePatientDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.LoginPatientDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutLanguageDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutNameDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutOnboardedDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PatientOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.service.PatientService;
@@ -20,8 +21,6 @@ import java.io.IOException;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-
-
 
 public class PatientControllerTest {
 
@@ -181,5 +180,48 @@ public class PatientControllerTest {
         // Assert
         assertNotNull(result);
         assertTrue(result.isOnboarded()); // or assertFalse(...) if you set false above
+    }
+
+    @Test
+    void setName_shouldUpdateNameFieldAndCallSetField() throws IOException {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+
+        // Arrange
+        String name = "myName";
+        PutNameDTO dto = new PutNameDTO();
+        dto.setName(name);
+
+        Patient mockPatient = new Patient();
+        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
+
+        // Act
+        patientController.setName(dto, request);
+
+        // Assert
+        ArgumentCaptor<Patient> patientCaptor = ArgumentCaptor.forClass(Patient.class);
+        verify(patientService).setField(patientCaptor.capture());
+
+        Patient captured = patientCaptor.getValue();
+        assertNotNull(captured);
+        assert captured.getName().equals(name);
+    }
+
+    @Test
+    void getName_shouldReturnPatientOutputDTO() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+
+        // Arrange
+        String name = "myName";
+        Patient mockPatient = new Patient();
+        mockPatient.setName(name); // Set some name for clarity
+
+        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
+
+        // Act
+        PatientOutputDTO result = patientController.getName(request);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(name, result.getName());
     }
 }

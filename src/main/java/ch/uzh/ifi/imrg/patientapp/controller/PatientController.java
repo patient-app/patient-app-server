@@ -1,6 +1,7 @@
 package ch.uzh.ifi.imrg.patientapp.controller;
 
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutLanguageDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutNameDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutOnboardedDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -65,7 +66,8 @@ public class PatientController {
 
     @PutMapping("patients/language")
     @ResponseStatus(HttpStatus.OK)
-    public void setLanguage(@RequestBody PutLanguageDTO putLanguageDTO, HttpServletRequest httpServletRequest) throws IOException {
+    public void setLanguage(@RequestBody PutLanguageDTO putLanguageDTO, HttpServletRequest httpServletRequest)
+            throws IOException {
 
         Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
         loggedInPatient.setLanguage(putLanguageDTO.getLanguage());
@@ -74,25 +76,44 @@ public class PatientController {
 
     @GetMapping("patients/language")
     @ResponseStatus(HttpStatus.OK)
-    public PatientOutputDTO getLanguage(HttpServletRequest httpServletRequest){
+    public PatientOutputDTO getLanguage(HttpServletRequest httpServletRequest) {
         Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
         return PatientMapper.INSTANCE.convertEntityToPatientOutputDTO(loggedInPatient);
     }
 
     @PutMapping("patients/onboarded")
     @ResponseStatus(HttpStatus.OK)
-    public void setOnboarded(@RequestBody PutOnboardedDTO putOnboardedDTO, HttpServletRequest httpServletRequest) throws IOException {
+    public void setOnboarded(@RequestBody PutOnboardedDTO putOnboardedDTO, HttpServletRequest httpServletRequest)
+            throws IOException {
 
         Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
-        if(!loggedInPatient.isOnboarded()){
+        if (!loggedInPatient.isOnboarded()) {
             loggedInPatient.setOnboarded(putOnboardedDTO.isOnboarded());
             patientService.setField(loggedInPatient);
         }
 
     }
+
     @GetMapping("patients/onboarded")
     @ResponseStatus(HttpStatus.OK)
-    public PatientOutputDTO getOnboarded(HttpServletRequest httpServletRequest){
+    public PatientOutputDTO getOnboarded(HttpServletRequest httpServletRequest) {
+        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
+        return PatientMapper.INSTANCE.convertEntityToPatientOutputDTO(loggedInPatient);
+    }
+
+    @PutMapping("patients/name")
+    @ResponseStatus(HttpStatus.OK)
+    public void setName(@RequestBody PutNameDTO putNameDTO, HttpServletRequest httpServletRequest)
+            throws IOException {
+
+        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
+        loggedInPatient.setName(putNameDTO.getName());
+        patientService.setField(loggedInPatient);
+    }
+
+    @GetMapping("patients/name")
+    @ResponseStatus(HttpStatus.OK)
+    public PatientOutputDTO getName(HttpServletRequest httpServletRequest) {
         Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
         return PatientMapper.INSTANCE.convertEntityToPatientOutputDTO(loggedInPatient);
     }
