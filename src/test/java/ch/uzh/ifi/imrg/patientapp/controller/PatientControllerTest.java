@@ -1,6 +1,7 @@
 package ch.uzh.ifi.imrg.patientapp.controller;
 
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.ChangePasswordDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreatePatientDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.LoginPatientDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutLanguageDTO;
@@ -15,11 +16,14 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.ArgumentCaptor;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 public class PatientControllerTest {
@@ -223,5 +227,58 @@ public class PatientControllerTest {
         // Assert
         assertNotNull(result);
         assertEquals(name, result.getName());
+    }
+
+    @Test
+    void changePassword_shouldCallService_andReturnNoException() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        ChangePasswordDTO dto = new ChangePasswordDTO();
+        dto.setOldPassword("oldPwd");
+        dto.setNewPassword("newPwd");
+        dto.setConfirmPassword("newPwd");
+
+        Patient mockPatient = new Patient();
+        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
+        doNothing().when(patientService).changePassword(mockPatient, dto);
+
+        assertDoesNotThrow(() -> patientController.changePassword(dto, request));
+        verify(patientService).changePassword(mockPatient, dto);
+    }
+
+    @Test
+    void changePassword_shouldThrowForbidden_whenOldPasswordIncorrect() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        ChangePasswordDTO dto = new ChangePasswordDTO();
+        dto.setOldPassword("badOld");
+        dto.setNewPassword("newPwd");
+        dto.setConfirmPassword("newPwd");
+
+        Patient mockPatient = new Patient();
+        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
+        doThrow(new ResponseStatusException(HttpStatus.FORBIDDEN, "Old password is incorrect"))
+                .when(patientService).changePassword(mockPatient, dto);
+
+        ResponseStatusException ex = assertThrows(
+                ResponseStatusException.class,
+                () -> patientController.changePassword(dto, request));
+        assertEquals(HttpStatus.FORBIDDEN, ex.getStatusCode());
+    }
+
+    @Test
+    void changePassword_shouldThrowBadRequest_whenNewPasswordsDoNotMatch() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        ChangePasswordDTO dto = new ChangePasswordDTO();
+        dto.setOldPassword("oldPwd");
+        dto.setNewPassword("newPwd");
+        dto.setConfirmPassword("mismatch");
+
+        Patient mockPatient = new Patient();
+        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
+        doThrow(new ResponseStatusException(HttpStatus.BAD_REQUEST, "New password and confirmation do not match"))
+                .when(patientService).changePassword(mockPatient, dto);
+
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> patientController.changePassword(dto, request));
+        assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
     }
 }
