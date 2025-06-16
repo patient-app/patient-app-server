@@ -16,8 +16,6 @@ import ch.uzh.ifi.imrg.patientapp.utils.PasswordUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import static ch.uzh.ifi.imrg.patientapp.utils.CryptographyUtil.decrypt;
-
 @Service
 @Transactional
 public class PatientService {
@@ -45,7 +43,8 @@ public class PatientService {
         patientRepository.save(patient);
         return patient;
     }
-    public void setField(Patient patient){
+
+    public void setField(Patient patient) {
         patientRepository.save(patient);
     }
 
@@ -67,7 +66,7 @@ public class PatientService {
         }
         if (patient.getEmail() != null && patientRepository.existsByEmail(patient.getEmail())) {
             throw new Error(
-                    "Creating client failed because patient with this email" + patient.getEmail() +"already exists");
+                    "Creating client failed because patient with this email" + patient.getEmail() + "already exists");
         }
 
         patient.setPassword(PasswordUtil.encryptPassword(patient.getPassword()));
@@ -83,14 +82,31 @@ public class PatientService {
             LoginPatientDTO loginPatientDTO,
             HttpServletRequest httpServletRequest,
             HttpServletResponse httpServletResponse) {
-        Patient foundPatient = patientRepository.getPatientByEmail(loginPatientDTO.getEmail());
-        if (foundPatient == null) {
-            throw new Error("No client with email: " + loginPatientDTO.getEmail() + " exists");
+
+        Patient foundPatient;
+        if (loginPatientDTO.getEmail() != null && !loginPatientDTO.getEmail().isBlank()) {
+            foundPatient = patientRepository.getPatientByEmail(loginPatientDTO.getEmail());
+            if (foundPatient == null) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "No client with email: " + loginPatientDTO.getEmail() + "exists");
+            }
+        }
+
+        else if (loginPatientDTO.getUsername() != null && !loginPatientDTO.getUsername().isBlank()) {
+            foundPatient = patientRepository.getPatientByUsername(loginPatientDTO.getUsername());
+            if (foundPatient == null) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "No client with username: " + loginPatientDTO.getUsername() + "exists");
+            }
+        }
+
+        else {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You must supply either email or username");
         }
 
         if (!PasswordUtil.checkPassword(
                 loginPatientDTO.getPassword(), foundPatient.getPassword())) {
-            throw new Error("Wrong password.");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Wrong password");
         }
 
         String jwt = JwtUtil.createJWT(loginPatientDTO.getEmail());
