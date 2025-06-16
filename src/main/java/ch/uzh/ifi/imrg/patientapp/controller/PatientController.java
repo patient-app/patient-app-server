@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.ChangePasswordDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreatePatientDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.LoginPatientDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PatientOutputDTO;
@@ -14,11 +15,9 @@ import ch.uzh.ifi.imrg.patientapp.rest.mapper.PatientMapper;
 import ch.uzh.ifi.imrg.patientapp.service.PatientService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.stream.Collectors;
 
 @RestController
 public class PatientController {
@@ -39,7 +38,7 @@ public class PatientController {
     @PostMapping("/patients/register")
     @ResponseStatus(HttpStatus.CREATED)
     public PatientOutputDTO registerPatient(
-            @RequestBody CreatePatientDTO patientInputDTO,
+            @Valid @RequestBody CreatePatientDTO patientInputDTO,
             HttpServletRequest httpServletRequest,
             HttpServletResponse httpServletResponse) {
         Patient patient = PatientMapper.INSTANCE.convertCreatePatientDTOToEntity(patientInputDTO);
@@ -116,5 +115,14 @@ public class PatientController {
     public PatientOutputDTO getName(HttpServletRequest httpServletRequest) {
         Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
         return PatientMapper.INSTANCE.convertEntityToPatientOutputDTO(loggedInPatient);
+    }
+
+    @PutMapping("patients/password")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void changePassword(@Valid @RequestBody ChangePasswordDTO changePasswordDTO,
+            HttpServletRequest httpServletRequest) {
+        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
+        patientService.changePassword(loggedInPatient, changePasswordDTO);
+
     }
 }
