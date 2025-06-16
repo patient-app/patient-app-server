@@ -38,7 +38,7 @@ public class PatientController {
     @PostMapping("/patients/register")
     @ResponseStatus(HttpStatus.CREATED)
     public PatientOutputDTO registerPatient(
-            @RequestBody CreatePatientDTO patientInputDTO,
+            @Valid @RequestBody CreatePatientDTO patientInputDTO,
             HttpServletRequest httpServletRequest,
             HttpServletResponse httpServletResponse) {
         Patient patient = PatientMapper.INSTANCE.convertCreatePatientDTOToEntity(patientInputDTO);
