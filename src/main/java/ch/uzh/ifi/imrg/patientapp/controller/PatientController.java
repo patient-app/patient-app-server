@@ -1,6 +1,7 @@
 package ch.uzh.ifi.imrg.patientapp.controller;
 
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutLanguageDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutNameDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutOnboardedDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -16,10 +17,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.stream.Collectors;
 
 @RestController
 public class PatientController {
@@ -98,6 +96,23 @@ public class PatientController {
     @GetMapping("patients/onboarded")
     @ResponseStatus(HttpStatus.OK)
     public PatientOutputDTO getOnboarded(HttpServletRequest httpServletRequest) {
+        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
+        return PatientMapper.INSTANCE.convertEntityToPatientOutputDTO(loggedInPatient);
+    }
+
+    @PutMapping("patients/name")
+    @ResponseStatus(HttpStatus.OK)
+    public void setName(@RequestBody PutNameDTO putNameDTO, HttpServletRequest httpServletRequest)
+            throws IOException {
+
+        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
+        loggedInPatient.setName(putNameDTO.getName());
+        patientService.setField(loggedInPatient);
+    }
+
+    @GetMapping("patients/name")
+    @ResponseStatus(HttpStatus.OK)
+    public PatientOutputDTO getName(HttpServletRequest httpServletRequest) {
         Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
         return PatientMapper.INSTANCE.convertEntityToPatientOutputDTO(loggedInPatient);
     }
