@@ -38,6 +38,9 @@ public class Patient implements Serializable {
     @Column(nullable = false, unique = true)
     private String email;
 
+    @Column(nullable = false, unique = true)
+    private String username;
+
     @Column(nullable = false)
     private String password;
 
@@ -76,12 +79,13 @@ public class Patient implements Serializable {
                 ", name='" + name + '\'' +
                 ", gender='" + gender + '\'' +
                 ", email='" + email + '\'' +
+                ", username='" + username + '\'' +
                 ", description='" + description + '\'' +
                 ", admin=" + admin +
                 ", therapistId=" + (therapist != null ? therapist.getId() : "null") +
                 ", workspaceId='" + workspaceId + '\'' +
-                ",language:"+ language + '\'' +
-                ",onboarded:"+ onboarded + '\'' +
+                ",language:" + language + '\'' +
+                ",onboarded:" + onboarded + '\'' +
                 ", privateKey=" + (privateKey != null ? privateKey : "null") +
                 ", conversationCount=" + (conversations != null ? conversations.size() : 0) +
                 '}';
