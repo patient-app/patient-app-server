@@ -32,8 +32,8 @@ public class JournalEntryController {
 
         Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
 
-        JournalEntry savedEntry = journalEntryService.createEntry(dto, loggedInPatient);
-        return JournalEntryMapper.INSTANCE.convertEntityToJournalEntryOutputDTO(savedEntry);
+        JournalEntryOutputDTO savedEntry = journalEntryService.createEntry(dto, loggedInPatient);
+        return savedEntry;
     }
 
     // get all entries for patient
