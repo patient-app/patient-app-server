@@ -1,6 +1,7 @@
 package ch.uzh.ifi.imrg.patientapp.entity.Exercise;
 
 
+import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,11 +20,17 @@ public class Exercise implements Serializable {
     private String id = UUID.randomUUID().toString();
 
     @Column
-    private String title;
+    private String name;
+
+    private String pictureUrl;
 
     @Column
     private String description;
 
     @OneToMany(mappedBy = "exercise", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ExerciseElement> exerciseElements;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "patient_id", referencedColumnName = "id", nullable = false)
+    private Patient patient;
 }

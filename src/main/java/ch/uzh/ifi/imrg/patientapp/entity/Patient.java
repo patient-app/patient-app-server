@@ -1,5 +1,6 @@
 package ch.uzh.ifi.imrg.patientapp.entity;
 
+import ch.uzh.ifi.imrg.patientapp.entity.Exercise.Exercise;
 import jakarta.persistence.*;
 import java.io.Serializable;
 import java.time.Instant;
@@ -66,6 +67,9 @@ public class Patient implements Serializable {
 
     @OneToMany(mappedBy = "patient", fetch = FetchType.LAZY)
     private List<Conversation> conversations;
+
+    @OneToMany(mappedBy = "patient", fetch = FetchType.LAZY)
+    private List<Exercise> exercises;
 
     @Override
     public String toString() {

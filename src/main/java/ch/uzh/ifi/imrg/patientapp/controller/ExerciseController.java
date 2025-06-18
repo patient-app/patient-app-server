@@ -3,8 +3,8 @@ package ch.uzh.ifi.imrg.patientapp.controller;
 
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.*;
+import ch.uzh.ifi.imrg.patientapp.service.ExerciseService;
 import ch.uzh.ifi.imrg.patientapp.service.PatientService;
-import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
@@ -22,14 +22,26 @@ import java.util.List;
 @RestController
 public class ExerciseController {
     private final PatientService patientService;
+    private final ExerciseService exerciseService;
 
-    ExerciseController(PatientService patientService){
+    ExerciseController(PatientService patientService, ExerciseService exerciseService) {
         this.patientService = patientService;
+        this.exerciseService = exerciseService;
     }
 
-    @GetMapping("/patients/exercises")
+
+    @GetMapping("/patients/exercises/")
     @ResponseStatus(HttpStatus.OK)
     public List<ExercisesOverviewOutputDTO> getExerciseOverview(HttpServletRequest httpServletRequest){
+        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
+        List<ExercisesOverviewOutputDTO> exercisesOverviewOutputDTOs = new ArrayList<>();
+                exercisesOverviewOutputDTOs = exerciseService.getExercisesOverview(loggedInPatient);
+        return exercisesOverviewOutputDTOs;
+    }
+
+    @GetMapping("/patients/exercises/mock")
+    @ResponseStatus(HttpStatus.OK)
+    public List<ExercisesOverviewOutputDTO> getExerciseOverviewMock(HttpServletRequest httpServletRequest){
         Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
         List<ExercisesOverviewOutputDTO> exercisesOverviewOutputDTOS = new ArrayList<>();
         ExercisesOverviewOutputDTO exercisesOverviewOutputDTO1 = new ExercisesOverviewOutputDTO();
@@ -47,9 +59,9 @@ public class ExerciseController {
     }
 
 
-    @GetMapping("/patients/exercises/{exerciseId}")
+    @GetMapping("/patients/exercises/{exerciseId}/mock")
     @ResponseStatus(HttpStatus.OK)
-    public ExerciseOutputDTO exerciseOutputDTO(HttpServletRequest httpServletRequest){
+    public ExerciseOutputDTO GetExerciseOutputDTOMock(HttpServletRequest httpServletRequest){
         Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
         ExerciseOutputDTO exerciseOutputDTO = new ExerciseOutputDTO();
         exerciseOutputDTO.setDescription("Solve the following exercise.");
@@ -93,8 +105,8 @@ public class ExerciseController {
         exerciseOutputDTO.setElements(exerciseElementDTOList);
         return exerciseOutputDTO;
     }
-    @GetMapping("/patients/exercises/{exerciseId}/pictures/{pictureId}")
-    public ResponseEntity<ClassPathResource> getPicture(
+    @GetMapping("/patients/exercises/{exerciseId}/pictures/{pictureId}/mock")
+    public ResponseEntity<ClassPathResource> getPictureMock(
             @PathVariable String exerciseId,
             @PathVariable String pictureId) throws IOException {
 
@@ -107,8 +119,8 @@ public class ExerciseController {
                 .body(imgFile);
     }
 
-    @GetMapping("/patients/exercises/{exerciseId}/documents/{fileId}")
-    public ResponseEntity<ClassPathResource> getPdf(
+    @GetMapping("/patients/exercises/{exerciseId}/documents/{fileId}/mock")
+    public ResponseEntity<ClassPathResource> getPdfMock(
             @PathVariable String exerciseId,
             @PathVariable String fileId) throws IOException {
 
