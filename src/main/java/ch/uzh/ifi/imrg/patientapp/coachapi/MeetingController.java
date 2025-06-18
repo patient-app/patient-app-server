@@ -48,6 +48,7 @@ public class MeetingController {
     }
 
     @PutMapping("/patients/{patientId}/meetings/{meetingId}")
+    @ResponseStatus(HttpStatus.OK)
     public MeetingOutputDTO updateMeeting(@PathVariable String patientId, @PathVariable String meetingId,
             @RequestBody UpdateMeetingDTO updateMeeting) {
         Meeting updated = meetingService.updateMeeting(patientId, meetingId, updateMeeting);
