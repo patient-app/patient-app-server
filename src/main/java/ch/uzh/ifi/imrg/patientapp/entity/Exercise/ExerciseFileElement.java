@@ -18,6 +18,7 @@ public class ExerciseFileElement extends ExerciseElement {
         this.setType("FILE");
     }
 
+
     @Override
     public Object getData() {
         return Map.of("name", name, "url", url);
