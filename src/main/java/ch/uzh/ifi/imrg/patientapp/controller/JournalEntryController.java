@@ -1,18 +1,20 @@
 package ch.uzh.ifi.imrg.patientapp.controller;
 
+import java.util.List;
+import java.util.Set;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import ch.uzh.ifi.imrg.patientapp.entity.JournalEntry;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.JournalEntryRequestDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.JournalEntryOutputDTO;
-import ch.uzh.ifi.imrg.patientapp.rest.mapper.JournalEntryMapper;
 import ch.uzh.ifi.imrg.patientapp.service.JournalEntryService;
 import ch.uzh.ifi.imrg.patientapp.service.PatientService;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.GetMapping;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.output.GetAllJournalEntriesDTO;
 
 @RestController
 public class JournalEntryController {
@@ -28,7 +30,7 @@ public class JournalEntryController {
     @PostMapping("/patients/journal-entries")
     @ResponseStatus(HttpStatus.CREATED)
     public JournalEntryOutputDTO create(@Valid @RequestBody JournalEntryRequestDTO dto,
-            HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
+            HttpServletRequest httpServletRequest) {
 
         Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
 
@@ -36,9 +38,29 @@ public class JournalEntryController {
         return savedEntry;
     }
 
-    // get all entries for patient
+    @GetMapping("/patients/journal-entries/tags")
+    @ResponseStatus(HttpStatus.OK)
+    public Set<String> getAllTags(HttpServletRequest httpServletRequest) {
 
-    // get specific entry
+        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
 
-    // update specific entry
+        return journalEntryService.getAllTags(loggedInPatient);
+    }
+
+    @GetMapping("/patients/journal-entries")
+    @ResponseStatus(HttpStatus.OK)
+    public List<GetAllJournalEntriesDTO> listAll(HttpServletRequest httpServletRequest) {
+        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
+
+        return journalEntryService.listEntries(loggedInPatient);
+    }
+
+    @GetMapping("/patients/journal-entries/{entryId}")
+    public JournalEntryOutputDTO getOne(@PathVariable String entryId, HttpServletRequest httpServletRequest) {
+        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
+
+        return journalEntryService.getEntry(loggedInPatient, entryId);
+    }
+
+    // TODO: update specific entry
 }
