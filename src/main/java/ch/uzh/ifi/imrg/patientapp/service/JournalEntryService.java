@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -96,6 +97,43 @@ public class JournalEntryService {
         decryptJournalDTO(dto, key);
 
         return dto;
+    }
+
+    public JournalEntryOutputDTO updateJournalEntry(Patient patient, String entryId,
+            JournalEntryRequestDTO dto) {
+        JournalEntry entry = journalEntryRepository.findById(entryId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Journal Entry not found"));
+
+        if (!entry.getPatient().getId().equals(patient.getId())) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Entry not found for this patient");
+        }
+
+        BeanUtils.copyProperties(dto, entry);
+
+        String key = CryptographyUtil.decrypt(patient.getPrivateKey());
+
+        encryptJournalEntity(entry, key);
+
+        JournalEntry updatedEntry = journalEntryRepository.saveAndFlush(entry);
+
+        JournalEntryOutputDTO outputDTO = JournalEntryMapper.INSTANCE
+                .convertEntityToJournalEntryOutputDTO(updatedEntry);
+
+        decryptJournalDTO(outputDTO, key);
+
+        return outputDTO;
+
+    }
+
+    public void deleteEntry(Patient patient, String entryId) {
+        JournalEntry entry = journalEntryRepository.findById(entryId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Journal Entry not found"));
+
+        if (!entry.getPatient().getId().equals(patient.getId())) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Entry not found for this patient");
+        }
+
+        journalEntryRepository.delete(entry);
     }
 
     private void encryptJournalEntity(JournalEntry entry, String rawKey) {

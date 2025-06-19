@@ -13,7 +13,6 @@ import ch.uzh.ifi.imrg.patientapp.service.JournalEntryService;
 import ch.uzh.ifi.imrg.patientapp.service.PatientService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import org.springframework.web.bind.annotation.GetMapping;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.GetAllJournalEntriesDTO;
 
 @RestController
@@ -56,11 +55,26 @@ public class JournalEntryController {
     }
 
     @GetMapping("/patients/journal-entries/{entryId}")
+    @ResponseStatus(HttpStatus.OK)
     public JournalEntryOutputDTO getOne(@PathVariable String entryId, HttpServletRequest httpServletRequest) {
         Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
 
         return journalEntryService.getEntry(loggedInPatient, entryId);
     }
 
-    // TODO: update specific entry
+    @PutMapping("/patients/journal-entries/{entryId}")
+    @ResponseStatus(HttpStatus.OK)
+    public JournalEntryOutputDTO updateJournalEntry(@Valid @RequestBody JournalEntryRequestDTO dto,
+            @PathVariable String entryId, HttpServletRequest httpServletRequest) {
+        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
+
+        return journalEntryService.updateJournalEntry(loggedInPatient, entryId, dto);
+    }
+
+    @DeleteMapping("/patients/journal-entries/{entryId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteEntry(@PathVariable String entryId, HttpServletRequest httpServletRequest) {
+        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
+        journalEntryService.deleteEntry(loggedInPatient, entryId);
+    }
 }
