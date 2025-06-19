@@ -9,7 +9,6 @@ import ch.uzh.ifi.imrg.patientapp.rest.mapper.ExerciseMapper;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -23,9 +22,8 @@ public class ExerciseService {
         this.exerciseMapper = exerciseMapper;
     }
 
-    public ExercisesOverviewOutputDTO getExercisesOverview(Patient patient){
+    public List<ExercisesOverviewOutputDTO> getExercisesOverview(Patient patient){
         List<Exercise> exercises = exerciseRepository.getExercisesByPatientId(patient.getId());
-        List<ExercisesOverviewOutputDTO> exercisesOverviewOutputDTOS = exerciseMapper.INSTANCE.exercisesToExerciseOverviewOutputDTOs(exercises);
-        return exercisesOverviewOutputDTOS;
+        return exerciseMapper.INSTANCE.exercisesToExerciseOverviewOutputDTOs(exercises);
     }
 }

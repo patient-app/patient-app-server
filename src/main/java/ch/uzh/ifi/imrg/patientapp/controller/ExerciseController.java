@@ -34,9 +34,7 @@ public class ExerciseController {
     @ResponseStatus(HttpStatus.OK)
     public List<ExercisesOverviewOutputDTO> getExerciseOverview(HttpServletRequest httpServletRequest){
         Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
-        List<ExercisesOverviewOutputDTO> exercisesOverviewOutputDTOs = new ArrayList<>();
-                exercisesOverviewOutputDTOs = exerciseService.getExercisesOverview(loggedInPatient);
-        return exercisesOverviewOutputDTOs;
+        return exerciseService.getExercisesOverview(loggedInPatient);
     }
 
     @GetMapping("/patients/exercises/mock")
