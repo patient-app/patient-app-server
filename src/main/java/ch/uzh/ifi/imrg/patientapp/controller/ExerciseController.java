@@ -30,37 +30,20 @@ public class ExerciseController {
     }
 
 
-    @GetMapping("/patients/exercises/")
+    @GetMapping("/patients/exercises")
     @ResponseStatus(HttpStatus.OK)
     public List<ExercisesOverviewOutputDTO> getExerciseOverview(HttpServletRequest httpServletRequest){
         Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
         return exerciseService.getExercisesOverview(loggedInPatient);
     }
 
-    @GetMapping("/patients/exercises/mock")
+
+    @GetMapping("/patients/exercises/{exerciseId}")
     @ResponseStatus(HttpStatus.OK)
-    public List<ExercisesOverviewOutputDTO> getExerciseOverviewMock(HttpServletRequest httpServletRequest){
+    public ExerciseOutputDTO GetExerciseOutputDTOMock(HttpServletRequest httpServletRequest,
+                                                      @PathVariable String exerciseId){
         Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
-        List<ExercisesOverviewOutputDTO> exercisesOverviewOutputDTOS = new ArrayList<>();
-        ExercisesOverviewOutputDTO exercisesOverviewOutputDTO1 = new ExercisesOverviewOutputDTO();
-        exercisesOverviewOutputDTO1.setName("Name of first exercise");
-        exercisesOverviewOutputDTO1.setId("Id1");
-        exercisesOverviewOutputDTO1.setPictureUrl("pictureUrlPlaceholder1");
-
-        ExercisesOverviewOutputDTO exercisesOverviewOutputDTO2 = new ExercisesOverviewOutputDTO();
-        exercisesOverviewOutputDTO2.setName("Name of second exercise");
-        exercisesOverviewOutputDTO2.setId("Id2");
-        exercisesOverviewOutputDTO2.setPictureUrl("pictureUrlPlaceholder2");
-        exercisesOverviewOutputDTOS.add(exercisesOverviewOutputDTO1);
-        exercisesOverviewOutputDTOS.add(exercisesOverviewOutputDTO2);
-        return exercisesOverviewOutputDTOS;
-    }
-
-
-    @GetMapping("/patients/exercises/{exerciseId}/mock")
-    @ResponseStatus(HttpStatus.OK)
-    public ExerciseOutputDTO GetExerciseOutputDTOMock(HttpServletRequest httpServletRequest){
-        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
+        exerciseService.getExercise(exerciseId)
         ExerciseOutputDTO exerciseOutputDTO = new ExerciseOutputDTO();
         exerciseOutputDTO.setDescription("Solve the following exercise.");
         exerciseOutputDTO.setId("exercise-id");

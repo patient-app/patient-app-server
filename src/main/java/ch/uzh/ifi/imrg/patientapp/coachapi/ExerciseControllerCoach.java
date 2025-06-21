@@ -7,17 +7,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-public class ExerciseController {
+public class ExerciseControllerCoach {
     private final ExerciseService exerciseService;
 
-    public ExerciseController(ExerciseService exerciseService) {
+    public ExerciseControllerCoach(ExerciseService exerciseService) {
         this.exerciseService = exerciseService;
     }
     @PostMapping("/coach/{patientId}/exercises")
     @ResponseStatus(HttpStatus.CREATED)
     public void createExercise(HttpServletRequest httpServletRequest, @PathVariable String patientId,
                                @RequestBody CreateExerciseDTO createExerciseDTO){
-        //insert some auth functionality
+        //insert some auth functionality evtl. something to directly pass the patient.
         exerciseService.createExercise(patientId, createExerciseDTO);
     }
 
