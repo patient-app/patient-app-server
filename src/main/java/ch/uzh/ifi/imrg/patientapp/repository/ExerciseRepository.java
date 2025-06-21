@@ -9,5 +9,6 @@ import java.util.List;
 @Repository
 public interface ExerciseRepository extends JpaRepository<Exercise, String> {
     List<Exercise> getExercisesByPatientId(String patientId);
+    Exercise getExerciseById(String exerciseId);
 
 }

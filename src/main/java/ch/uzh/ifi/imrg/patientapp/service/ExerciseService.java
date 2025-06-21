@@ -31,7 +31,14 @@ public class ExerciseService {
         List<Exercise> exercises = exerciseRepository.getExercisesByPatientId(patient.getId());
         return ExerciseMapper.INSTANCE.exercisesToExerciseOverviewOutputDTOs(exercises);
     }
-    public ExerciseOutputDTO
+    public ExerciseOutputDTO getExercise(String exerciseId) {
+        Exercise exercise = exerciseRepository.getExerciseById(exerciseId);
+        if (exercise == null) {
+            throw new IllegalArgumentException("No exercise found with ID: " + exerciseId);
+        }
+        return ExerciseMapper.INSTANCE.exerciseToExerciseOutputDTO(exercise);
+    }
+
     public void createExercise(String patientId, CreateExerciseDTO createExerciseDTO){
         Exercise exercise = ExerciseMapper.INSTANCE.createExerciseDTOToExercise(createExerciseDTO);
         Patient patient = patientRepository.getPatientById(patientId);

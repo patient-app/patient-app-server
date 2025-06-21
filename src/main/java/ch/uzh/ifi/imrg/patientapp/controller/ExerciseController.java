@@ -43,48 +43,7 @@ public class ExerciseController {
     public ExerciseOutputDTO GetExerciseOutputDTOMock(HttpServletRequest httpServletRequest,
                                                       @PathVariable String exerciseId){
         Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
-        exerciseService.getExercise(exerciseId)
-        ExerciseOutputDTO exerciseOutputDTO = new ExerciseOutputDTO();
-        exerciseOutputDTO.setDescription("Solve the following exercise.");
-        exerciseOutputDTO.setId("exercise-id");
-        exerciseOutputDTO.setTitle("Psychotherapie exercise");
-
-        List<ExerciseElementDTO> exerciseElementDTOList = new ArrayList<>();
-        ExerciseImageElementDTO.ImageData imageData = new ExerciseImageElementDTO.ImageData();
-        imageData.setAlt("Diagram A");
-        imageData.setUrl("pictureUrl");
-
-        ExerciseImageElementDTO exerciseImageElementDTO = new ExerciseImageElementDTO();
-        exerciseImageElementDTO.setId("img-id");
-        exerciseImageElementDTO.setType("IMAGE");
-        exerciseImageElementDTO.setData(imageData);
-
-        ExerciseFileElementDTO.FileData fileData = new ExerciseFileElementDTO.FileData();
-        fileData.setName("file.pdf");
-        fileData.setUrl("fileUrl");
-
-        ExerciseFileElementDTO exerciseFileElementDTO = new ExerciseFileElementDTO();
-        exerciseFileElementDTO.setId("File-id");
-        exerciseFileElementDTO.setType("FILE");
-        exerciseFileElementDTO.setData(fileData);
-
-        ExerciseTextInputElementDTO.TextInputData textInputData = new ExerciseTextInputElementDTO.TextInputData();
-        textInputData.setLabel("What are your thoughts?");
-        textInputData.setPlaceholder("Your thoughts");
-        textInputData.setRequired(true);
-
-        ExerciseTextInputElementDTO exerciseTextInputElementDTO = new ExerciseTextInputElementDTO();
-        exerciseTextInputElementDTO.setId("input-id");
-        exerciseTextInputElementDTO.setType("TEXT_INPUT");
-        exerciseTextInputElementDTO.setData(textInputData);
-
-
-        exerciseElementDTOList.add(exerciseImageElementDTO);
-        exerciseElementDTOList.add(exerciseFileElementDTO);
-        exerciseElementDTOList.add(exerciseTextInputElementDTO);
-
-        exerciseOutputDTO.setElements(exerciseElementDTOList);
-        return exerciseOutputDTO;
+        return exerciseService.getExercise(exerciseId);
     }
     @GetMapping("/patients/exercises/{exerciseId}/pictures/{pictureId}/mock")
     public ResponseEntity<ClassPathResource> getPictureMock(

@@ -9,7 +9,7 @@ import java.util.List;
 @Setter
 public class ExerciseOutputDTO {
     private String id;
-    private String title;
+    private String name;
     private String description;
-    private List<ExerciseElementDTO> elements;
+    private List<ExerciseElementDTO> exerciseElements;
 }
