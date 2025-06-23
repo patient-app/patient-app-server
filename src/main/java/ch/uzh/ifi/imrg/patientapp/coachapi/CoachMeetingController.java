@@ -25,7 +25,7 @@ public class CoachMeetingController {
 
     @PostMapping("/coach/patients/{patientId}/meetings")
     @ResponseStatus(HttpStatus.CREATED)
-    @SecurityRequirement(name = "X-Patient-Key")
+    @SecurityRequirement(name = "X-Coach-Key")
     public MeetingOutputDTO createMeeting(@PathVariable String patientId,
             @RequestBody CreateMeetingDTO createMeeting) {
         System.out.println("someone wants to create a meeting for patient: " + patientId);
@@ -35,7 +35,7 @@ public class CoachMeetingController {
 
     @GetMapping("/coach/patients/{patientId}/meetings")
     @ResponseStatus(HttpStatus.OK)
-    @SecurityRequirement(name = "X-Patient-Key")
+    @SecurityRequirement(name = "X-Coach-Key")
     public List<MeetingOutputDTO> listMeetings(@PathVariable String patientId) {
         List<Meeting> meetings = meetingService.getAllMeetings(patientId);
         return meetings.stream().map(MeetingMapper.INSTANCE::convertEntityToMeetingOutputDTO)
@@ -44,7 +44,7 @@ public class CoachMeetingController {
 
     @GetMapping("/coach/patients/{patientId}/meetings/{meetingId}")
     @ResponseStatus(HttpStatus.OK)
-    @SecurityRequirement(name = "X-Patient-Key")
+    @SecurityRequirement(name = "X-Coach-Key")
     public MeetingOutputDTO getMeeting(@PathVariable String patientId, @PathVariable String meetingId) {
         Meeting meeting = meetingService.getMeeting(meetingId, patientId);
         return MeetingMapper.INSTANCE.convertEntityToMeetingOutputDTO(meeting);
@@ -52,7 +52,7 @@ public class CoachMeetingController {
 
     @PutMapping("/coach/patients/{patientId}/meetings/{meetingId}")
     @ResponseStatus(HttpStatus.OK)
-    @SecurityRequirement(name = "X-Patient-Key")
+    @SecurityRequirement(name = "X-Coach-Key")
     public MeetingOutputDTO updateMeeting(@PathVariable String patientId, @PathVariable String meetingId,
             @RequestBody UpdateMeetingDTO updateMeeting) {
         Meeting updated = meetingService.updateMeeting(patientId, meetingId, updateMeeting);
@@ -61,7 +61,7 @@ public class CoachMeetingController {
 
     @DeleteMapping("/coach/patients/{patientId}/meetings/{meetingId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @SecurityRequirement(name = "X-Patient-Key")
+    @SecurityRequirement(name = "X-Coach-Key")
     public void deleteMeeting(@PathVariable String patientId, @PathVariable String meetingId) {
         meetingService.deleteMeeting(patientId, meetingId);
     }

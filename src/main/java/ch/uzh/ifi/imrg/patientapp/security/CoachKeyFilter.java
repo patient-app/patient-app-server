@@ -44,10 +44,10 @@ public class CoachKeyFilter extends OncePerRequestFilter {
             String patientId = parts[3]; // "", "coach", "patients", "{id}", ...
 
             // header must be present
-            String rawKey = request.getHeader("X-Patient-Key");
+            String rawKey = request.getHeader("X-Coach-Key");
 
             if (rawKey == null || rawKey.isBlank()) {
-                response.sendError(HttpStatus.UNAUTHORIZED.value(), "Missing X-Patient-Key");
+                response.sendError(HttpStatus.UNAUTHORIZED.value(), "Missing X-Coach-Key");
                 return;
             }
 
