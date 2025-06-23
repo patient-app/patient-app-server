@@ -16,15 +16,15 @@ import ch.uzh.ifi.imrg.patientapp.service.MeetingService;
 import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
-public class MeetingController {
+public class CoachMeetingController {
 
     private final MeetingService meetingService;
 
-    public MeetingController(MeetingService meetingService) {
+    public CoachMeetingController(MeetingService meetingService) {
         this.meetingService = meetingService;
     }
 
-    @PostMapping("/patients/{patientId}/meetings")
+    @PostMapping("/coach/patients/{patientId}/meetings")
     @ResponseStatus(HttpStatus.CREATED)
     public MeetingOutputDTO createMeeting(HttpServletRequest httpServletRequest, @PathVariable String patientId,
             @RequestBody CreateMeetingDTO createMeeting) {
@@ -32,7 +32,7 @@ public class MeetingController {
         return MeetingMapper.INSTANCE.convertEntityToMeetingOutputDTO(newMeeting);
     }
 
-    @GetMapping("/patients/{patientId}/meetings")
+    @GetMapping("/coach/patients/{patientId}/meetings")
     @ResponseStatus(HttpStatus.OK)
     public List<MeetingOutputDTO> listMeetings(@PathVariable String patientId) {
         List<Meeting> meetings = meetingService.getAllMeetings(patientId);
@@ -40,14 +40,14 @@ public class MeetingController {
                 .collect(Collectors.toList());
     }
 
-    @GetMapping("/patients/{patientId}/meetings/{meetingId}")
+    @GetMapping("/coach/patients/{patientId}/meetings/{meetingId}")
     @ResponseStatus(HttpStatus.OK)
     public MeetingOutputDTO getMeeting(@PathVariable String patientId, @PathVariable String meetingId) {
         Meeting meeting = meetingService.getMeeting(meetingId, patientId);
         return MeetingMapper.INSTANCE.convertEntityToMeetingOutputDTO(meeting);
     }
 
-    @PutMapping("/patients/{patientId}/meetings/{meetingId}")
+    @PutMapping("/coach/patients/{patientId}/meetings/{meetingId}")
     @ResponseStatus(HttpStatus.OK)
     public MeetingOutputDTO updateMeeting(@PathVariable String patientId, @PathVariable String meetingId,
             @RequestBody UpdateMeetingDTO updateMeeting) {
@@ -55,7 +55,7 @@ public class MeetingController {
         return MeetingMapper.INSTANCE.convertEntityToMeetingOutputDTO(updated);
     }
 
-    @DeleteMapping("/patients/{patientId}/meetings/{meetingId}")
+    @DeleteMapping("/coach/patients/{patientId}/meetings/{meetingId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteMeeting(@PathVariable String patientId, @PathVariable String meetingId) {
         meetingService.deleteMeeting(patientId, meetingId);
