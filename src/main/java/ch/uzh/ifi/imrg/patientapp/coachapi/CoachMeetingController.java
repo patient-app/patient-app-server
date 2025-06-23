@@ -12,8 +12,7 @@ import ch.uzh.ifi.imrg.patientapp.rest.dto.input.UpdateMeetingDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.MeetingOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.MeetingMapper;
 import ch.uzh.ifi.imrg.patientapp.service.MeetingService;
-
-import jakarta.servlet.http.HttpServletRequest;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 @RestController
 public class CoachMeetingController {
@@ -26,14 +25,17 @@ public class CoachMeetingController {
 
     @PostMapping("/coach/patients/{patientId}/meetings")
     @ResponseStatus(HttpStatus.CREATED)
-    public MeetingOutputDTO createMeeting(HttpServletRequest httpServletRequest, @PathVariable String patientId,
+    @SecurityRequirement(name = "X-Patient-Key")
+    public MeetingOutputDTO createMeeting(@PathVariable String patientId,
             @RequestBody CreateMeetingDTO createMeeting) {
+        System.out.println("someone wants to create a meeting for patient: " + patientId);
         Meeting newMeeting = meetingService.createMeeting(createMeeting, patientId);
         return MeetingMapper.INSTANCE.convertEntityToMeetingOutputDTO(newMeeting);
     }
 
     @GetMapping("/coach/patients/{patientId}/meetings")
     @ResponseStatus(HttpStatus.OK)
+    @SecurityRequirement(name = "X-Patient-Key")
     public List<MeetingOutputDTO> listMeetings(@PathVariable String patientId) {
         List<Meeting> meetings = meetingService.getAllMeetings(patientId);
         return meetings.stream().map(MeetingMapper.INSTANCE::convertEntityToMeetingOutputDTO)
@@ -42,6 +44,7 @@ public class CoachMeetingController {
 
     @GetMapping("/coach/patients/{patientId}/meetings/{meetingId}")
     @ResponseStatus(HttpStatus.OK)
+    @SecurityRequirement(name = "X-Patient-Key")
     public MeetingOutputDTO getMeeting(@PathVariable String patientId, @PathVariable String meetingId) {
         Meeting meeting = meetingService.getMeeting(meetingId, patientId);
         return MeetingMapper.INSTANCE.convertEntityToMeetingOutputDTO(meeting);
@@ -49,6 +52,7 @@ public class CoachMeetingController {
 
     @PutMapping("/coach/patients/{patientId}/meetings/{meetingId}")
     @ResponseStatus(HttpStatus.OK)
+    @SecurityRequirement(name = "X-Patient-Key")
     public MeetingOutputDTO updateMeeting(@PathVariable String patientId, @PathVariable String meetingId,
             @RequestBody UpdateMeetingDTO updateMeeting) {
         Meeting updated = meetingService.updateMeeting(patientId, meetingId, updateMeeting);
@@ -57,6 +61,7 @@ public class CoachMeetingController {
 
     @DeleteMapping("/coach/patients/{patientId}/meetings/{meetingId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @SecurityRequirement(name = "X-Patient-Key")
     public void deleteMeeting(@PathVariable String patientId, @PathVariable String meetingId) {
         meetingService.deleteMeeting(patientId, meetingId);
     }

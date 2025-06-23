@@ -29,6 +29,7 @@ public class JournalEntryRepositoryTest {
         patient.setId("myId");
         patient.setEmail("me@example.com");
         patient.setPassword("pwd");
+        patient.setCoachAccessKey("key");
         entityManager.persist(patient);
 
         // First journal entry
@@ -66,12 +67,14 @@ public class JournalEntryRepositoryTest {
         patient.setId("p1");
         patient.setEmail("p1@example.com");
         patient.setPassword("pwd");
+        patient.setCoachAccessKey("key");
         entityManager.persist(patient);
 
         Patient other = new Patient();
         other.setId("p2");
         other.setEmail("p2@example.com");
         other.setPassword("pwd");
+        other.setCoachAccessKey("key");
         entityManager.persist(other);
 
         // entry for p1
