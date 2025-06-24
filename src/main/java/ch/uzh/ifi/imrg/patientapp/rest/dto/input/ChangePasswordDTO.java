@@ -11,14 +11,10 @@ import lombok.Setter;
 public class ChangePasswordDTO {
 
     @NotBlank
-    private String oldPassword;
+    private String currentPassword;
 
     @NotBlank
     @Size(min = 8, message = "New password must be at least 8 characters")
     @Pattern(regexp = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d).*$", message = "Password must contain upper, lower and digits")
     private String newPassword;
-
-    @NotBlank
-    private String confirmPassword;
-
 }

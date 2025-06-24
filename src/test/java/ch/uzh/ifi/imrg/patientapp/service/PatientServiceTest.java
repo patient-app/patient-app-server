@@ -253,9 +253,8 @@ public class PatientServiceTest {
         Patient patient = spy(new Patient());
         patient.setPassword("oldHash");
         ChangePasswordDTO dto = new ChangePasswordDTO();
-        dto.setOldPassword("oldPwd");
+        dto.setCurrentPassword("oldPwd");
         dto.setNewPassword("newPwd");
-        dto.setConfirmPassword("newPwd");
 
         try (MockedStatic<PasswordUtil> pwMock = mockStatic(PasswordUtil.class)) {
             pwMock.when(() -> PasswordUtil.checkPassword("oldPwd", "oldHash")).thenReturn(true);
@@ -278,9 +277,8 @@ public class PatientServiceTest {
         Patient patient = new Patient();
         patient.setPassword("storedHash");
         ChangePasswordDTO dto = new ChangePasswordDTO();
-        dto.setOldPassword("wrongOld");
+        dto.setCurrentPassword("wrongOld");
         dto.setNewPassword("newPwd");
-        dto.setConfirmPassword("newPwd");
 
         try (MockedStatic<PasswordUtil> pwMock = mockStatic(PasswordUtil.class)) {
             pwMock.when(() -> PasswordUtil.checkPassword("wrongOld", "storedHash")).thenReturn(false);
@@ -289,26 +287,6 @@ public class PatientServiceTest {
                     () -> patientService.changePassword(patient, dto));
             assertEquals(HttpStatus.FORBIDDEN, ex.getStatusCode());
             assertTrue(ex.getReason().contains("Old password is incorrect"));
-        }
-    }
-
-    @Test
-    void changePassword_shouldThrowBadRequest_whenNewPasswordsDoNotMatch() {
-        // Arrange
-        Patient patient = new Patient();
-        patient.setPassword("storedHash");
-        ChangePasswordDTO dto = new ChangePasswordDTO();
-        dto.setOldPassword("correctOld");
-        dto.setNewPassword("newPwd1");
-        dto.setConfirmPassword("newPwd2");
-
-        try (MockedStatic<PasswordUtil> pwMock = mockStatic(PasswordUtil.class)) {
-            pwMock.when(() -> PasswordUtil.checkPassword("correctOld", "storedHash")).thenReturn(true);
-
-            ResponseStatusException ex = assertThrows(ResponseStatusException.class,
-                    () -> patientService.changePassword(patient, dto));
-            assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
-            assertTrue(ex.getReason().contains("New password and confirmation do not match"));
         }
     }
 
