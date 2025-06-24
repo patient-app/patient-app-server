@@ -1,7 +1,9 @@
 package ch.uzh.ifi.imrg.patientapp.rest.mapper;
 
 import ch.uzh.ifi.imrg.patientapp.entity.Exercise.Exercise;
+import ch.uzh.ifi.imrg.patientapp.entity.Exercise.StoredExerciseFile;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseInputDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExerciseMediaOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExerciseOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExercisesOverviewOutputDTO;
 import org.mapstruct.Mapper;
@@ -15,6 +17,7 @@ public interface ExerciseMapper {
     List<ExercisesOverviewOutputDTO> exercisesToExerciseOverviewOutputDTOs(List<Exercise> exercises);
     Exercise createExerciseDTOToExercise(ExerciseInputDTO exerciseInputDTO);
     ExerciseOutputDTO exerciseToExerciseOutputDTO(Exercise exercise);
+    ExerciseMediaOutputDTO storedExerciseFileToExerciseMediaOutputDTO(StoredExerciseFile storedExerciseFile);
 }
 
 

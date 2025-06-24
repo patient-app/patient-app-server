@@ -45,31 +45,12 @@ public class ExerciseController {
         Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
         return exerciseService.getExercise(exerciseId);
     }
-    @GetMapping("/patients/exercises/{exerciseId}/pictures/{pictureId}/mock")
-    public ResponseEntity<ClassPathResource> getPictureMock(
+    @GetMapping("/patients/exercises/{exerciseId}/{mediaId}")
+    public ExerciseMediaOutputDTO getPictureMock(HttpServletRequest httpServletRequest,
             @PathVariable String exerciseId,
-            @PathVariable String pictureId) throws IOException {
-
-        // For now, we ignore the actual IDs and just serve a static image
-        ClassPathResource imgFile = new ClassPathResource("placeholder.jpg");
-
-        return ResponseEntity
-                .ok()
-                .contentType(MediaType.IMAGE_PNG)
-                .body(imgFile);
-    }
-
-    @GetMapping("/patients/exercises/{exerciseId}/documents/{fileId}/mock")
-    public ResponseEntity<ClassPathResource> getPdfMock(
-            @PathVariable String exerciseId,
-            @PathVariable String fileId) throws IOException {
-
-        ClassPathResource pdfFile = new ClassPathResource("placeholder.pdf");
-
-        return ResponseEntity
-                .ok()
-                .contentType(MediaType.APPLICATION_PDF)
-                .body(pdfFile);
+            @PathVariable String mediaId) {
+        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
+        return exerciseService.getExerciseMedia(loggedInPatient, exerciseId, mediaId);
     }
 
 }
