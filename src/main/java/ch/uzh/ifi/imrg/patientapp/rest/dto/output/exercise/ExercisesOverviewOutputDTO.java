@@ -9,5 +9,5 @@ import lombok.Setter;
 public class ExercisesOverviewOutputDTO {
     private String id;
     private String name;
-    private String pictureUrl;
+    private String pictureId;
 }

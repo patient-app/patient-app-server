@@ -22,7 +22,7 @@ public class Exercise implements Serializable {
     @Column
     private String name;
 
-    private String pictureUrl;
+    private String pictureId;
 
     @Column
     private String description;
@@ -54,7 +54,7 @@ public class Exercise implements Serializable {
                 "\n  id='" + id + '\'' +
                 ",\n  name='" + name + '\'' +
                 ",\n  description='" + description + '\'' +
-                ",\n  pictureUrl='" + pictureUrl + '\'' +
+                ",\n  pictureUrl='" + pictureId + '\'' +
                 ",\n  patientId='" + (patient != null ? patient.getId() : "null") + '\'' +
                 ",\n  exerciseElements=" + elementsStr +
                 "\n}";

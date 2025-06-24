@@ -12,6 +12,6 @@ public class ExerciseFileElementOutputDTO extends ExerciseElementOutputDTO {
     @Setter
     public static class FileData {
         private String name;
-        private String url;
+        private String id;
     }
 }

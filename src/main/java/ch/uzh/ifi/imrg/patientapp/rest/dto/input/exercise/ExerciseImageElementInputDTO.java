@@ -12,7 +12,7 @@ public class ExerciseImageElementInputDTO extends ExerciseElementInputDTO {
     @Getter
     @Setter
     public static class ImageData {
-        private String url;
+        private String data;
         private String alt;
     }
 }

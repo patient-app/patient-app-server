@@ -1,9 +1,6 @@
 package ch.uzh.ifi.imrg.patientapp.rest.mapper;
 
-import ch.uzh.ifi.imrg.patientapp.entity.Exercise.ExerciseElement;
-import ch.uzh.ifi.imrg.patientapp.entity.Exercise.ExerciseFileElement;
-import ch.uzh.ifi.imrg.patientapp.entity.Exercise.ExerciseImageElement;
-import ch.uzh.ifi.imrg.patientapp.entity.Exercise.ExerciseTextElement;
+import ch.uzh.ifi.imrg.patientapp.entity.Exercise.*;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.*;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.*;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExerciseFileElementOutputDTO;
@@ -11,14 +8,17 @@ import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExerciseImageElementO
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
+import java.nio.charset.StandardCharsets;
+import java.util.UUID;
+
 @Mapper(componentModel = "spring")
 public interface ExerciseElementMapper {
 
     @Mapping(source = "name", target = "data.name")
-    @Mapping(source = "url", target = "data.url")
+    @Mapping(source = "fileId", target = "data.id")
     ExerciseFileElementOutputDTO toDto(ExerciseFileElement entity);
 
-    @Mapping(source = "url", target = "data.url")
+    @Mapping(source = "fileId", target = "data.id")
     @Mapping(source = "alt", target = "data.alt")
     ExerciseImageElementOutputDTO toDto(ExerciseImageElement entity);
 
@@ -27,20 +27,50 @@ public interface ExerciseElementMapper {
     @Mapping(source = "required", target = "data.required")
     ExerciseTextInputElementOutputDTO toDto(ExerciseTextElement entity);
 
-    @Mapping(source = "data.name", target = "name")
-    @Mapping(source = "data.url", target = "url")
-    ExerciseFileElement toEntity(ExerciseFileElementInputDTO dto);
-
-    @Mapping(source = "data.url", target = "url")
-    @Mapping(source = "data.alt", target = "alt")
-    ExerciseImageElement toEntity(ExerciseImageElementInputDTO dto);
-
     @Mapping(source = "data.label", target = "label")
     @Mapping(source = "data.placeholder", target = "placeholder")
     @Mapping(source = "data.required", target = "required")
     ExerciseTextElement toEntity(ExerciseTextInputElementInputDTO dto);
 
-    // Dispatcher
+    // Map stored file ID to String
+    default String map(StoredExerciseFile storedFile) {
+        return storedFile != null ? storedFile.getId() : null;
+    }
+
+    default ExerciseFileElement toEntity(ExerciseFileElementInputDTO dto) {
+        ExerciseFileElement entity = new ExerciseFileElement();
+        entity.setId(dto.getId());
+        entity.setName(dto.getData().getName());
+
+        String base64 = dto.getData().toString();
+
+        StoredExerciseFile file = new StoredExerciseFile();
+        file.setId(UUID.randomUUID().toString());
+        file.setData(base64.getBytes(StandardCharsets.UTF_8)); // or decode if needed
+
+        entity.setFileId(file);
+
+        return entity;
+    }
+
+    default ExerciseImageElement toEntity(ExerciseImageElementInputDTO dto) {
+        ExerciseImageElement entity = new ExerciseImageElement();
+        entity.setId(dto.getId());
+        entity.setAlt(dto.getData().getAlt());
+
+        String base64 = dto.getData().toString();
+
+        StoredExerciseFile file = new StoredExerciseFile();
+        file.setId(UUID.randomUUID().toString());
+        file.setData(base64.getBytes(StandardCharsets.UTF_8)); // or decode if needed
+
+        entity.setFileId(file);
+
+        return entity;
+    }
+
+
+    // Dispatcher entity
     default ExerciseElement toEntity(ExerciseElementInputDTO dto) {
         if (dto instanceof ExerciseFileElementInputDTO fileDto) {
             return toEntity(fileDto);
@@ -52,7 +82,7 @@ public interface ExerciseElementMapper {
         throw new IllegalArgumentException("Unsupported type: " + dto.getClass());
     }
 
-    // Main dispatcher
+    // Dispatcher DTO
     default ExerciseElementOutputDTO toDto(ExerciseElement element) {
         if (element instanceof ExerciseFileElement) {
             return toDto((ExerciseFileElement) element);

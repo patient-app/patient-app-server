@@ -9,12 +9,12 @@ import java.util.List;
 public class ExerciseInputDTO {
     private String name;
     private String description;
-    private String pictureUrl;
+    private String pictureData;
     private List<ExerciseElementInputDTO> exerciseElements;
     @Override
     public String toString() {
         return "ExerciseInputDTO{" +
-                "pictureUrl='" + pictureUrl + '\'' +
+                "pictureUrl='" + pictureData + '\'' +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", exerciseElements=" + (exerciseElements != null ? exerciseElements.toString() : "[]") +
