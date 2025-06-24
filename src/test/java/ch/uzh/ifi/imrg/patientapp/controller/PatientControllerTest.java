@@ -13,7 +13,11 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.IOException;
 
@@ -22,17 +26,12 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 
-
+@ExtendWith(MockitoExtension.class)
 public class PatientControllerTest {
-
+    @Mock
     private PatientService patientService;
+    @InjectMocks
     private PatientController patientController;
-
-    @BeforeEach
-    void setUp() {
-        patientService = mock(PatientService.class);
-        patientController = new PatientController(patientService);
-    }
 
     @Test
     void getCurrentlyLoggedInPatient_shouldReturnMappedDTO() {

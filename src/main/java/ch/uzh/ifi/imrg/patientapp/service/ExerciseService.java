@@ -40,6 +40,7 @@ public class ExerciseService {
         List<Exercise> exercises = exerciseRepository.getExercisesByPatientId(patient.getId());
         return exerciseMapper.exercisesToExerciseOverviewOutputDTOs(exercises);
     }
+
     public ExerciseOutputDTO getExercise(String exerciseId) {
         Exercise exercise = exerciseRepository.getExerciseById(exerciseId);
         if (exercise == null) {

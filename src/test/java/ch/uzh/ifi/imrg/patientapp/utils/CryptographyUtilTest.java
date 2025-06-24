@@ -1,7 +1,10 @@
 package ch.uzh.ifi.imrg.patientapp.utils;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.MockedStatic;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import javax.crypto.KeyGenerator;
 
 import java.util.Base64;
@@ -9,6 +12,7 @@ import java.util.Base64;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mockStatic;
 
+@ExtendWith(MockitoExtension.class)
 public class CryptographyUtilTest {
     @Test
     void encryptAndDecrypt_withKey_shouldReturnOriginal() {

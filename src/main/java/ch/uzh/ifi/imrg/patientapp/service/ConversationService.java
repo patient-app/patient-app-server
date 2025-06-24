@@ -28,6 +28,7 @@ public class ConversationService {
         conversation.setPatient(patient);
         return this.conversationRepository.save(conversation);
     }
+
     public void deleteConversation(String externalConversationId, Patient loggedInPatient ){
         Optional<Conversation> optionalConversation = conversationRepository.getConversationByExternalId(externalConversationId);
         Conversation conversation;
