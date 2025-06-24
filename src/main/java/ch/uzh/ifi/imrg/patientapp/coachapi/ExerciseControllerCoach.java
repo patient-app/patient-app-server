@@ -1,6 +1,6 @@
 package ch.uzh.ifi.imrg.patientapp.coachapi;
 
-import ch.uzh.ifi.imrg.patientapp.rest.dto.input.Exercise.CreateExerciseDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseInputDTO;
 import ch.uzh.ifi.imrg.patientapp.service.ExerciseService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -16,9 +16,9 @@ public class ExerciseControllerCoach {
     @PostMapping("/coach/{patientId}/exercises")
     @ResponseStatus(HttpStatus.CREATED)
     public void createExercise(HttpServletRequest httpServletRequest, @PathVariable String patientId,
-                               @RequestBody CreateExerciseDTO createExerciseDTO){
+                               @RequestBody ExerciseInputDTO exerciseInputDTO){
         //insert some auth functionality evtl. something to directly pass the patient.
-        exerciseService.createExercise(patientId, createExerciseDTO);
+        exerciseService.createExercise(patientId, exerciseInputDTO);
     }
 
 }

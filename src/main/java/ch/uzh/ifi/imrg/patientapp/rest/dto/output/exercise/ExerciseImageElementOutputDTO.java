@@ -6,7 +6,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class ExerciseImageElementDTO extends ExerciseElementDTO {
+public class ExerciseImageElementOutputDTO extends ExerciseElementOutputDTO {
     private ImageData data;
 
     @Getter

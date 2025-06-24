@@ -33,4 +33,31 @@ public class Exercise implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "patient_id", referencedColumnName = "id", nullable = false)
     private Patient patient;
+
+    @Override
+    public String toString() {
+        StringBuilder elementsStr = new StringBuilder();
+        if (exerciseElements != null) {
+            for (ExerciseElement element : exerciseElements) {
+                elementsStr.append("\n  - [")
+                        .append(element.getClass().getSimpleName())
+                        .append("] id=")
+                        .append(element.getId())
+                        .append(", type=")
+                        .append(element.getType())
+                        .append(", data=")
+                        .append(element.getData());
+            }
+        }
+
+        return "Exercise {" +
+                "\n  id='" + id + '\'' +
+                ",\n  name='" + name + '\'' +
+                ",\n  description='" + description + '\'' +
+                ",\n  pictureUrl='" + pictureUrl + '\'' +
+                ",\n  patientId='" + (patient != null ? patient.getId() : "null") + '\'' +
+                ",\n  exerciseElements=" + elementsStr +
+                "\n}";
+    }
+
 }

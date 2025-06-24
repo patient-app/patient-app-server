@@ -11,5 +11,5 @@ public class ExerciseOutputDTO {
     private String id;
     private String name;
     private String description;
-    private List<ExerciseElementDTO> exerciseElements;
+    private List<ExerciseElementOutputDTO> exerciseElements;
 }

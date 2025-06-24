@@ -6,7 +6,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class ExerciseTextInputElementDTO extends ExerciseElementDTO {
+public class ExerciseTextInputElementOutputDTO extends ExerciseElementOutputDTO {
     private TextInputData data;
 
     @Getter

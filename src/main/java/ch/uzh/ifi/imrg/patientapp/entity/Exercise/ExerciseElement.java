@@ -30,7 +30,6 @@ public abstract class ExerciseElement {
     @JoinColumn(name = "exercise_id")
     private Exercise exercise;
 
-    // Custom JSON output for 'data' block
     @JsonProperty("data")
     public abstract Object getData();
 }

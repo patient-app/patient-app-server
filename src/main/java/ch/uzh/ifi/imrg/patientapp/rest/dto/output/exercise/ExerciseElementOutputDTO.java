@@ -14,11 +14,11 @@ import lombok.Setter;
         visible = true
 )
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = ExerciseImageElementDTO.class, name = "IMAGE"),
-        @JsonSubTypes.Type(value = ExerciseFileElementDTO.class, name = "FILE"),
-        @JsonSubTypes.Type(value = ExerciseTextInputElementDTO.class, name = "TEXT_INPUT")
+        @JsonSubTypes.Type(value = ExerciseImageElementOutputDTO.class, name = "IMAGE"),
+        @JsonSubTypes.Type(value = ExerciseFileElementOutputDTO.class, name = "FILE"),
+        @JsonSubTypes.Type(value = ExerciseTextInputElementOutputDTO.class, name = "TEXT_INPUT")
 })
-public abstract class ExerciseElementDTO {
+public abstract class ExerciseElementOutputDTO {
     private String id;
     private String type;
 }
