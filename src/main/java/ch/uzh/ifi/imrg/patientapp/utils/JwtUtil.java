@@ -38,8 +38,8 @@ public class JwtUtil {
     cookie.setHttpOnly(true);
     cookie.setMaxAge(30 * 24 * 60 * 60); // 30 days
     cookie.setPath("/");
-    cookie.setSecure(true);
-    cookie.setAttribute("SameSite", "None");
+    cookie.setSecure(request.isSecure());
+    cookie.setAttribute("SameSite", "Lax");
     response.addCookie(cookie);
   }
 
@@ -49,7 +49,7 @@ public class JwtUtil {
     cookie.setMaxAge(0);
     cookie.setPath("/");
     cookie.setSecure(false);
-    cookie.setAttribute("SameSite", "None");
+    cookie.setAttribute("SameSite", "Lax");
     response.addCookie(cookie);
 
   }
