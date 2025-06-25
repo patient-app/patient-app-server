@@ -36,6 +36,15 @@ public class ExerciseService {
         this.storedExerciseFileRepository = storedExerciseFileRepository;
     }
 
+    public List<ExercisesOverviewOutputDTO>getAllExercisesForCoach(String patientId){
+        Patient patient = patientRepository.getPatientById(patientId);
+        if (patient == null) {
+            throw new IllegalArgumentException("No patient found with ID: " + patientId);
+        }
+        List<Exercise> exercises = exerciseRepository.getExercisesByPatientId(patient.getId());
+        return exerciseMapper.exercisesToExerciseOverviewOutputDTOs(exercises);
+    }
+
     public List<ExercisesOverviewOutputDTO> getExercisesOverview(Patient patient){
         List<Exercise> exercises = exerciseRepository.getExercisesByPatientId(patient.getId());
         return exerciseMapper.exercisesToExerciseOverviewOutputDTOs(exercises);
@@ -66,7 +75,7 @@ public class ExerciseService {
     }
 
     public void createExercise(String patientId, ExerciseInputDTO exerciseInputDTO){
-        Exercise exercise = exerciseMapper.createExerciseDTOToExercise(exerciseInputDTO);
+        Exercise exercise = exerciseMapper.exerciseInputDTOToExercise(exerciseInputDTO);
         Patient patient = patientRepository.getPatientById(patientId);
         exercise.setPatient(patient);
         //manually set the exercise in the exercise elements
@@ -77,4 +86,28 @@ public class ExerciseService {
         }
         exerciseRepository.save(exercise);
     }
+    public void updateExercise(String patientId, String exerciseId, ExerciseInputDTO exerciseInputDTO) {
+        Exercise exercise = exerciseRepository.getExerciseById(exerciseId);
+        if (exercise == null) {
+            throw new IllegalArgumentException("No exercise found with ID: " + exerciseId);
+        }
+        if (!exercise.getPatient().getId().equals(patientId)) {
+            throw new IllegalArgumentException("Patient does not have access to this exercise");
+        }
+
+        exerciseMapper.updateExerciseFromInputDTO(exerciseInputDTO, exercise);
+        exerciseRepository.save(exercise);
+    }
+
+    public void deleteExercise(String patientId, String exerciseId) {
+        Exercise exercise = exerciseRepository.getExerciseById(exerciseId);
+        if (exercise == null) {
+            throw new IllegalArgumentException("No exercise found with ID: " + exerciseId);
+        }
+        if (!exercise.getPatient().getId().equals(patientId)) {
+            throw new IllegalArgumentException("Patient does not have access to this exercise");
+        }
+        exerciseRepository.delete(exercise);
+    }
+
 }
