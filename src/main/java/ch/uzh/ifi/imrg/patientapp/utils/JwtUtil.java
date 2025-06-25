@@ -38,8 +38,8 @@ public class JwtUtil {
     cookie.setHttpOnly(true);
     cookie.setMaxAge(30 * 24 * 60 * 60); // 30 days
     cookie.setPath("/");
-    cookie.setSecure(request.isSecure());
-    cookie.setAttribute("SameSite", "Lax");
+    cookie.setSecure(true);
+    cookie.setAttribute("SameSite", "None");
     response.addCookie(cookie);
   }
 
@@ -49,8 +49,9 @@ public class JwtUtil {
     cookie.setMaxAge(0);
     cookie.setPath("/");
     cookie.setSecure(false);
-    cookie.setAttribute("SameSite", "Lax");
+    cookie.setAttribute("SameSite", "None");
     response.addCookie(cookie);
+
   }
 
   public static String validateJWTAndExtractEmail(HttpServletRequest request) {
