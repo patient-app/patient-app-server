@@ -246,5 +246,37 @@ public class PatientServiceTest {
             jwtMock.verify(() -> JwtUtil.removeJwtCookie(response));
         }
     }
+    @Test
+    void setField_shouldSavePatient() {
+        // Arrange
+        Patient patient = new Patient();
+        // optionally set some fields on the patient
+
+        // Act
+        patientService.setField(patient);
+
+        // Assert
+        verify(patientRepository, times(1)).save(patient);
+    }
+
+    @Test
+    void loginPatient_shouldThrowError_WhenPatientNotFound() {
+        // Arrange
+        String email = "notfound@example.com";
+        String password = "password123";
+        LoginPatientDTO loginDTO = new LoginPatientDTO();
+        loginDTO.setEmail(email);
+        loginDTO.setPassword(password);
+
+        when(patientRepository.getPatientByEmail(email)).thenReturn(null);
+
+        // Act + Assert
+        Error error = assertThrows(Error.class, () ->
+                patientService.loginPatient(loginDTO, request, response)
+        );
+
+        // Verify exception message
+        assert(error.getMessage().contains("No client with email: " + email + " exists"));
+    }
 
 }
