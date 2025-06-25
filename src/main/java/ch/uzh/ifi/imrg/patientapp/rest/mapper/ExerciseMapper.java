@@ -7,7 +7,7 @@ import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExerciseMediaOutputDT
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExerciseOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExercisesOverviewOutputDTO;
 import org.mapstruct.Mapper;
-import org.mapstruct.factory.Mappers;
+import org.mapstruct.MappingTarget;
 
 import java.util.List;
 
@@ -15,9 +15,11 @@ import java.util.List;
 public interface ExerciseMapper {
 
     List<ExercisesOverviewOutputDTO> exercisesToExerciseOverviewOutputDTOs(List<Exercise> exercises);
-    Exercise createExerciseDTOToExercise(ExerciseInputDTO exerciseInputDTO);
+    Exercise exerciseInputDTOToExercise(ExerciseInputDTO exerciseInputDTO);
     ExerciseOutputDTO exerciseToExerciseOutputDTO(Exercise exercise);
     ExerciseMediaOutputDTO storedExerciseFileToExerciseMediaOutputDTO(StoredExerciseFile storedExerciseFile);
+
+    void updateExerciseFromInputDTO(ExerciseInputDTO exerciseInputDTO, @MappingTarget Exercise target);
 }
 
 
