@@ -47,25 +47,26 @@ jobs:
 
         run: |
           if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            
+
+
             echo "DB_PASSWORD=$DB_PASSWORD_MAIN" > .kubernetes/overlays/main/env.secrets
             echo "JWT_SECRET_KEY=$JWT_SECRET_KEY_MAIN" >> .kubernetes/overlays/main/env.secrets
             echo "CHATGPT_API_KEY=$CHATGPT_API_KEY" >> .kubernetes/overlays/main/env.secrets
-            echo "LOCAL_AI_API_KEY" >> .kubernetes/overlays/main/env.secrets
-            
-            kubectl apply -k .kubernetes/overlays/main
+            echo "LOCAL_AI_API_KEY=$LOCAL_AI_API_KEY" >> .kubernetes/overlays/main/env.secrets
 
+            kubectl apply -k .kubernetes/overlays/main
             kubectl rollout restart deployment/patient-app-backend -n patient-app-main
 
           elif [[ "${{ github.ref }}" == "refs/heads/production" ]]; then 
             
+
             echo "DB_PASSWORD=$DB_PASSWORD_PRODUCTION" > .kubernetes/overlays/production/env.secrets
             echo "JWT_SECRET_KEY=$JWT_SECRET_KEY_PRODUCTION" >> .kubernetes/overlays/production/env.secrets
             echo "CHATGPT_API_KEY=$CHATGPT_API_KEY" >> .kubernetes/overlays/production/env.secrets
             echo "LOCAL_AI_API_KEY=$LOCAL_AI_API_KEY" >> .kubernetes/overlays/production/env.secrets
             
-            kubectl apply -k .kubernetes/overlays/production
 
+            kubectl apply -k .kubernetes/overlays/production
             kubectl rollout restart deployment/patient-app-backend -n patient-app-production
             
           fi
