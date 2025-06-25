@@ -10,5 +10,7 @@ import java.util.List;
 public class CompleteConversationOutputDTO {
     private String id;
     private String name;
+    private Boolean shareWithCoach;
+    private Boolean shareWithAi;
     private List<MessageOutputDTO> messages;
 }

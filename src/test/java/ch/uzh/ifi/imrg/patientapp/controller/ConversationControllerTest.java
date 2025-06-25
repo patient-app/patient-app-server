@@ -3,7 +3,10 @@ package ch.uzh.ifi.imrg.patientapp.controller;
 import ch.uzh.ifi.imrg.patientapp.entity.Conversation;
 import ch.uzh.ifi.imrg.patientapp.entity.Message;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
+import ch.uzh.ifi.imrg.patientapp.entity.Therapist;
+import ch.uzh.ifi.imrg.patientapp.repository.ConversationRepository;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreateMessageDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutSharingDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.CompleteConversationOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.CreateConversationOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.MessageOutputDTO;
@@ -26,8 +29,11 @@ import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.nio.file.AccessDeniedException;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -55,10 +61,8 @@ public class ConversationControllerTest {
     @Mock
     private HttpServletRequest request;
 
-    @BeforeEach
-    void setUp() {
-        conversationController = new ConversationController(patientService, conversationService, messageService);
-    }
+    @Mock
+    private ConversationRepository conversationRepository;
 
     @Test
     void createConversation_shouldReturnOutputDTO() {
@@ -146,5 +150,56 @@ public class ConversationControllerTest {
         assertEquals("cid123", result.getFirst().getId());
         assertEquals("Test Conversation", result.getFirst().getName());
     }
+
+
+    @Test
+    void testUpdateSharing_CallsServicesCorrectly() {
+        // Arrange
+        String conversationId = "conv123";
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        PutSharingDTO dto = new PutSharingDTO();
+        dto.setShareWithAi(Boolean.TRUE);
+        dto.setShareWithCoach(Boolean.TRUE);
+
+        Patient mockPatient = new Patient();
+        Instant createdAt = Instant.now();
+        Instant updatedAt = Instant.now();
+        String gender = "Male";
+        mockPatient.setCreatedAt(createdAt);
+        mockPatient.setUpdatedAt(updatedAt);
+        mockPatient.setGender(gender);
+        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
+
+        // Act
+        conversationController.updateSharing(dto, conversationId, request);
+
+        // Assert
+        verify(patientService).getCurrentlyLoggedInPatient(request);
+        verify(conversationService).updateSharing(dto, conversationId, mockPatient);
+        assertEquals(createdAt, mockPatient.getCreatedAt(), "createdAt should not have changed");
+        assertEquals(updatedAt, mockPatient.getUpdatedAt(), "updatedAt should not have changed");
+        assertEquals(gender, mockPatient.getGender(), "gender should not have changed");
+    }
+
+    @Test
+    void testDeleteChat_CallsServicesCorrectly() {
+        // Arrange
+        String conversationId = "conv456";
+        HttpServletRequest request = mock(HttpServletRequest.class);
+
+        Patient mockPatient = new Patient();
+        Therapist therapist = new Therapist();
+        mockPatient.setTherapist(therapist);
+        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
+
+        // Act
+        conversationController.deleteChat(request, conversationId);
+
+        // Assert
+        verify(patientService).getCurrentlyLoggedInPatient(request);
+        verify(conversationService).deleteConversation(conversationId, mockPatient);
+        assertEquals(therapist, mockPatient.getTherapist(), "Therapist should not have changed");
+    }
+
 
 }

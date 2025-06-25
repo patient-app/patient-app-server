@@ -2,6 +2,10 @@ package ch.uzh.ifi.imrg.patientapp.service.aiService;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,15 +14,13 @@ import java.util.Map;
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
+@ExtendWith(MockitoExtension.class)
 public class PromptBuilderServiceTest {
+    @Mock
     private ChatGPTService chatGPTService;
+    @InjectMocks
     private PromptBuilderService promptBuilderService;
 
-    @BeforeEach
-    void setUp() {
-        chatGPTService = mock(ChatGPTService.class);
-        promptBuilderService = new PromptBuilderService(chatGPTService);
-    }
 
     @Test
     void getResponse_shouldCallChatGPTServiceWithExpectedPrompt() {
