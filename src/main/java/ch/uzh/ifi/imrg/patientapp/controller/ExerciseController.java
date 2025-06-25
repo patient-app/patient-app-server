@@ -51,6 +51,7 @@ public class ExerciseController {
             @PathVariable String mediaId) {
         Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
         return exerciseService.getExerciseMedia(loggedInPatient, exerciseId, mediaId);
+
     }
 
 }
