@@ -51,6 +51,7 @@ public class JwtUtil {
     cookie.setSecure(false);
     cookie.setAttribute("SameSite", "None");
     response.addCookie(cookie);
+
   }
 
   public static String validateJWTAndExtractEmail(HttpServletRequest request) {
