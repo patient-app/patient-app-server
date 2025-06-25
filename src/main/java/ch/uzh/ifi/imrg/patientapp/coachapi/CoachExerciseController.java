@@ -35,9 +35,9 @@ public class CoachExerciseController {
     }
 
     @PutMapping("/coach/patients/{patientId}/exercises{exerciseId}")
-    @ResponseStatus(HttpStatus.CREATED)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @SecurityRequirement(name = "X-Coach-Key")
-    public void createExercise(@PathVariable String patientId,
+    public void updateExercise(@PathVariable String patientId,
                                @PathVariable String exerciseId,
                                @RequestBody ExerciseInputDTO exerciseInputDTO){
         exerciseService.updateExercise(patientId, exerciseId, exerciseInputDTO);

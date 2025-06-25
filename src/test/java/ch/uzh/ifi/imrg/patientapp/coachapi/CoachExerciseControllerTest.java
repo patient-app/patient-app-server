@@ -70,18 +70,19 @@ class CoachExerciseControllerTest {
     }
 
     @Test
-    void testCreateExercise_CallsUpdateExerciseOnService() {
+    void testUpdateExercise_CallsUpdateExerciseOnService() {
         // Arrange
         String patientId = "patient123";
         String exerciseId = "exercise456";
         ExerciseInputDTO inputDTO = new ExerciseInputDTO();
 
         // Act
-        coachExerciseController.createExercise(patientId, exerciseId, inputDTO);
+        coachExerciseController.updateExercise(patientId, exerciseId, inputDTO);
 
         // Assert
         verify(exerciseService).updateExercise(patientId, exerciseId, inputDTO);
         verifyNoMoreInteractions(exerciseService);
     }
+
 
 }
