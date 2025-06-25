@@ -1,5 +1,6 @@
 package ch.uzh.ifi.imrg.patientapp.entity;
 
+import ch.uzh.ifi.imrg.patientapp.entity.Exercise.Exercise;
 import jakarta.persistence.*;
 import java.io.Serializable;
 import java.time.Instant;
@@ -67,6 +68,12 @@ public class Patient implements Serializable {
     @OneToMany(mappedBy = "patient", fetch = FetchType.LAZY)
     private List<Conversation> conversations;
 
+    @OneToMany(mappedBy = "patient", fetch = FetchType.LAZY)
+    private List<Exercise> exercises;
+
+    @Column(name = "coach_access_key", nullable = false)
+    private String coachAccessKey;
+
     @Override
     public String toString() {
         return "Patient{" +
@@ -80,8 +87,8 @@ public class Patient implements Serializable {
                 ", admin=" + admin +
                 ", therapistId=" + (therapist != null ? therapist.getId() : "null") +
                 ", workspaceId='" + workspaceId + '\'' +
-                ",language:"+ language + '\'' +
-                ",onboarded:"+ onboarded + '\'' +
+                ",language:" + language + '\'' +
+                ",onboarded:" + onboarded + '\'' +
                 ", privateKey=" + (privateKey != null ? privateKey : "null") +
                 ", conversationCount=" + (conversations != null ? conversations.size() : 0) +
                 '}';

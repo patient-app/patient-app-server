@@ -16,6 +16,9 @@ public class CreatePatientDTO {
     @Pattern(regexp = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d).*$", message = "Password must contain upper, lower and digits")
     private String password;
 
+    @NotBlank
+    private String coachAccessKey;
+
     public CreatePatientDTO() {
     }
 

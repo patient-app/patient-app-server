@@ -1,12 +1,14 @@
 package ch.uzh.ifi.imrg.patientapp.utils;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.lang.reflect.InvocationTargetException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-
+@ExtendWith(MockitoExtension.class)
 public class PasswordUtilTest {
     @Test
     void encryptPassword_shouldReturnHashedPassword() {
