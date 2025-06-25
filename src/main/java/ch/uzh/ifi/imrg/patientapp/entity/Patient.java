@@ -71,6 +71,9 @@ public class Patient implements Serializable {
     @OneToMany(mappedBy = "patient", fetch = FetchType.LAZY)
     private List<Exercise> exercises;
 
+    @Column(name = "coach_access_key", nullable = false)
+    private String coachAccessKey;
+
     @Override
     public String toString() {
         return "Patient{" +

@@ -11,7 +11,7 @@ configMapGenerator:
       - DB_PORT=5432
       - DB_NAME=patient_app_production_db
       - DB_USERNAME=therapist-user
-      - APP_COOKIE_DOMAIN=.jonas-blum.ch
+      - APP_COOKIE_DOMAIN=jonas-blum.ch
 
 secretGenerator:
   - name: patient-app-backend-secret
