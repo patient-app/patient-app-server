@@ -122,7 +122,7 @@ public class PatientController {
         return PatientMapper.INSTANCE.convertEntityToPatientOutputDTO(loggedInPatient);
     }
 
-    @PutMapping("patients/password")
+    @PutMapping("patients/passwords")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void changePassword(@Valid @RequestBody ChangePasswordDTO changePasswordDTO,
             HttpServletRequest httpServletRequest) {

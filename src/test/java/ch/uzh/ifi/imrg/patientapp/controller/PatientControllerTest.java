@@ -233,9 +233,8 @@ public class PatientControllerTest {
     void changePassword_shouldCallService_andReturnNoException() {
         HttpServletRequest request = mock(HttpServletRequest.class);
         ChangePasswordDTO dto = new ChangePasswordDTO();
-        dto.setOldPassword("oldPwd");
+        dto.setCurrentPassword("oldPwd");
         dto.setNewPassword("newPwd");
-        dto.setConfirmPassword("newPwd");
 
         Patient mockPatient = new Patient();
         when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
@@ -249,9 +248,8 @@ public class PatientControllerTest {
     void changePassword_shouldThrowForbidden_whenOldPasswordIncorrect() {
         HttpServletRequest request = mock(HttpServletRequest.class);
         ChangePasswordDTO dto = new ChangePasswordDTO();
-        dto.setOldPassword("badOld");
+        dto.setCurrentPassword("badOld");
         dto.setNewPassword("newPwd");
-        dto.setConfirmPassword("newPwd");
 
         Patient mockPatient = new Patient();
         when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
@@ -264,21 +262,4 @@ public class PatientControllerTest {
         assertEquals(HttpStatus.FORBIDDEN, ex.getStatusCode());
     }
 
-    @Test
-    void changePassword_shouldThrowBadRequest_whenNewPasswordsDoNotMatch() {
-        HttpServletRequest request = mock(HttpServletRequest.class);
-        ChangePasswordDTO dto = new ChangePasswordDTO();
-        dto.setOldPassword("oldPwd");
-        dto.setNewPassword("newPwd");
-        dto.setConfirmPassword("mismatch");
-
-        Patient mockPatient = new Patient();
-        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
-        doThrow(new ResponseStatusException(HttpStatus.BAD_REQUEST, "New password and confirmation do not match"))
-                .when(patientService).changePassword(mockPatient, dto);
-
-        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
-                () -> patientController.changePassword(dto, request));
-        assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
-    }
 }

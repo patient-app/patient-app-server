@@ -110,13 +110,8 @@ public class PatientService {
     public void changePassword(Patient loggedInPatient, ChangePasswordDTO changePasswordDTO) {
 
         // veify old password
-        if (!PasswordUtil.checkPassword(changePasswordDTO.getOldPassword(), loggedInPatient.getPassword())) {
+        if (!PasswordUtil.checkPassword(changePasswordDTO.getCurrentPassword(), loggedInPatient.getPassword())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Old password is incorrect");
-        }
-
-        // check new vs confirmed
-        if (!changePasswordDTO.getNewPassword().equals(changePasswordDTO.getConfirmPassword())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "New password and confirmation do not match");
         }
 
         // encode and save new password
