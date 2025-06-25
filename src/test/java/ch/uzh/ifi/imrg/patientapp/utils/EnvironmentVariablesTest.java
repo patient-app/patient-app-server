@@ -1,9 +1,12 @@
 package ch.uzh.ifi.imrg.patientapp.utils;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@ExtendWith(MockitoExtension.class)
 public class EnvironmentVariablesTest {
 
     @Test
@@ -13,7 +16,7 @@ public class EnvironmentVariablesTest {
         String localAIKey = "test-local-ai-key";
 
         // Simulate Spring injecting the values
-        new EnvironmentVariables(jwtKey, gptKey, localAIKey);
+        new EnvironmentVariables(jwtKey, gptKey, localAIKey,null);
 
         assertEquals(jwtKey, EnvironmentVariables.getJwtSecretKey());
         assertEquals(gptKey, EnvironmentVariables.getChatGptApiKey());

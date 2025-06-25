@@ -48,6 +48,13 @@ public class Conversation implements Serializable {
     @Column(name = "conversation_instruction", unique = true)
     private String conversationInstruction;
 
+    @Column(name = "share_with_coach")
+    private Boolean shareWithCoach = true;
+
+    @Column(name = "share_with_ai")
+    private Boolean shareWithAi = true;
+
+
     @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Message> messages = new ArrayList<>();;
 
