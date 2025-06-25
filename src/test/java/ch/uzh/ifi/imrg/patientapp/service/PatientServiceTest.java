@@ -1,9 +1,9 @@
 package ch.uzh.ifi.imrg.patientapp.service;
 
-
 import ch.uzh.ifi.imrg.patientapp.entity.Conversation;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.repository.PatientRepository;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.ChangePasswordDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.LoginPatientDTO;
 import ch.uzh.ifi.imrg.patientapp.utils.CryptographyUtil;
 import ch.uzh.ifi.imrg.patientapp.utils.JwtUtil;
@@ -15,13 +15,16 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
-
 
 import java.util.ArrayList;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -39,8 +42,6 @@ public class PatientServiceTest {
     PatientService patientService;
 
     private static final String EMAIL = "test@example.com";
-
-
 
     @Test
     void getCurrentlyLoggedInPatient_shouldReturnPatient_whenExists() {
@@ -79,6 +80,7 @@ public class PatientServiceTest {
         assertTrue(patient.getConversations().contains(conversation));
         assertEquals(conversation, result.getConversations().get(0));
     }
+
     @Test
     void loginPatient_shouldReturnPatient_whenCredentialsAreCorrect() {
         // Arrange
@@ -97,14 +99,15 @@ public class PatientServiceTest {
 
         when(patientRepository.getPatientByEmail(email)).thenReturn(mockPatient);
         try (MockedStatic<PasswordUtil> mockedPasswordUtil = mockStatic(PasswordUtil.class);
-             MockedStatic<JwtUtil> mockedJwtUtil = mockStatic(JwtUtil.class)) {
+                MockedStatic<JwtUtil> mockedJwtUtil = mockStatic(JwtUtil.class)) {
 
             mockedPasswordUtil.when(() -> PasswordUtil.checkPassword(password, encryptedPassword)).thenReturn(true);
             mockedJwtUtil.when(() -> JwtUtil.createJWT(email)).thenReturn(jwt);
             mockedJwtUtil.when(() -> JwtUtil.addJwtCookie(any(), any(), eq(jwt))).then(invocation -> null);
 
             // Act
-            Patient result = patientService.loginPatient(loginDTO, mock(HttpServletRequest.class), mock(HttpServletResponse.class));
+            Patient result = patientService.loginPatient(loginDTO, mock(HttpServletRequest.class),
+                    mock(HttpServletResponse.class));
 
             // Assert
             assertNotNull(result);
@@ -126,8 +129,8 @@ public class PatientServiceTest {
         when(patientRepository.save(any())).thenReturn(patient);
 
         try (MockedStatic<PasswordUtil> pwMock = mockStatic(PasswordUtil.class);
-             MockedStatic<CryptographyUtil> cryptoMock = mockStatic(CryptographyUtil.class);
-             MockedStatic<JwtUtil> jwtMock = mockStatic(JwtUtil.class)) {
+                MockedStatic<CryptographyUtil> cryptoMock = mockStatic(CryptographyUtil.class);
+                MockedStatic<JwtUtil> jwtMock = mockStatic(JwtUtil.class)) {
 
             pwMock.when(() -> PasswordUtil.encryptPassword("plain")).thenReturn("hashed");
             cryptoMock.when(CryptographyUtil::generatePrivateKey).thenReturn("key");
@@ -166,7 +169,7 @@ public class PatientServiceTest {
         when(patientRepository.getPatientByEmail(EMAIL)).thenReturn(patient);
 
         try (MockedStatic<PasswordUtil> pwMock = mockStatic(PasswordUtil.class);
-             MockedStatic<JwtUtil> jwtMock = mockStatic(JwtUtil.class)) {
+                MockedStatic<JwtUtil> jwtMock = mockStatic(JwtUtil.class)) {
 
             pwMock.when(() -> PasswordUtil.checkPassword("abc", "hashed")).thenReturn(true);
             jwtMock.when(() -> JwtUtil.createJWT(EMAIL)).thenReturn("jwt");
@@ -200,12 +203,12 @@ public class PatientServiceTest {
     @Test
     void registerPatient_shouldThrowError_whenEmailIsNull() {
         Patient patient = new Patient();
-        patient.setPassword("validPassword");  // Only set password, no email
+        patient.setPassword("validPassword"); // Only set password, no email
 
-        assertThrows(Error.class, () ->
-                        patientService.registerPatient(patient, mock(HttpServletRequest.class), mock(HttpServletResponse.class)),
-                "Creating patient failed because no email was specified"
-        );
+        assertThrows(Error.class,
+                () -> patientService.registerPatient(patient, mock(HttpServletRequest.class),
+                        mock(HttpServletResponse.class)),
+                "Creating patient failed because no email was specified");
     }
 
     @Test
@@ -213,10 +216,10 @@ public class PatientServiceTest {
         Patient patient = new Patient();
         patient.setEmail("test@example.com"); // Only set email, no password
 
-        assertThrows(Error.class, () ->
-                        patientService.registerPatient(patient, mock(HttpServletRequest.class), mock(HttpServletResponse.class)),
-                "Creating patient failed because no password was specified"
-        );
+        assertThrows(Error.class,
+                () -> patientService.registerPatient(patient, mock(HttpServletRequest.class),
+                        mock(HttpServletResponse.class)),
+                "Creating patient failed because no password was specified");
     }
 
     @Test
@@ -224,20 +227,17 @@ public class PatientServiceTest {
         Patient patient = new Patient();
         patient.setEmail("test@example.com");
         patient.setPassword("password123");
-        String uuid = UUID.randomUUID().toString();  // String ID
+        String uuid = UUID.randomUUID().toString(); // String ID
         patient.setId(uuid);
 
         when(patientRepository.existsById(uuid)).thenReturn(true);
 
-        Error thrown = assertThrows(Error.class, () ->
-                patientService.registerPatient(patient, mock(HttpServletRequest.class), mock(HttpServletResponse.class))
-        );
+        Error thrown = assertThrows(Error.class, () -> patientService.registerPatient(patient,
+                mock(HttpServletRequest.class), mock(HttpServletResponse.class)));
         System.out.println("Actual error message: " + thrown.getMessage());
 
         assertTrue(thrown.getMessage().contains("Creating client failed because patient with this ID already exists"));
     }
-
-
 
     @Test
     void logoutPatient_shouldRemoveJwtCookie() {
@@ -277,6 +277,49 @@ public class PatientServiceTest {
 
         // Verify exception message
         assert(error.getMessage().contains("No client with email: " + email + " exists"));
+    }
+
+    @Test
+    void changePassword_shouldEncryptAndSave_whenValid() {
+        // Arrange
+        Patient patient = spy(new Patient());
+        patient.setPassword("oldHash");
+        ChangePasswordDTO dto = new ChangePasswordDTO();
+        dto.setCurrentPassword("oldPwd");
+        dto.setNewPassword("newPwd");
+
+        try (MockedStatic<PasswordUtil> pwMock = mockStatic(PasswordUtil.class)) {
+            pwMock.when(() -> PasswordUtil.checkPassword("oldPwd", "oldHash")).thenReturn(true);
+            pwMock.when(() -> PasswordUtil.encryptPassword("newPwd")).thenReturn("newHash");
+
+            // Act
+            patientService.changePassword(patient, dto);
+
+            // Assert
+            pwMock.verify(() -> PasswordUtil.encryptPassword("newPwd"));
+            ArgumentCaptor<Patient> captor = ArgumentCaptor.forClass(Patient.class);
+            verify(patientRepository).save(captor.capture());
+            assertEquals("newHash", captor.getValue().getPassword());
+        }
+    }
+
+    @Test
+    void changePassword_shouldThrowForbidden_whenOldPasswordIncorrect() {
+        // Arrange
+        Patient patient = new Patient();
+        patient.setPassword("storedHash");
+        ChangePasswordDTO dto = new ChangePasswordDTO();
+        dto.setCurrentPassword("wrongOld");
+        dto.setNewPassword("newPwd");
+
+        try (MockedStatic<PasswordUtil> pwMock = mockStatic(PasswordUtil.class)) {
+            pwMock.when(() -> PasswordUtil.checkPassword("wrongOld", "storedHash")).thenReturn(false);
+
+            ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                    () -> patientService.changePassword(patient, dto));
+            assertEquals(HttpStatus.FORBIDDEN, ex.getStatusCode());
+            assertTrue(ex.getReason().contains("Old password is incorrect"));
+        }
     }
 
 }

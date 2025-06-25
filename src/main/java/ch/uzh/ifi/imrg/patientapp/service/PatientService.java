@@ -10,11 +10,13 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.repository.PatientRepository;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.ChangePasswordDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.LoginPatientDTO;
 import ch.uzh.ifi.imrg.patientapp.utils.JwtUtil;
 import ch.uzh.ifi.imrg.patientapp.utils.PasswordUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 
 import static ch.uzh.ifi.imrg.patientapp.utils.CryptographyUtil.decrypt;
 
@@ -45,7 +47,8 @@ public class PatientService {
         patientRepository.save(patient);
         return patient;
     }
-    public void setField(Patient patient){
+
+    public void setField(Patient patient) {
         patientRepository.save(patient);
     }
 
@@ -67,11 +70,13 @@ public class PatientService {
         }
         if (patient.getEmail() != null && patientRepository.existsByEmail(patient.getEmail())) {
             throw new Error(
-                    "Creating client failed because patient with this email" + patient.getEmail() +"already exists");
+                    "Creating client failed because patient with this email" + patient.getEmail() + "already exists");
         }
 
         patient.setPassword(PasswordUtil.encryptPassword(patient.getPassword()));
         patient.setPrivateKey(CryptographyUtil.encrypt(CryptographyUtil.generatePrivateKey()));
+
+        patient.setCoachAccessKey(PasswordUtil.encryptPassword(patient.getCoachAccessKey()));
 
         Patient createdPatient = this.patientRepository.save(patient);
         String jwt = JwtUtil.createJWT(patient.getEmail());
@@ -100,6 +105,19 @@ public class PatientService {
 
     public void logoutPatient(HttpServletResponse httpServletResponse) {
         JwtUtil.removeJwtCookie(httpServletResponse);
+    }
+
+    public void changePassword(Patient loggedInPatient, ChangePasswordDTO changePasswordDTO) {
+
+        // veify old password
+        if (!PasswordUtil.checkPassword(changePasswordDTO.getCurrentPassword(), loggedInPatient.getPassword())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Old password is incorrect");
+        }
+
+        // encode and save new password
+        loggedInPatient.setPassword(PasswordUtil.encryptPassword(changePasswordDTO.getNewPassword()));
+        patientRepository.save(loggedInPatient);
+
     }
 
 }

@@ -38,6 +38,10 @@ public class JwtUtil {
     cookie.setHttpOnly(true);
     cookie.setMaxAge(30 * 24 * 60 * 60); // 30 days
     cookie.setPath("/");
+    String appCookieDomain = EnvironmentVariables.getAppCookieDomain();
+    if (appCookieDomain != null && !appCookieDomain.isEmpty()) {
+        cookie.setDomain(appCookieDomain);
+    }
     cookie.setSecure(request.isSecure());
     cookie.setAttribute("SameSite", "Lax");
     response.addCookie(cookie);
@@ -48,9 +52,14 @@ public class JwtUtil {
     cookie.setHttpOnly(true);
     cookie.setMaxAge(0);
     cookie.setPath("/");
+    String appCookieDomain = EnvironmentVariables.getAppCookieDomain();
+    if (appCookieDomain != null && !appCookieDomain.isEmpty()) {
+        cookie.setDomain(appCookieDomain);
+    }
     cookie.setSecure(false);
     cookie.setAttribute("SameSite", "Lax");
     response.addCookie(cookie);
+
   }
 
   public static String validateJWTAndExtractEmail(HttpServletRequest request) {

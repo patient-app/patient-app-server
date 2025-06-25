@@ -1,9 +1,11 @@
 package ch.uzh.ifi.imrg.patientapp.controller;
 
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.ChangePasswordDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreatePatientDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.LoginPatientDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutLanguageDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutNameDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutOnboardedDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PatientOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.service.PatientService;
@@ -23,6 +25,7 @@ import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 
@@ -181,4 +184,81 @@ public class PatientControllerTest {
         assertNotNull(result);
         assertTrue(result.isOnboarded()); // or assertFalse(...) if you set false above
     }
+
+    @Test
+    void setName_shouldUpdateNameFieldAndCallSetField() throws IOException {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+
+        // Arrange
+        String name = "myName";
+        PutNameDTO dto = new PutNameDTO();
+        dto.setName(name);
+
+        Patient mockPatient = new Patient();
+        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
+
+        // Act
+        patientController.setName(dto, request);
+
+        // Assert
+        ArgumentCaptor<Patient> patientCaptor = ArgumentCaptor.forClass(Patient.class);
+        verify(patientService).setField(patientCaptor.capture());
+
+        Patient captured = patientCaptor.getValue();
+        assertNotNull(captured);
+        assert captured.getName().equals(name);
+    }
+
+    @Test
+    void getName_shouldReturnPatientOutputDTO() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+
+        // Arrange
+        String name = "myName";
+        Patient mockPatient = new Patient();
+        mockPatient.setName(name); // Set some name for clarity
+
+        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
+
+        // Act
+        PatientOutputDTO result = patientController.getName(request);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(name, result.getName());
+    }
+
+    @Test
+    void changePassword_shouldCallService_andReturnNoException() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        ChangePasswordDTO dto = new ChangePasswordDTO();
+        dto.setCurrentPassword("oldPwd");
+        dto.setNewPassword("newPwd");
+
+        Patient mockPatient = new Patient();
+        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
+        doNothing().when(patientService).changePassword(mockPatient, dto);
+
+        assertDoesNotThrow(() -> patientController.changePassword(dto, request));
+        verify(patientService).changePassword(mockPatient, dto);
+    }
+
+    @Test
+    void changePassword_shouldThrowForbidden_whenOldPasswordIncorrect() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        ChangePasswordDTO dto = new ChangePasswordDTO();
+        dto.setCurrentPassword("badOld");
+        dto.setNewPassword("newPwd");
+
+        Patient mockPatient = new Patient();
+        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
+        doThrow(new ResponseStatusException(HttpStatus.FORBIDDEN, "Old password is incorrect"))
+                .when(patientService).changePassword(mockPatient, dto);
+
+        ResponseStatusException ex = assertThrows(
+                ResponseStatusException.class,
+                () -> patientController.changePassword(dto, request));
+        assertEquals(HttpStatus.FORBIDDEN, ex.getStatusCode());
+    }
+
 }
