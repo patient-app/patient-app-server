@@ -27,6 +27,12 @@ public class CoachKeyFilter extends OncePerRequestFilter {
     private PatientRepository patientRepository;
 
     @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        // return true if you want to skip doFilterInternal()
+        return "/coach/patients/register".equals(request.getRequestURI());
+    }
+
+    @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
 

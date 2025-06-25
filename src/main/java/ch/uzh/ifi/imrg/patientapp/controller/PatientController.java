@@ -13,6 +13,7 @@ import ch.uzh.ifi.imrg.patientapp.rest.dto.input.LoginPatientDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PatientOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.PatientMapper;
 import ch.uzh.ifi.imrg.patientapp.service.PatientService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -36,11 +37,15 @@ public class PatientController {
     }
 
     @PostMapping("/patients/register")
+    @Operation(summary = "This endpoint will be removed", description = "@Therapist app: pleas use /coach/patients/register as endpoint")
     @ResponseStatus(HttpStatus.CREATED)
     public PatientOutputDTO registerPatient(
-            @Valid @RequestBody CreatePatientDTO patientInputDTO,
+            @RequestBody CreatePatientDTO patientInputDTO,
             HttpServletRequest httpServletRequest,
             HttpServletResponse httpServletResponse) {
+        if (patientInputDTO.getCoachAccessKey() == null || patientInputDTO.getCoachAccessKey().isBlank()) {
+            patientInputDTO.setCoachAccessKey("randomString");
+        }
         Patient patient = PatientMapper.INSTANCE.convertCreatePatientDTOToEntity(patientInputDTO);
         Patient createdPatient = patientService.registerPatient(patient, httpServletRequest, httpServletResponse);
         return PatientMapper.INSTANCE.convertEntityToPatientOutputDTO(createdPatient);
