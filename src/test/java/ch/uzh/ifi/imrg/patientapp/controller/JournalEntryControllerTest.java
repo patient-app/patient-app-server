@@ -12,14 +12,18 @@ import java.util.List;
 import java.util.Set;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+
 import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.JournalEntryRequestDTO;
@@ -28,27 +32,41 @@ import ch.uzh.ifi.imrg.patientapp.rest.dto.output.JournalEntryOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.service.JournalEntryService;
 import ch.uzh.ifi.imrg.patientapp.service.PatientService;
 import jakarta.servlet.http.HttpServletRequest;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
 
-@WebMvcTest(JournalEntryController.class)
-@AutoConfigureMockMvc(addFilters = false)
+@ExtendWith(MockitoExtension.class)
 public class JournalEntryControllerTest {
 
         @Autowired
         private MockMvc mockMvc;
 
         @Autowired
-        private ObjectMapper objectMapper;
+        private ObjectMapper objectMapper = new ObjectMapper();
 
-        @MockitoBean
+        @Mock
         private JournalEntryService journalEntryService;
 
-        @MockitoBean
+        @Mock
         private PatientService patientService;
 
         @Mock
         private HttpServletRequest request;
+
+        @InjectMocks
+        private JournalEntryController controller;
+
+        @BeforeEach
+        void setup() {
+                var validator = new LocalValidatorFactoryBean();
+                validator.afterPropertiesSet();
+
+                mockMvc = MockMvcBuilders
+                                .standaloneSetup(controller)
+                                .setValidator(validator)
+                                .build();
+        }
 
         @Test
         void createEntry_returnsCreatedEntry() throws Exception {

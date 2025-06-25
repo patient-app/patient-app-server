@@ -67,6 +67,9 @@ public class Patient implements Serializable {
     @OneToMany(mappedBy = "patient", fetch = FetchType.LAZY)
     private List<Conversation> conversations;
 
+    @Column(name = "coach_access_key", nullable = false)
+    private String coachAccessKey;
+
     @Override
     public String toString() {
         return "Patient{" +
@@ -80,8 +83,8 @@ public class Patient implements Serializable {
                 ", admin=" + admin +
                 ", therapistId=" + (therapist != null ? therapist.getId() : "null") +
                 ", workspaceId='" + workspaceId + '\'' +
-                ",language:"+ language + '\'' +
-                ",onboarded:"+ onboarded + '\'' +
+                ",language:" + language + '\'' +
+                ",onboarded:" + onboarded + '\'' +
                 ", privateKey=" + (privateKey != null ? privateKey : "null") +
                 ", conversationCount=" + (conversations != null ? conversations.size() : 0) +
                 '}';
