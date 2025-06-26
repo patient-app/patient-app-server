@@ -11,7 +11,7 @@ import java.util.Map;
 @Setter
 public class ExerciseImageElement extends ExerciseElement {
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = false)
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = false, orphanRemoval = true)
     @JoinColumn(name = "stored_file_id", referencedColumnName = "id")
     private StoredExerciseFile fileId;
     private String alt;

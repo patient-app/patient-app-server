@@ -19,13 +19,10 @@ public class Exercise implements Serializable {
     @Column(unique = true)
     private String id = UUID.randomUUID().toString();
 
-    @Column
     private String name;
-
     private String pictureId;
-
-    @Column
     private String description;
+    private boolean hasFeedback;
 
     @OneToMany(mappedBy = "exercise", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ExerciseElement> exerciseElements;
@@ -33,6 +30,9 @@ public class Exercise implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "patient_id", referencedColumnName = "id", nullable = false)
     private Patient patient;
+
+    @OneToMany(mappedBy = "exercise", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List <ExerciseInformation> exerciseInformation;
 
     @Override
     public String toString() {

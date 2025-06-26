@@ -12,7 +12,7 @@ import java.util.Map;
 public class ExerciseFileElement extends ExerciseElement {
 
     private String name;
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = false)
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = false, orphanRemoval = true)
     @JoinColumn(name = "stored_file_id", referencedColumnName = "id")
     private StoredExerciseFile fileId;
 

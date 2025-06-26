@@ -1,6 +1,8 @@
 package ch.uzh.ifi.imrg.patientapp.controller;
 
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseInformationInputDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExerciseInformationOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExerciseMediaOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExerciseOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExercisesOverviewOutputDTO;
@@ -72,7 +74,7 @@ class ExerciseControllerTest {
         when(exerciseService.getExercise(exerciseId)).thenReturn(expectedDTO);
 
         // Act
-        ExerciseOutputDTO result = exerciseController.GetExerciseOutputDTOMock(request, exerciseId);
+        ExerciseOutputDTO result = exerciseController.getExerciseOutputDTO(request, exerciseId);
 
         // Assert
         assertEquals(expectedDTO, result);
@@ -97,7 +99,7 @@ class ExerciseControllerTest {
         when(exerciseService.getExerciseMedia(mockPatient, exerciseId, mediaId)).thenReturn(expectedDTO);
 
         // Act
-        ExerciseMediaOutputDTO result = exerciseController.getPictureMock(request, exerciseId, mediaId);
+        ExerciseMediaOutputDTO result = exerciseController.getPicture(request, exerciseId, mediaId);
 
         // Assert
         assertEquals(expectedDTO, result);
@@ -105,5 +107,27 @@ class ExerciseControllerTest {
         verify(exerciseService).getExerciseMedia(mockPatient, exerciseId, mediaId);
         verifyNoMoreInteractions(patientService, exerciseService);
     }
+    @Test
+    void testPostExerciseFeedback_InvokesServiceCorrectly() {
+        // Arrange
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        String exerciseId = "exercise789";
+        ExerciseInformationInputDTO inputDTO = new ExerciseInformationInputDTO();
+
+        Patient mockPatient = new Patient();
+        mockPatient.setId("p123");
+
+        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
+
+        // Act
+        exerciseController.postExerciseFeedback(request, exerciseId, inputDTO);
+
+        // Assert
+        verify(patientService).getCurrentlyLoggedInPatient(request);
+        verify(exerciseService).putExerciseFeedback(mockPatient, exerciseId, inputDTO);
+        verifyNoMoreInteractions(patientService, exerciseService);
+    }
+
+
 
 }
