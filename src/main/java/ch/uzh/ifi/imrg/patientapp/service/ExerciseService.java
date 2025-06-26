@@ -12,6 +12,7 @@ import ch.uzh.ifi.imrg.patientapp.repository.PatientRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.StoredExerciseFileRepository;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseInformationInputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseInputDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExerciseInformationOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExerciseMediaOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExerciseOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExercisesOverviewOutputDTO;
@@ -127,5 +128,17 @@ public class ExerciseService {
         exerciseInformation.setExercise(exercise);
         exerciseInformationRepository.save(exerciseInformation);
     }
+    public List<ExerciseInformationOutputDTO> getExerciseInformation(String patientId, String exerciseId) {
+        Exercise exercise = exerciseRepository.getExerciseById(exerciseId);
+        if (exercise == null) {
+            throw new IllegalArgumentException("No exercise found with ID: " + exerciseId);
+        }
+        if (!exercise.getPatient().getId().equals(patientId)) {
+            throw new IllegalArgumentException("Patient does not have access to this exercise");
+        }
+        List<ExerciseInformation> exerciseInformations = exerciseInformationRepository.getExerciseInformationByExerciseId(exercise.getId());
+        return exerciseMapper.exerciseInformationsToExerciseInformationOutputDTOs(exerciseInformations);
+    }
 
 }
+

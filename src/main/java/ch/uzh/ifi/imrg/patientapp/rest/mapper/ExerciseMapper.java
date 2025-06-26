@@ -5,6 +5,7 @@ import ch.uzh.ifi.imrg.patientapp.entity.Exercise.ExerciseInformation;
 import ch.uzh.ifi.imrg.patientapp.entity.Exercise.StoredExerciseFile;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseInformationInputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseInputDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExerciseInformationOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExerciseMediaOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExerciseOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExercisesOverviewOutputDTO;
@@ -21,6 +22,7 @@ public interface ExerciseMapper {
     ExerciseOutputDTO exerciseToExerciseOutputDTO(Exercise exercise);
     ExerciseMediaOutputDTO storedExerciseFileToExerciseMediaOutputDTO(StoredExerciseFile storedExerciseFile);
     ExerciseInformation exerciseInformationInputDTOToExerciseInformation(ExerciseInformationInputDTO exerciseInformationInputDTO);
+    List <ExerciseInformationOutputDTO> exerciseInformationsToExerciseInformationOutputDTOs(List<ExerciseInformation> exerciseInformations);
 
     void updateExerciseFromInputDTO(ExerciseInputDTO exerciseInputDTO, @MappingTarget Exercise target);
 }
