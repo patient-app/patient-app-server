@@ -1,6 +1,6 @@
 package ch.uzh.ifi.imrg.patientapp.rest.dto.input;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -14,9 +14,9 @@ public class CreateMeetingDTO {
     // this is not needed, becaus patientId comes from path variable
     // private String patientId;
 
-    private OffsetDateTime startAt;
+    private Instant startAt;
 
-    private OffsetDateTime endAt;
+    private Instant endAt;
 
     private String location;
 

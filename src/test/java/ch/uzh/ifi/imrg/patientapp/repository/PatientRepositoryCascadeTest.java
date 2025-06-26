@@ -10,9 +10,8 @@ import ch.uzh.ifi.imrg.patientapp.entity.Exercise.Exercise;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -138,8 +137,8 @@ public class PatientRepositoryCascadeTest {
         Meeting meeting = new Meeting();
         meeting.setId("MeetId");
         meeting.setExternalMeetingId("exId");
-        meeting.setStartAt(OffsetDateTime.parse("2025-06-26T10:15:30+02:00"));
-        meeting.setEndAt(OffsetDateTime.parse("2025-06-26T11:45:15.500+02:00"));
+        meeting.setStartAt(Instant.parse("2025-06-26T10:15:30+02:00"));
+        meeting.setEndAt(Instant.parse("2025-06-26T11:45:15.500+02:00"));
         meeting.setPatient(patient);
         meetingRepository.saveAndFlush(meeting);
 

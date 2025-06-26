@@ -14,8 +14,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
+
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 
@@ -67,8 +67,8 @@ public class CoachMeetingControllerTest {
                 String patientId = "p1";
                 CreateMeetingDTO dto = new CreateMeetingDTO();
                 dto.setExternalMeetingId("ext1");
-                dto.setStartAt(OffsetDateTime.parse("2025-06-15T10:00:00Z"));
-                dto.setEndAt(OffsetDateTime.parse("2025-06-15T11:00:00Z"));
+                dto.setStartAt(Instant.parse("2025-06-15T10:00:00Z"));
+                dto.setEndAt(Instant.parse("2025-06-15T11:00:00Z"));
                 dto.setLocation("Room 101");
 
                 Meeting saved = new Meeting();
@@ -78,7 +78,7 @@ public class CoachMeetingControllerTest {
                 saved.setEndAt(dto.getEndAt());
                 saved.setLocation("Room 101");
                 saved.setMeetingStatus(MeetingStatus.PENDING);
-                saved.setCreatedAt(LocalDateTime.parse("2025-06-15T09:00:00"));
+                saved.setCreatedAt(Instant.parse("2025-06-15T09:00:00"));
                 Patient patient = new Patient();
                 patient.setId(patientId);
                 saved.setPatient(patient);
@@ -139,8 +139,8 @@ public class CoachMeetingControllerTest {
                 String patientId = "p1";
                 String meetingId = "m1";
                 UpdateMeetingDTO dto = new UpdateMeetingDTO();
-                dto.setStartAt(OffsetDateTime.parse("2025-06-15T12:00:00Z"));
-                dto.setEndAt(OffsetDateTime.parse("2025-06-15T13:00:00Z"));
+                dto.setStartAt(Instant.parse("2025-06-15T12:00:00Z"));
+                dto.setEndAt(Instant.parse("2025-06-15T13:00:00Z"));
                 dto.setLocation("Room 103");
                 dto.setMeetingStatus(MeetingStatus.CONFIRMED);
 
@@ -151,7 +151,7 @@ public class CoachMeetingControllerTest {
                 updated.setEndAt(dto.getEndAt());
                 updated.setLocation("Room 103");
                 updated.setMeetingStatus(MeetingStatus.CONFIRMED);
-                updated.setCreatedAt(LocalDateTime.parse("2025-06-15T09:00:00"));
+                updated.setCreatedAt(Instant.parse("2025-06-15T09:00:00"));
 
                 when(meetingService.updateMeeting(eq(patientId), eq(meetingId), any(UpdateMeetingDTO.class)))
                                 .thenReturn(updated);
