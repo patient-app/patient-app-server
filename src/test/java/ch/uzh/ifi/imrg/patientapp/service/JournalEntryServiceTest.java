@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.*;
 
 import ch.uzh.ifi.imrg.patientapp.entity.JournalEntry;
@@ -32,14 +32,12 @@ public class JournalEntryServiceTest {
     private JournalEntryService service;
 
     private Patient patient;
-    private LocalDateTime now;
 
     @BeforeEach
     void setUp() {
         patient = new Patient();
         patient.setId("p1");
         patient.setPrivateKey("encKey");
-        now = LocalDateTime.of(2025, 6, 20, 15, 30);
     }
 
     @Test
@@ -60,8 +58,6 @@ public class JournalEntryServiceTest {
         savedEntity.setTags(dto.getTags());
         savedEntity.setSharedWithTherapist(true);
         savedEntity.setAiAccessAllowed(false);
-        savedEntity.setCreatedAt(now);
-        savedEntity.setUpdatedAt(now);
 
         when(repo.saveAndFlush(any(JournalEntry.class))).thenReturn(savedEntity);
 
@@ -85,8 +81,6 @@ public class JournalEntryServiceTest {
             assertEquals(dto.getTags(), out.getTags());
             assertTrue(out.isSharedWithTherapist());
             assertFalse(out.isAiAccessAllowed());
-            assertEquals(now, out.getCreatedAt());
-            assertEquals(now, out.getUpdatedAt());
         }
     }
 
@@ -117,8 +111,6 @@ public class JournalEntryServiceTest {
         entry.setPatient(patient);
         entry.setTitle("encTitle");
         entry.setTags(Set.of("encTag"));
-        entry.setCreatedAt(now);
-        entry.setUpdatedAt(now);
         when(repo.findByPatientId("p1")).thenReturn(List.of(entry));
 
         try (MockedStatic<CryptographyUtil> crypto = mockStatic(CryptographyUtil.class)) {
@@ -135,8 +127,6 @@ public class JournalEntryServiceTest {
             assertEquals("e2", dto.getId());
             assertEquals("Title", dto.getTitle());
             assertEquals(Set.of("Tag"), dto.getTags());
-            assertEquals(now, dto.getCreatedAt());
-            assertEquals(now, dto.getUpdatedAt());
         }
     }
 
@@ -149,8 +139,6 @@ public class JournalEntryServiceTest {
         entry.setTitle("encT");
         entry.setContent("encC");
         entry.setTags(Set.of("encX"));
-        entry.setCreatedAt(now);
-        entry.setUpdatedAt(now);
         when(repo.findById("e3")).thenReturn(Optional.of(entry));
 
         try (MockedStatic<CryptographyUtil> crypto = mockStatic(CryptographyUtil.class)) {
@@ -167,8 +155,6 @@ public class JournalEntryServiceTest {
             assertEquals("T", dto.getTitle());
             assertEquals("C", dto.getContent());
             assertEquals(Set.of("X"), dto.getTags());
-            assertEquals(now, dto.getCreatedAt());
-            assertEquals(now, dto.getUpdatedAt());
         }
     }
 
@@ -202,8 +188,6 @@ public class JournalEntryServiceTest {
         updated.setTitle("encNewT");
         updated.setContent("encNewC");
         updated.setTags(Set.of("encTag1"));
-        updated.setCreatedAt(now);
-        updated.setUpdatedAt(now.plusDays(1));
         when(repo.saveAndFlush(entry)).thenReturn(updated);
 
         try (MockedStatic<CryptographyUtil> crypto = mockStatic(CryptographyUtil.class)) {
@@ -223,8 +207,6 @@ public class JournalEntryServiceTest {
             assertEquals("newT", out.getTitle());
             assertEquals("newC", out.getContent());
             assertEquals(Set.of("tag1"), out.getTags());
-            assertEquals(now, out.getCreatedAt());
-            assertEquals(now.plusDays(1), out.getUpdatedAt());
         }
     }
 

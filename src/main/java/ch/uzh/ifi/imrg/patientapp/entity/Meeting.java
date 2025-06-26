@@ -1,7 +1,7 @@
 package ch.uzh.ifi.imrg.patientapp.entity;
 
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
+import java.time.Instant;
+
 import java.util.UUID;
 
 import org.hibernate.annotations.CreationTimestamp;
@@ -27,21 +27,21 @@ public class Meeting {
 
     @Column(name = "created_at", updatable = false)
     @CreationTimestamp
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     @Column(name = "updated_at")
     @UpdateTimestamp
-    private LocalDateTime updatedAt;
+    private Instant updatedAt;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "patient_id")
     private Patient patient;
 
     @Column(name = "start_at", nullable = false)
-    private OffsetDateTime startAt;
+    private Instant startAt;
 
     @Column(name = "end_at", nullable = false)
-    private OffsetDateTime endAt;
+    private Instant endAt;
 
     @Column(nullable = true)
     private String location;
