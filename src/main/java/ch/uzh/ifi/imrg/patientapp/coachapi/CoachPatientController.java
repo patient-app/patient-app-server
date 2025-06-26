@@ -38,4 +38,11 @@ public class CoachPatientController {
         JwtUtil.removeJwtCookie(httpServletResponse);
         return PatientMapper.INSTANCE.convertEntityToPatientOutputDTO(createdPatient);
     }
+
+    @DeleteMapping("coach/patients/{patientId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @SecurityRequirement(name = "X-Coach-Key")
+    public void deletePatient(@PathVariable String patientId) {
+        patientService.removePatient(patientId);
+    }
 }
