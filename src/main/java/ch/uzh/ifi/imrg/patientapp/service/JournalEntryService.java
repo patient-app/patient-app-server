@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -14,7 +15,10 @@ import org.springframework.web.server.ResponseStatusException;
 import ch.uzh.ifi.imrg.patientapp.entity.JournalEntry;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.repository.JournalEntryRepository;
+import ch.uzh.ifi.imrg.patientapp.repository.PatientRepository;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.JournalEntryRequestDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.output.CoachGetAllJournalEntriesDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.output.CoachJournalEntryOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.GetAllJournalEntriesDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.JournalEntryOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.JournalEntryMapper;
@@ -26,8 +30,11 @@ public class JournalEntryService {
 
     private final JournalEntryRepository journalEntryRepository;
 
-    public JournalEntryService(JournalEntryRepository journalEntryRepository) {
+    private final PatientRepository patientRepository;
+
+    public JournalEntryService(JournalEntryRepository journalEntryRepository, PatientRepository patientRepository) {
         this.journalEntryRepository = journalEntryRepository;
+        this.patientRepository = patientRepository;
     }
 
     public JournalEntryOutputDTO createEntry(JournalEntryRequestDTO dto, Patient loggedInPatient) {
@@ -148,6 +155,59 @@ public class JournalEntryService {
         dto.setContent(CryptographyUtil.decrypt(dto.getContent(), rawKey));
         dto.setTags(
                 dto.getTags().stream().map(tag -> CryptographyUtil.decrypt(tag, rawKey)).collect(Collectors.toSet()));
+    }
+
+    private void decryptJournalDTO(CoachJournalEntryOutputDTO dto, String rawKey) {
+        dto.setTitle(CryptographyUtil.decrypt(dto.getTitle(), rawKey));
+        dto.setContent(CryptographyUtil.decrypt(dto.getContent(), rawKey));
+        dto.setTags(
+                dto.getTags().stream().map(tag -> CryptographyUtil.decrypt(tag, rawKey)).collect(Collectors.toSet()));
+    }
+
+    public List<CoachGetAllJournalEntriesDTO> getEntriesForCoach(String patientId) {
+        List<JournalEntry> entries = journalEntryRepository.findAllByPatientIdAndSharedWithTherapistTrue(patientId);
+
+        Patient patient = patientRepository.getPatientById(patientId);
+
+        String key = CryptographyUtil.decrypt(patient.getPrivateKey());
+
+        List<CoachGetAllJournalEntriesDTO> result = new ArrayList<>();
+
+        for (JournalEntry entry : entries) {
+
+            CoachGetAllJournalEntriesDTO dto = JournalEntryMapper.INSTANCE
+                    .convertEntityToCoachGetAllJournalEntriesDTO(entry);
+
+            dto.setTitle(CryptographyUtil.decrypt(dto.getTitle(), key));
+            dto.setTags(
+                    dto.getTags().stream().map(tag -> CryptographyUtil.decrypt(tag, key)).collect(Collectors.toSet()));
+
+            result.add(dto);
+        }
+
+        return result;
+    }
+
+    public CoachJournalEntryOutputDTO getOneEntryForCoach(String patientId, String entryId) {
+        JournalEntry entry = journalEntryRepository.findByIdAndSharedWithTherapistTrue(entryId)
+                .orElseThrow(() -> new AccessDeniedException(
+                        "Journal entry not found or not shared with therapist"));
+
+        Patient patient = patientRepository.getPatientById(patientId);
+
+        if (!entry.getPatient().getId().equals(patient.getId()))
+
+        {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Entry not found for that patient");
+        }
+
+        String key = CryptographyUtil.decrypt(patient.getPrivateKey());
+
+        CoachJournalEntryOutputDTO dto = JournalEntryMapper.INSTANCE.convertEntityToCoachJournalEntryOutputDTO(entry);
+
+        decryptJournalDTO(dto, key);
+
+        return dto;
     }
 
 }
