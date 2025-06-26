@@ -7,7 +7,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 
@@ -88,8 +88,8 @@ public class JournalEntryControllerTest {
                 outDto.setTags(Set.of("tag1", "tag2"));
                 outDto.setSharedWithTherapist(true);
                 outDto.setAiAccessAllowed(false);
-                outDto.setCreatedAt(LocalDateTime.of(2025, 6, 20, 12, 0));
-                outDto.setUpdatedAt(LocalDateTime.of(2025, 6, 20, 12, 0));
+                outDto.setCreatedAt(Instant.parse("2025-06-26T10:15:30+02:00"));
+                outDto.setUpdatedAt(Instant.parse("2025-06-26T10:15:30+02:00"));
 
                 when(journalEntryService.createEntry(any(JournalEntryRequestDTO.class), any(Patient.class)))
                                 .thenReturn(outDto);
@@ -131,8 +131,8 @@ public class JournalEntryControllerTest {
                 m1.setId("e1");
                 m1.setTitle("T1");
                 m1.setTags(Set.of("t1"));
-                m1.setCreatedAt(LocalDateTime.of(2025, 6, 1, 10, 0));
-                m1.setUpdatedAt(LocalDateTime.of(2025, 6, 1, 10, 0));
+                m1.setCreatedAt(Instant.parse("2025-06-26T10:15:30+02:00"));
+                m1.setUpdatedAt(Instant.parse("2025-06-26T10:15:30+02:00"));
 
                 when(journalEntryService.listEntries(mockPatient)).thenReturn(List.of(m1));
 
@@ -156,8 +156,8 @@ public class JournalEntryControllerTest {
                 outDto.setTags(Set.of("x", "y"));
                 outDto.setSharedWithTherapist(false);
                 outDto.setAiAccessAllowed(true);
-                outDto.setCreatedAt(LocalDateTime.of(2025, 6, 2, 11, 0));
-                outDto.setUpdatedAt(LocalDateTime.of(2025, 6, 2, 11, 0));
+                outDto.setCreatedAt(Instant.parse("2025-06-26T10:15:30+02:00"));
+                outDto.setUpdatedAt(Instant.parse("2025-06-26T10:15:30+02:00"));
 
                 when(journalEntryService.getEntry(mockPatient, "e2")).thenReturn(outDto);
 
@@ -188,8 +188,8 @@ public class JournalEntryControllerTest {
                 outDto.setTags(Set.of("a", "b"));
                 outDto.setSharedWithTherapist(false);
                 outDto.setAiAccessAllowed(true);
-                outDto.setCreatedAt(LocalDateTime.of(2025, 6, 3, 12, 0));
-                outDto.setUpdatedAt(LocalDateTime.of(2025, 6, 3, 12, 0));
+                outDto.setCreatedAt(Instant.parse("2025-06-26T10:15:30+02:00"));
+                outDto.setUpdatedAt(Instant.parse("2025-06-26T10:15:30+02:00"));
 
                 when(journalEntryService.updateJournalEntry(any(Patient.class), eq("e3"),
                                 any(JournalEntryRequestDTO.class)))

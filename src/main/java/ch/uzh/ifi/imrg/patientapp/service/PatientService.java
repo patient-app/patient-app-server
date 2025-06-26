@@ -14,6 +14,7 @@ import ch.uzh.ifi.imrg.patientapp.rest.dto.input.ChangePasswordDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.LoginPatientDTO;
 import ch.uzh.ifi.imrg.patientapp.utils.JwtUtil;
 import ch.uzh.ifi.imrg.patientapp.utils.PasswordUtil;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -118,6 +119,13 @@ public class PatientService {
         loggedInPatient.setPassword(PasswordUtil.encryptPassword(changePasswordDTO.getNewPassword()));
         patientRepository.save(loggedInPatient);
 
+    }
+
+    public void removePatient(String patientId) {
+        if (!patientRepository.existsById(patientId)) {
+            throw new EntityNotFoundException("Patient " + patientId + " not found");
+        }
+        patientRepository.deleteById(patientId);
     }
 
 }

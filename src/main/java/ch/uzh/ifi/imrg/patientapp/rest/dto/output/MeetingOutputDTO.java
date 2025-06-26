@@ -1,7 +1,6 @@
 package ch.uzh.ifi.imrg.patientapp.rest.dto.output;
 
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
+import java.time.Instant;
 
 import ch.uzh.ifi.imrg.patientapp.constant.MeetingStatus;
 import lombok.Getter;
@@ -15,15 +14,15 @@ public class MeetingOutputDTO {
 
     private String externalMeetingId;
 
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
-    private LocalDateTime updatedAt;
+    private Instant updatedAt;
 
     private String patientId;
 
-    private OffsetDateTime startAt;
+    private Instant startAt;
 
-    private OffsetDateTime endAt;
+    private Instant endAt;
 
     private String location;
 

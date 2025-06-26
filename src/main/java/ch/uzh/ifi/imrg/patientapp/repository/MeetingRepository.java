@@ -1,6 +1,7 @@
 package ch.uzh.ifi.imrg.patientapp.repository;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -18,6 +19,6 @@ public interface MeetingRepository extends JpaRepository<Meeting, String> {
 
     List<Meeting> findByPatientId(String patientId);
 
-    List<Meeting> findByPatientIdAndStartAtAfter(String patientId, OffsetDateTime from);
+    List<Meeting> findByPatientIdAndStartAtAfter(String patientId, Instant from);
 
 }

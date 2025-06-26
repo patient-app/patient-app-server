@@ -1,6 +1,6 @@
 package ch.uzh.ifi.imrg.patientapp.entity;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -28,11 +28,11 @@ public class JournalEntry {
 
     @Column(name = "created_at", updatable = false)
     @CreationTimestamp
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     @Column(name = "updated_at")
     @UpdateTimestamp
-    private LocalDateTime updatedAt;
+    private Instant updatedAt;
 
     @Column(nullable = false)
     private String title;

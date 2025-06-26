@@ -3,7 +3,7 @@ package ch.uzh.ifi.imrg.patientapp.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -42,8 +42,8 @@ class MeetingServiceTest {
     void createMeeting_success() {
         CreateMeetingDTO dto = new CreateMeetingDTO();
         dto.setExternalMeetingId("ext-1");
-        dto.setStartAt(OffsetDateTime.parse("2025-06-15T10:00:00Z"));
-        dto.setEndAt(OffsetDateTime.parse("2025-06-15T11:00:00Z"));
+        dto.setStartAt(Instant.parse("2025-06-15T10:00:00Z"));
+        dto.setEndAt(Instant.parse("2025-06-15T11:00:00Z"));
         dto.setLocation("Room A");
 
         Patient patient = new Patient();
