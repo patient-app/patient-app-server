@@ -72,7 +72,7 @@ class ExerciseControllerTest {
         when(exerciseService.getExercise(exerciseId)).thenReturn(expectedDTO);
 
         // Act
-        ExerciseOutputDTO result = exerciseController.GetExerciseOutputDTOMock(request, exerciseId);
+        ExerciseOutputDTO result = exerciseController.getExerciseOutputDTO(request, exerciseId);
 
         // Assert
         assertEquals(expectedDTO, result);
@@ -97,7 +97,7 @@ class ExerciseControllerTest {
         when(exerciseService.getExerciseMedia(mockPatient, exerciseId, mediaId)).thenReturn(expectedDTO);
 
         // Act
-        ExerciseMediaOutputDTO result = exerciseController.getPictureMock(request, exerciseId, mediaId);
+        ExerciseMediaOutputDTO result = exerciseController.getPicture(request, exerciseId, mediaId);
 
         // Assert
         assertEquals(expectedDTO, result);

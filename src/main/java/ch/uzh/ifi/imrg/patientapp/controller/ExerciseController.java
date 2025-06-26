@@ -2,6 +2,7 @@ package ch.uzh.ifi.imrg.patientapp.controller;
 
 
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseInformationInputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.*;
 import ch.uzh.ifi.imrg.patientapp.service.ExerciseService;
 import ch.uzh.ifi.imrg.patientapp.service.PatientService;
@@ -10,10 +11,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -40,18 +38,26 @@ public class ExerciseController {
 
     @GetMapping("/patients/exercises/{exerciseId}")
     @ResponseStatus(HttpStatus.OK)
-    public ExerciseOutputDTO GetExerciseOutputDTOMock(HttpServletRequest httpServletRequest,
+    public ExerciseOutputDTO getExerciseOutputDTO(HttpServletRequest httpServletRequest,
                                                       @PathVariable String exerciseId){
         Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
         return exerciseService.getExercise(exerciseId);
     }
     @GetMapping("/patients/exercises/{exerciseId}/{mediaId}")
-    public ExerciseMediaOutputDTO getPictureMock(HttpServletRequest httpServletRequest,
+    public ExerciseMediaOutputDTO getPicture(HttpServletRequest httpServletRequest,
             @PathVariable String exerciseId,
             @PathVariable String mediaId) {
         Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
         return exerciseService.getExerciseMedia(loggedInPatient, exerciseId, mediaId);
 
+    }
+    @PostMapping("/patients/exercises/{exerciseId}")
+    @ResponseStatus(HttpStatus.OK)
+    public void postExerciseFeedback(HttpServletRequest httpServletRequest,
+            @PathVariable String exerciseId,
+            @RequestBody ExerciseInformationInputDTO exerciseInformationInputDTO) {
+        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
+        exerciseService.putExerciseFeedback(loggedInPatient, exerciseId, exerciseInformationInputDTO);
     }
 
 }

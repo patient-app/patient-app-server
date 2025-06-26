@@ -3,11 +3,14 @@ package ch.uzh.ifi.imrg.patientapp.service;
 
 import ch.uzh.ifi.imrg.patientapp.entity.Exercise.Exercise;
 import ch.uzh.ifi.imrg.patientapp.entity.Exercise.ExerciseElement;
+import ch.uzh.ifi.imrg.patientapp.entity.Exercise.ExerciseInformation;
 import ch.uzh.ifi.imrg.patientapp.entity.Exercise.StoredExerciseFile;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
+import ch.uzh.ifi.imrg.patientapp.repository.ExerciseInformationRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.ExerciseRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.PatientRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.StoredExerciseFileRepository;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseInformationInputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseInputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExerciseMediaOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExerciseOutputDTO;
@@ -27,13 +30,15 @@ public class ExerciseService {
     private final PatientRepository patientRepository;
     private final ExerciseMapper exerciseMapper;
     private final StoredExerciseFileRepository storedExerciseFileRepository;
+    private final ExerciseInformationRepository exerciseInformationRepository;
 
-    public ExerciseService(PatientService patientService, ExerciseRepository exerciseRepository, PatientRepository patientRepository, ExerciseMapper exerciseMapper, StoredExerciseFileRepository storedExerciseFileRepository) {
+    public ExerciseService(PatientService patientService, ExerciseRepository exerciseRepository, PatientRepository patientRepository, ExerciseMapper exerciseMapper, StoredExerciseFileRepository storedExerciseFileRepository, ExerciseInformationRepository exerciseInformationRepository) {
         this.patientService = patientService;
         this.exerciseRepository = exerciseRepository;
         this.patientRepository = patientRepository;
         this.exerciseMapper = exerciseMapper;
         this.storedExerciseFileRepository = storedExerciseFileRepository;
+        this.exerciseInformationRepository = exerciseInformationRepository;
     }
 
     public List<ExercisesOverviewOutputDTO>getAllExercisesForCoach(String patientId){
@@ -108,6 +113,19 @@ public class ExerciseService {
             throw new IllegalArgumentException("Patient does not have access to this exercise");
         }
         exerciseRepository.delete(exercise);
+    }
+
+    public void putExerciseFeedback(Patient patient, String exerciseId, ExerciseInformationInputDTO exerciseInformationInputDTO) {
+        Exercise exercise = exerciseRepository.getExerciseById(exerciseId);
+        if (exercise == null) {
+            throw new IllegalArgumentException("No exercise found with ID: " + exerciseId);
+        }
+        if (!exercise.getPatient().getId().equals(patient.getId())) {
+            throw new IllegalArgumentException("Patient does not have access to this exercise");
+        }
+        ExerciseInformation exerciseInformation = exerciseMapper.exerciseInformationInputDTOToExerciseInformation(exerciseInformationInputDTO);
+        exerciseInformation.setExercise(exercise);
+        exerciseInformationRepository.save(exerciseInformation);
     }
 
 }
