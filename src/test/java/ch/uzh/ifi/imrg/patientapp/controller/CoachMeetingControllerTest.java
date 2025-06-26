@@ -78,7 +78,7 @@ public class CoachMeetingControllerTest {
                 saved.setEndAt(dto.getEndAt());
                 saved.setLocation("Room 101");
                 saved.setMeetingStatus(MeetingStatus.PENDING);
-                saved.setCreatedAt(Instant.parse("2025-06-15T09:00:00"));
+                saved.setCreatedAt(Instant.parse("2025-06-15T09:00:00Z"));
                 Patient patient = new Patient();
                 patient.setId(patientId);
                 saved.setPatient(patient);
@@ -97,7 +97,7 @@ public class CoachMeetingControllerTest {
                                 .andExpect(jsonPath("$.endAt").value("2025-06-15T11:00:00Z"))
                                 .andExpect(jsonPath("$.location").value("Room 101"))
                                 .andExpect(jsonPath("$.meetingStatus").value("PENDING"))
-                                .andExpect(jsonPath("$.createdAt").value("2025-06-15T09:00:00"));
+                                .andExpect(jsonPath("$.createdAt").value("2025-06-15T09:00:00Z"));
         }
 
         @Test
@@ -151,7 +151,7 @@ public class CoachMeetingControllerTest {
                 updated.setEndAt(dto.getEndAt());
                 updated.setLocation("Room 103");
                 updated.setMeetingStatus(MeetingStatus.CONFIRMED);
-                updated.setCreatedAt(Instant.parse("2025-06-15T09:00:00"));
+                updated.setCreatedAt(Instant.parse("2025-06-15T09:00:00Z"));
 
                 when(meetingService.updateMeeting(eq(patientId), eq(meetingId), any(UpdateMeetingDTO.class)))
                                 .thenReturn(updated);
