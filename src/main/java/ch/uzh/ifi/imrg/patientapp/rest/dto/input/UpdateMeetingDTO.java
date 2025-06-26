@@ -3,7 +3,7 @@ package ch.uzh.ifi.imrg.patientapp.rest.dto.input;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 
 import ch.uzh.ifi.imrg.patientapp.constant.MeetingStatus;
 
@@ -11,9 +11,9 @@ import ch.uzh.ifi.imrg.patientapp.constant.MeetingStatus;
 @Setter
 public class UpdateMeetingDTO {
 
-    private OffsetDateTime startAt;
+    private Instant startAt;
 
-    private OffsetDateTime endAt;
+    private Instant endAt;
 
     private String location;
 
