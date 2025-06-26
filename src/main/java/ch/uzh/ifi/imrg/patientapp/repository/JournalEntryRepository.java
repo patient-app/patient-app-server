@@ -1,6 +1,7 @@
 package ch.uzh.ifi.imrg.patientapp.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
@@ -13,6 +14,10 @@ import java.util.Set;
 public interface JournalEntryRepository extends JpaRepository<JournalEntry, String> {
 
     List<JournalEntry> findByPatientId(String patientId);
+
+    List<JournalEntry> findAllByPatientIdAndSharedWithTherapistTrue(String patientId);
+
+    Optional<JournalEntry> findByIdAndSharedWithTherapistTrue(String id);
 
     @Query("""
             select distinct t

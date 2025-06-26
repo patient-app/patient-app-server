@@ -23,7 +23,7 @@ public class CoachPatientController {
         this.patientService = patientService;
     }
 
-    @PostMapping("coach/patients/register")
+    @PostMapping("/coach/patients/register")
     @ResponseStatus(HttpStatus.CREATED)
     @SecurityRequirement(name = "X-Coach-Key")
     public PatientOutputDTO registerPatient(
@@ -39,7 +39,7 @@ public class CoachPatientController {
         return PatientMapper.INSTANCE.convertEntityToPatientOutputDTO(createdPatient);
     }
 
-    @DeleteMapping("coach/patients/{patientId}")
+    @DeleteMapping("/coach/patients/{patientId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @SecurityRequirement(name = "X-Coach-Key")
     public void deletePatient(@PathVariable String patientId) {
