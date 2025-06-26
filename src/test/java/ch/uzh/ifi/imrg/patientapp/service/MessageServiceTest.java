@@ -9,9 +9,11 @@ import ch.uzh.ifi.imrg.patientapp.service.aiService.PromptBuilderService;
 import ch.uzh.ifi.imrg.patientapp.utils.CryptographyUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.*;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.lang.reflect.Method;
 import java.time.Instant;
@@ -23,6 +25,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 public class MessageServiceTest {
     @Mock
     private MessageRepository messageRepository;
@@ -38,14 +41,6 @@ public class MessageServiceTest {
 
     @InjectMocks
     private MessageService messageService;
-
-    @BeforeEach
-    void setup() {
-        MockitoAnnotations.openMocks(this);
-        doNothing().when(messageRepository).flush();
-        doNothing().when(authorizationService).checkConversationAccess(any(), any(), any());
-
-    }
 
     @Test
     void generateAnswer_shouldEncryptMessageAndResponse_andSetFieldsCorrectly() {

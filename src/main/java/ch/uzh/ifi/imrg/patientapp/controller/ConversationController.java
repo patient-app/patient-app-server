@@ -4,6 +4,8 @@ import ch.uzh.ifi.imrg.patientapp.entity.Conversation;
 import ch.uzh.ifi.imrg.patientapp.entity.Message;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreateMessageDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutOnboardedDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutSharingDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.CompleteConversationOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.CreateConversationOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.MessageOutputDTO;
@@ -50,6 +52,14 @@ public class ConversationController {
         return new CreateConversationOutputDTO(createdConversation.getExternalId());
     }
 
+    @PutMapping("/patients/conversations/{conversationId}")
+    @ResponseStatus(HttpStatus.OK)
+    public void updateSharing(@RequestBody PutSharingDTO putSharingDTO, @PathVariable String conversationId, HttpServletRequest httpServletRequest){
+        System.out.println("hi");
+        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
+        conversationService.updateSharing(putSharingDTO, conversationId, loggedInPatient);
+    }
+
     @GetMapping("/patients/conversations/{patientId}")
     @ResponseStatus(HttpStatus.OK)
     public List<NameConversationOutputDTO> nameConversationDTO(HttpServletRequest httpServletRequest){
@@ -75,8 +85,7 @@ public class ConversationController {
                                                        @PathVariable String conversationId) {
         Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
         Conversation completeConversation = conversationService.getAllMessagesFromConversation(conversationId, loggedInPatient);
-        CompleteConversationOutputDTO completeConversationOutputDTO = new CompleteConversationOutputDTO();
-        completeConversationOutputDTO.setId(completeConversation.getExternalId());
+        CompleteConversationOutputDTO completeConversationOutputDTO = ConversationMapper.INSTANCE.convertEntityToCompleteConversationOutputDTO(completeConversation);
         completeConversationOutputDTO.setMessages(new ArrayList<>());
 
         for(Message message : completeConversation.getMessages()) {
@@ -85,6 +94,15 @@ public class ConversationController {
             completeConversationOutputDTO.getMessages().add(MessageMapper.INSTANCE.convertEntityToMessageOutputDTO(message));
         }
         return completeConversationOutputDTO;
+
+    }
+
+    @DeleteMapping("/patients/conversations/{conversationId}")
+    @ResponseStatus(HttpStatus.OK)
+    public void deleteChat(HttpServletRequest httpServletRequest,
+                           @PathVariable String conversationId){
+        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
+        conversationService.deleteConversation(conversationId, loggedInPatient);
 
     }
 }
