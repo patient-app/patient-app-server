@@ -1,6 +1,7 @@
 package ch.uzh.ifi.imrg.patientapp.coachapi;
 
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseInputDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExerciseInformationOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExercisesOverviewOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.service.ExerciseService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -34,7 +35,7 @@ public class CoachExerciseController {
         return exerciseService.getAllExercisesForCoach(patientId);
     }
 
-    @PutMapping("/coach/patients/{patientId}/exercises{exerciseId}")
+    @PutMapping("/coach/patients/{patientId}/exercises/{exerciseId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @SecurityRequirement(name = "X-Coach-Key")
     public void updateExercise(@PathVariable String patientId,
@@ -51,4 +52,11 @@ public class CoachExerciseController {
         exerciseService.deleteExercise(patientId, exerciseId);
     }
 
+    @GetMapping("/coach/patients/{patientId}/exercises/{exerciseId}")
+    @ResponseStatus(HttpStatus.OK)
+    @SecurityRequirement(name = "X-Coach-Key")
+    public List<ExerciseInformationOutputDTO> getExerciseInformation(@PathVariable String patientId,
+                                                                     @PathVariable String exerciseId) {
+        return exerciseService.getExerciseInformation(patientId, exerciseId);
+    }
 }
