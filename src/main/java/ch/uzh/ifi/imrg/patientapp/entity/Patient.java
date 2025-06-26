@@ -70,6 +70,9 @@ public class Patient implements Serializable {
     @OneToMany(mappedBy = "patient", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<JournalEntry> journalEntries;
 
+    @OneToMany(mappedBy = "patient", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<ChatbotTemplate> chatbotTemplates;
+
     @Column(name = "coach_access_key", nullable = false)
     private String coachAccessKey;
 

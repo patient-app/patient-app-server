@@ -10,5 +10,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository("chatbotTemplateRepository")
 public interface ChatbotTemplateRepository extends JpaRepository<ChatbotTemplate, String> {
+    List<ChatbotTemplate> findByPatientId(String patientId);
 
 }

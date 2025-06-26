@@ -20,6 +20,10 @@ public class ChatbotTemplate implements Serializable {
     @Column(unique = true)
     private String id = UUID.randomUUID().toString();
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "patient_id")
+    private Patient patient;
+
     @Column(name = "created_at", updatable = false)
     @CreationTimestamp
     private Instant createdAt;
@@ -28,11 +32,7 @@ public class ChatbotTemplate implements Serializable {
     @UpdateTimestamp
     private Instant updatedAt;
 
-    @Column(nullable = false)
-    private String chatbotName;
-
-    private String description;
-    private String chatbotModel;
+    private boolean isActive;
     private String chatbotIcon;
     private String chatbotLanguage;
     private String chatbotRole;
