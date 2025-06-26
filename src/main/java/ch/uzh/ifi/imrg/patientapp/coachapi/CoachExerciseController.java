@@ -35,7 +35,7 @@ public class CoachExerciseController {
         return exerciseService.getAllExercisesForCoach(patientId);
     }
 
-    @PutMapping("/coach/patients/{patientId}/exercises{exerciseId}")
+    @PutMapping("/coach/patients/{patientId}/exercises/{exerciseId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @SecurityRequirement(name = "X-Coach-Key")
     public void updateExercise(@PathVariable String patientId,
@@ -52,10 +52,11 @@ public class CoachExerciseController {
         exerciseService.deleteExercise(patientId, exerciseId);
     }
 
-    @GetMapping("/coach/patients/{patientId}/exercises{exerciseId}")
+    @GetMapping("/coach/patients/{patientId}/exercises/{exerciseId}")
     @ResponseStatus(HttpStatus.OK)
     @SecurityRequirement(name = "X-Coach-Key")
     public List<ExerciseInformationOutputDTO> getExerciseInformation(@PathVariable String patientId,
                                                                      @PathVariable String exerciseId) {
         return exerciseService.getExerciseInformation(patientId, exerciseId);
+    }
 }

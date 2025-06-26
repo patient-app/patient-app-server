@@ -2,6 +2,7 @@ package ch.uzh.ifi.imrg.patientapp.coachapi;
 
 
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseInputDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExerciseInformationOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExercisesOverviewOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.service.ExerciseService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -84,5 +85,25 @@ class CoachExerciseControllerTest {
         verifyNoMoreInteractions(exerciseService);
     }
 
+    @Test
+    void testGetExerciseInformation_ReturnsExerciseInformationList() {
+        // Arrange
+        String patientId = "p123";
+        String exerciseId = "e456";
+
+        ExerciseInformationOutputDTO dto1 = new ExerciseInformationOutputDTO();
+        ExerciseInformationOutputDTO dto2 = new ExerciseInformationOutputDTO();
+        List<ExerciseInformationOutputDTO> expected = List.of(dto1, dto2);
+
+        when(exerciseService.getExerciseInformation(patientId, exerciseId)).thenReturn(expected);
+
+        // Act
+        List<ExerciseInformationOutputDTO> result = coachExerciseController.getExerciseInformation(patientId, exerciseId);
+
+        // Assert
+        assertEquals(expected, result);
+        verify(exerciseService).getExerciseInformation(patientId, exerciseId);
+        verifyNoMoreInteractions(exerciseService);
+    }
 
 }

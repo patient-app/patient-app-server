@@ -2,10 +2,13 @@ package ch.uzh.ifi.imrg.patientapp.service;
 
 import ch.uzh.ifi.imrg.patientapp.entity.Exercise.*;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
+import ch.uzh.ifi.imrg.patientapp.repository.ExerciseInformationRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.ExerciseRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.PatientRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.StoredExerciseFileRepository;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseInformationInputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseInputDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExerciseInformationOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExerciseMediaOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExerciseOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExercisesOverviewOutputDTO;
@@ -40,6 +43,9 @@ class ExerciseServiceTest {
 
     @Mock
     private StoredExerciseFileRepository storedExerciseFileRepository;
+
+    @Mock
+    private ExerciseInformationRepository exerciseInformationRepository;
 
     @InjectMocks
     private ExerciseService exerciseService;
@@ -429,5 +435,157 @@ class ExerciseServiceTest {
         verify(exerciseRepository).getExerciseById(exerciseId);
         verifyNoMoreInteractions(exerciseRepository);
     }
+
+    @Test
+    void testPutExerciseFeedback_SuccessfullySavesExerciseInformation() {
+        // Arrange
+        String exerciseId = "ex1";
+        Patient patient = new Patient();
+        patient.setId("p123");
+
+        Exercise exercise = new Exercise();
+        exercise.setId(exerciseId);
+        exercise.setPatient(patient);
+
+        ExerciseInformationInputDTO inputDTO = new ExerciseInformationInputDTO();
+        ExerciseInformation mappedInfo = new ExerciseInformation();
+
+        when(exerciseRepository.getExerciseById(exerciseId)).thenReturn(exercise);
+        when(exerciseMapper.exerciseInformationInputDTOToExerciseInformation(inputDTO)).thenReturn(mappedInfo);
+
+        // Act
+        exerciseService.putExerciseFeedback(patient, exerciseId, inputDTO);
+
+        // Assert
+        assertEquals(exercise, mappedInfo.getExercise());
+        verify(exerciseRepository).getExerciseById(exerciseId);
+        verify(exerciseMapper).exerciseInformationInputDTOToExerciseInformation(inputDTO);
+        verify(exerciseInformationRepository).save(mappedInfo);
+        verifyNoMoreInteractions(exerciseRepository, exerciseMapper, exerciseInformationRepository);
+    }
+
+    @Test
+    void testPutExerciseFeedback_ThrowsWhenExerciseNotFound() {
+        // Arrange
+        String exerciseId = "ex2";
+        Patient patient = new Patient();
+        patient.setId("p123");
+        ExerciseInformationInputDTO inputDTO = new ExerciseInformationInputDTO();
+
+        when(exerciseRepository.getExerciseById(exerciseId)).thenReturn(null);
+
+        // Act + Assert
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
+                exerciseService.putExerciseFeedback(patient, exerciseId, inputDTO)
+        );
+        assertEquals("No exercise found with ID: " + exerciseId, ex.getMessage());
+
+        verify(exerciseRepository).getExerciseById(exerciseId);
+        verifyNoMoreInteractions(exerciseRepository, exerciseMapper, exerciseInformationRepository);
+    }
+
+    @Test
+    void testPutExerciseFeedback_ThrowsWhenPatientMismatch() {
+        // Arrange
+        String exerciseId = "ex3";
+
+        Patient actualPatient = new Patient();
+        actualPatient.setId("actual");
+
+        Patient otherPatient = new Patient();
+        otherPatient.setId("other");
+
+        Exercise exercise = new Exercise();
+        exercise.setId(exerciseId);
+        exercise.setPatient(otherPatient);
+
+        ExerciseInformationInputDTO inputDTO = new ExerciseInformationInputDTO();
+
+        when(exerciseRepository.getExerciseById(exerciseId)).thenReturn(exercise);
+
+        // Act + Assert
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
+                exerciseService.putExerciseFeedback(actualPatient, exerciseId, inputDTO)
+        );
+        assertEquals("Patient does not have access to this exercise", ex.getMessage());
+
+        verify(exerciseRepository).getExerciseById(exerciseId);
+        verifyNoMoreInteractions(exerciseRepository, exerciseMapper, exerciseInformationRepository);
+    }
+
+    @Test
+    void testGetExerciseInformation_ReturnsDTOList() {
+        // Arrange
+        String patientId = "p123";
+        String exerciseId = "e123";
+
+        Patient patient = new Patient();
+        patient.setId(patientId);
+
+        Exercise exercise = new Exercise();
+        exercise.setId(exerciseId);
+        exercise.setPatient(patient);
+
+        List<ExerciseInformation> exerciseInfoList = List.of(new ExerciseInformation(), new ExerciseInformation());
+        List<ExerciseInformationOutputDTO> expectedDTOs = List.of(new ExerciseInformationOutputDTO(), new ExerciseInformationOutputDTO());
+
+        when(exerciseRepository.getExerciseById(exerciseId)).thenReturn(exercise);
+        when(exerciseInformationRepository.getExerciseInformationByExerciseId(exerciseId)).thenReturn(exerciseInfoList);
+        when(exerciseMapper.exerciseInformationsToExerciseInformationOutputDTOs(exerciseInfoList)).thenReturn(expectedDTOs);
+
+        // Act
+        List<ExerciseInformationOutputDTO> result = exerciseService.getExerciseInformation(patientId, exerciseId);
+
+        // Assert
+        assertEquals(expectedDTOs, result);
+        verify(exerciseRepository).getExerciseById(exerciseId);
+        verify(exerciseInformationRepository).getExerciseInformationByExerciseId(exerciseId);
+        verify(exerciseMapper).exerciseInformationsToExerciseInformationOutputDTOs(exerciseInfoList);
+        verifyNoMoreInteractions(exerciseRepository, exerciseInformationRepository, exerciseMapper);
+    }
+
+    @Test
+    void testGetExerciseInformation_ThrowsWhenExerciseNotFound() {
+        // Arrange
+        String patientId = "p123";
+        String exerciseId = "e999";
+
+        when(exerciseRepository.getExerciseById(exerciseId)).thenReturn(null);
+
+        // Act & Assert
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
+                exerciseService.getExerciseInformation(patientId, exerciseId)
+        );
+        assertEquals("No exercise found with ID: " + exerciseId, ex.getMessage());
+
+        verify(exerciseRepository).getExerciseById(exerciseId);
+        verifyNoMoreInteractions(exerciseRepository, exerciseInformationRepository, exerciseMapper);
+    }
+
+    @Test
+    void testGetExerciseInformation_ThrowsWhenPatientMismatch() {
+        // Arrange
+        String patientId = "p123";
+        String exerciseId = "e456";
+
+        Patient actualPatient = new Patient();
+        actualPatient.setId("wrong-id");
+
+        Exercise exercise = new Exercise();
+        exercise.setId(exerciseId);
+        exercise.setPatient(actualPatient);
+
+        when(exerciseRepository.getExerciseById(exerciseId)).thenReturn(exercise);
+
+        // Act & Assert
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
+                exerciseService.getExerciseInformation(patientId, exerciseId)
+        );
+        assertEquals("Patient does not have access to this exercise", ex.getMessage());
+
+        verify(exerciseRepository).getExerciseById(exerciseId);
+        verifyNoMoreInteractions(exerciseRepository, exerciseInformationRepository, exerciseMapper);
+    }
+
 
 }

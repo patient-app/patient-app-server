@@ -128,6 +128,8 @@ public class ExerciseService {
         exerciseInformation.setExercise(exercise);
         exerciseInformationRepository.save(exerciseInformation);
     }
+
+
     public List<ExerciseInformationOutputDTO> getExerciseInformation(String patientId, String exerciseId) {
         Exercise exercise = exerciseRepository.getExerciseById(exerciseId);
         if (exercise == null) {
