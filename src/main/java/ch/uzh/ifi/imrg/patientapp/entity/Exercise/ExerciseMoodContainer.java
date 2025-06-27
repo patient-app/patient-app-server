@@ -1,9 +1,6 @@
 package ch.uzh.ifi.imrg.patientapp.entity.Exercise;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -20,5 +17,5 @@ public class ExerciseMoodContainer {
     private String id = UUID.randomUUID().toString();
 
     @OneToMany(mappedBy = "exerciseMoodContainer", cascade = jakarta.persistence.CascadeType.ALL, orphanRemoval = true)
-    private List <ExerciseMood> exerciseMoodsE;
+    private List <ExerciseMood> exerciseMoods;
 }
