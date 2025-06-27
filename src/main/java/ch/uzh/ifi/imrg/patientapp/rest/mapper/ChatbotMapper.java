@@ -13,6 +13,7 @@ public interface ChatbotMapper {
     ChatbotMapper INSTANCE = Mappers.getMapper(ChatbotMapper.class);
 
     ChatbotTemplate convertCreateChatbotDTOToChatbotTemplate(CreateChatbotDTO createChatbotDTO);
+    ChatbotConfigurationOutputDTO convertChatbotTemplateToChatbotConfigurationOutputDTO(ChatbotTemplate chatbotTemplate);
     List<ChatbotConfigurationOutputDTO> chatbotTemplatesToChatbotConfigurationOutputDTOs(List<ChatbotTemplate> chatbotTemplates);
 
 

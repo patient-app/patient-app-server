@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.*;
 
 @Service
 @Transactional
@@ -69,7 +70,20 @@ public class MessageService {
         newMessage.setRequest(CryptographyUtil.encrypt(message, key));
 
         List<Map<String, String>> priorMessages = parseMessagesFromConversation(conversation, key);
-        String answer = promptBuilderService.getResponse(patient.isAdmin(), priorMessages, message);
+        String rawAnswer = promptBuilderService.getResponse(patient.isAdmin(), priorMessages, message);
+
+        //extract the answer part from the response
+        String regex = "</think>\\s*([\\s\\S]*)";
+        Pattern pattern = Pattern.compile(regex, Pattern.DOTALL);
+        Matcher matcher = pattern.matcher(rawAnswer);
+
+        String answer;
+
+        if (matcher.find()) {
+            answer = matcher.group(1).trim();
+        } else {
+            throw new IllegalStateException("No <think> closing tag found in response:\n" + rawAnswer);
+        }
 
         newMessage.setResponse(CryptographyUtil.encrypt(answer, key));
         newMessage.setConversation(conversation);
@@ -80,7 +94,7 @@ public class MessageService {
         messageRepository.save(newMessage);
         messageRepository.flush();
 
-        Conversation refreshedConversation = conversationRepository.getConversationByExternalId(externalConversationId)
+    Conversation refreshedConversation = conversationRepository.getConversationByExternalId(externalConversationId)
                 .orElseThrow(() -> new IllegalArgumentException("Conversation not found"));
 
         // Make a frontend version

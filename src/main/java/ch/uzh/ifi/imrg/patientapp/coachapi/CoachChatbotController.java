@@ -1,8 +1,7 @@
 package ch.uzh.ifi.imrg.patientapp.coachapi;
 
 
-import ch.uzh.ifi.imrg.patientapp.entity.Exercise.ExerciseElement;
-import ch.uzh.ifi.imrg.patientapp.entity.Patient;
+
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreateChatbotDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.ChatbotConfigurationOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.service.ChatbotService;
