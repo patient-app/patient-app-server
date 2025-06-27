@@ -49,7 +49,9 @@ public class MessageServiceTest {
         String inputMessage = "How are you?";
         String mockKey = "mock-decrypted-key";
         String encryptedMessage = "encrypted-message";
-        String mockResponse = "I’m fine, thank you!";
+        String mockResponse = "<think>\n" +
+                "...some reasoning...\n" +
+                "</think> I’m fine, thank you!";
         String encryptedResponse = "encrypted-response";
 
         Patient patient = new Patient();
@@ -121,7 +123,9 @@ public class MessageServiceTest {
         String inputMessage = "How are you?";
         String mockKey = "mock-decrypted-key";
         String encryptedMessage = "encrypted-message";
-        String mockResponse = "I’m fine, thanks!";
+        String mockResponse = "<think>\n" +
+                "...some reasoning...\n" +
+                "</think> I’m fine, thanks!";
         String encryptedResponse = "encrypted-response";
 
         Patient patient = new Patient();

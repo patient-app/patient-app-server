@@ -1,4 +1,4 @@
-package ch.uzh.ifi.imrg.patientapp.controller;
+package ch.uzh.ifi.imrg.patientapp.coachapi;
 
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
@@ -30,7 +30,6 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import ch.uzh.ifi.imrg.patientapp.coachapi.CoachMeetingController;
 import ch.uzh.ifi.imrg.patientapp.constant.MeetingStatus;
 import ch.uzh.ifi.imrg.patientapp.entity.Meeting;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;

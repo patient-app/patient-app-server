@@ -1,4 +1,4 @@
-package ch.uzh.ifi.imrg.patientapp.controller;
+package ch.uzh.ifi.imrg.patientapp.coachapi;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -6,9 +6,12 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import ch.uzh.ifi.imrg.patientapp.controller.PatientController;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
@@ -20,14 +23,10 @@ import jakarta.servlet.http.HttpServletResponse;
 
 @ExtendWith(MockitoExtension.class)
 public class CoachPatientControllerTest {
+    @Mock
     private PatientService patientService;
+    @InjectMocks
     private PatientController patientController;
-
-    @BeforeEach
-    void setUp() {
-        patientService = mock(PatientService.class);
-        patientController = new PatientController(patientService);
-    }
 
     @Test
     void registerPatient_shouldConvertDTOAndReturnCreatedDTO() {

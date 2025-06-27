@@ -34,6 +34,8 @@ public class ChatbotService {
         chatbotTemplate.setPatient(patient);
         chatbotTemplateRepository.save(chatbotTemplate);
     }
+
+
     public void updateChatbot(String patientId, UpdateChatbotDTO updateChatbotDTO) {
         Patient patient = patientRepository.getPatientById(patientId);
         if (patient == null) {
