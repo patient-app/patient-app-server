@@ -5,6 +5,7 @@ import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.repository.ChatbotTemplateRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.PatientRepository;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreateChatbotDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.UpdateChatbotDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.ChatbotConfigurationOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.ChatbotMapper;
 import jakarta.transaction.Transactional;
@@ -32,6 +33,17 @@ public class ChatbotService {
         }
         chatbotTemplate.setPatient(patient);
         chatbotTemplateRepository.save(chatbotTemplate);
+    }
+    public void updateChatbot(String patientId, UpdateChatbotDTO updateChatbotDTO) {
+        Patient patient = patientRepository.getPatientById(patientId);
+        if (patient == null) {
+            throw new IllegalArgumentException("No patient found with ID: " + patientId);
+        }
+        ChatbotTemplate chatbotTemplate = chatbotTemplateRepository.findById(updateChatbotDTO.getId())
+                .orElseThrow(() -> new IllegalArgumentException("No chatbot configuration found for patient ID: " + patientId));
+        ChatbotMapper.INSTANCE.updateChatbotTemplateFromUpdateChatbotDTO(updateChatbotDTO, chatbotTemplate);
+        chatbotTemplateRepository.save(chatbotTemplate);
+
     }
 
     public List<ChatbotConfigurationOutputDTO> getChatbotConfigurations(String patientId) {

@@ -3,6 +3,7 @@ package ch.uzh.ifi.imrg.patientapp.coachapi;
 
 
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreateChatbotDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.UpdateChatbotDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.ChatbotConfigurationOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.service.ChatbotService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -28,10 +29,16 @@ public class CoachChatbotController {
     }
 
     @GetMapping("/coach/patients/{patientId}/chatbot")
-    @ResponseStatus(HttpStatus.CREATED)
+    @ResponseStatus(HttpStatus.OK)
     @SecurityRequirement(name = "X-Coach-Key")
     public List<ChatbotConfigurationOutputDTO> getChatbotConfigurations(@PathVariable String patientId) {
         return chatbotService.getChatbotConfigurations(patientId);
+    }
+    @PutMapping("/coach/patients/{patientId}/chatbot")
+    @ResponseStatus(HttpStatus.OK)
+    @SecurityRequirement(name = "X-Coach-Key")
+    public void updateChatbot(@PathVariable String patientId, @RequestBody UpdateChatbotDTO updateChatbotDTO) {
+        chatbotService.updateChatbot(patientId, updateChatbotDTO);
     }
 
 

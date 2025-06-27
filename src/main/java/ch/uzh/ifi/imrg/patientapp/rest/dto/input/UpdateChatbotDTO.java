@@ -1,12 +1,11 @@
-package ch.uzh.ifi.imrg.patientapp.rest.dto.output;
-
+package ch.uzh.ifi.imrg.patientapp.rest.dto.input;
 
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class ChatbotConfigurationOutputDTO {
+public class UpdateChatbotDTO {
     private String id;
     private boolean isActive;
     private String chatbotRole;

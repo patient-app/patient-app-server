@@ -2,8 +2,10 @@ package ch.uzh.ifi.imrg.patientapp.rest.mapper;
 
 import ch.uzh.ifi.imrg.patientapp.entity.ChatbotTemplate;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreateChatbotDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.UpdateChatbotDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.ChatbotConfigurationOutputDTO;
 import org.mapstruct.Mapper;
+import org.mapstruct.MappingTarget;
 import org.mapstruct.factory.Mappers;
 
 import java.util.List;
@@ -15,6 +17,7 @@ public interface ChatbotMapper {
     ChatbotTemplate convertCreateChatbotDTOToChatbotTemplate(CreateChatbotDTO createChatbotDTO);
     ChatbotConfigurationOutputDTO convertChatbotTemplateToChatbotConfigurationOutputDTO(ChatbotTemplate chatbotTemplate);
     List<ChatbotConfigurationOutputDTO> chatbotTemplatesToChatbotConfigurationOutputDTOs(List<ChatbotTemplate> chatbotTemplates);
+    void updateChatbotTemplateFromUpdateChatbotDTO(UpdateChatbotDTO updateChatbotDTO, @MappingTarget ChatbotTemplate chatbotTemplate);
 
 
 }
