@@ -15,10 +15,8 @@ import java.util.UUID;
 public class StoredExerciseFile {
 
     @Id
-    @Column(unique = true)
     private String id = UUID.randomUUID().toString();
 
     @Lob
-    @Column(length = Integer.MAX_VALUE)
     private byte[] data;
 }
