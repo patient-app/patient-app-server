@@ -3,7 +3,6 @@ package ch.uzh.ifi.imrg.patientapp.controller;
 import ch.uzh.ifi.imrg.patientapp.entity.Conversation;
 import ch.uzh.ifi.imrg.patientapp.entity.Message;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
-import ch.uzh.ifi.imrg.patientapp.entity.Therapist;
 import ch.uzh.ifi.imrg.patientapp.repository.ConversationRepository;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreateMessageDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutSharingDTO;
@@ -11,7 +10,6 @@ import ch.uzh.ifi.imrg.patientapp.rest.dto.output.CompleteConversationOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.CreateConversationOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.MessageOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.NameConversationOutputDTO;
-import ch.uzh.ifi.imrg.patientapp.rest.mapper.ConversationMapper;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.MessageMapper;
 import ch.uzh.ifi.imrg.patientapp.service.AuthorizationService;
 import ch.uzh.ifi.imrg.patientapp.service.ConversationService;
@@ -20,20 +18,16 @@ import ch.uzh.ifi.imrg.patientapp.service.PatientService;
 import ch.uzh.ifi.imrg.patientapp.utils.CryptographyUtil;
 
 import jakarta.servlet.http.HttpServletRequest;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.nio.file.AccessDeniedException;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -188,8 +182,6 @@ public class ConversationControllerTest {
         HttpServletRequest request = mock(HttpServletRequest.class);
 
         Patient mockPatient = new Patient();
-        Therapist therapist = new Therapist();
-        mockPatient.setTherapist(therapist);
         when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
 
         // Act
@@ -198,7 +190,6 @@ public class ConversationControllerTest {
         // Assert
         verify(patientService).getCurrentlyLoggedInPatient(request);
         verify(conversationService).deleteConversation(conversationId, mockPatient);
-        assertEquals(therapist, mockPatient.getTherapist(), "Therapist should not have changed");
     }
 
 

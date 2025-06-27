@@ -48,9 +48,9 @@ public class ChatGPTService {
         String content = "content";
         // Prepare the request bodyRequest
         Map<String, Object> bodyRequest = new HashMap<>();
-        bodyRequest.put("model", "Qwen/Qwen2.5-1.5B-Instruct");
+        bodyRequest.put("model", "Qwen/Qwen3-1.7B");
         bodyRequest.put("messages", messages);
-        bodyRequest.put("max_tokens", 70);
+        //bodyRequest.put("max_tokens", 170);
         bodyRequest.put("temperature", 0);
 
         // Set headers
@@ -58,14 +58,10 @@ public class ChatGPTService {
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBearerAuth(EnvironmentVariables.getLocalLlmApiKey());
 
-        System.out.println("Chello?");
-        System.out.println(bodyRequest);
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(bodyRequest, headers);
 
         try {
             ResponseEntity<Map> response = restTemplate.postForEntity(LOCAL_AI_API_URL, request, Map.class);
-            System.out.println("Response:");
-            System.out.println(response);
             if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
                 Map<String, Object> body = response.getBody();
                 List<Map<String, Object>> choices = (List<Map<String, Object>>) body.get("choices");

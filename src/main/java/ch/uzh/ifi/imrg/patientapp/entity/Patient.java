@@ -55,13 +55,6 @@ public class Patient implements Serializable {
     @Column(nullable = false)
     private boolean admin = false;
 
-    @ManyToOne
-    @JoinColumn(name = "therapist_id", referencedColumnName = "id")
-    private Therapist therapist;
-
-    @Column(unique = true)
-    private String workspaceId = UUID.randomUUID().toString();
-
     @Column(name = "private_key", unique = true)
     private String privateKey;
 
@@ -77,6 +70,9 @@ public class Patient implements Serializable {
     @OneToMany(mappedBy = "patient", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<JournalEntry> journalEntries;
 
+    @OneToOne(mappedBy = "patient", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private ChatbotTemplate chatbotTemplate;
+
     @Column(name = "coach_access_key", nullable = false)
     private String coachAccessKey;
 
@@ -91,8 +87,6 @@ public class Patient implements Serializable {
                 ", email='" + email + '\'' +
                 ", description='" + description + '\'' +
                 ", admin=" + admin +
-                ", therapistId=" + (therapist != null ? therapist.getId() : "null") +
-                ", workspaceId='" + workspaceId + '\'' +
                 ",language:" + language + '\'' +
                 ",onboarded:" + onboarded + '\'' +
                 ", privateKey=" + (privateKey != null ? privateKey : "null") +

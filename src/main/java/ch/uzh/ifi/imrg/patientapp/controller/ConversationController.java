@@ -55,7 +55,6 @@ public class ConversationController {
     @PutMapping("/patients/conversations/{conversationId}")
     @ResponseStatus(HttpStatus.OK)
     public void updateSharing(@RequestBody PutSharingDTO putSharingDTO, @PathVariable String conversationId, HttpServletRequest httpServletRequest){
-        System.out.println("hi");
         Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
         conversationService.updateSharing(putSharingDTO, conversationId, loggedInPatient);
     }
@@ -75,7 +74,7 @@ public class ConversationController {
                                         @PathVariable String conversationId) throws AccessDeniedException {
         Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
         Message answeredMessage = messageService.generateAnswer(loggedInPatient, conversationId, createMessageDTO.getMessage());
-
+        System.out.println("Message sent: " + answeredMessage.getResponse());
         return MessageMapper.INSTANCE.convertEntityToMessageOutputDTO(answeredMessage);
     }
 

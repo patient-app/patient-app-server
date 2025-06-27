@@ -10,9 +10,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository("chatbotTemplateRepository")
 public interface ChatbotTemplateRepository extends JpaRepository<ChatbotTemplate, String> {
-    List<ChatbotTemplate> findByTherapistId(String therapistId);
+    List<ChatbotTemplate> findByPatientId(String patientId);
 
-    @Query("SELECT t FROM ChatbotTemplate t WHERE t.id = :templateId AND t.therapist.id = :therapistId")
-    Optional<ChatbotTemplate> findByIdAndTherapistId(
-            @Param("templateId") String templateId, @Param("therapistId") String therapistId);
 }
