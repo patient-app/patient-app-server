@@ -1,8 +1,10 @@
 package ch.uzh.ifi.imrg.patientapp.service;
 
+import ch.uzh.ifi.imrg.patientapp.entity.ChatbotTemplate;
 import ch.uzh.ifi.imrg.patientapp.entity.Conversation;
 import ch.uzh.ifi.imrg.patientapp.entity.Message;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
+import ch.uzh.ifi.imrg.patientapp.repository.ChatbotTemplateRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.ConversationRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.MessageRepository;
 import ch.uzh.ifi.imrg.patientapp.service.aiService.PromptBuilderService;
@@ -39,6 +41,9 @@ public class MessageServiceTest {
     @Mock
     private AuthorizationService authorizationService;
 
+    @Mock
+    private ChatbotTemplateRepository chatbotTemplateRepository;
+
     @InjectMocks
     private MessageService messageService;
 
@@ -49,24 +54,35 @@ public class MessageServiceTest {
         String inputMessage = "How are you?";
         String mockKey = "mock-decrypted-key";
         String encryptedMessage = "encrypted-message";
-        String mockResponse = "<think>\n" +
-                "...some reasoning...\n" +
-                "</think> I’m fine, thank you!";
+        String mockResponse = "<think>\n"
+                + "...some reasoning...\n"
+                + "</think> I’m fine, thank you!";
         String encryptedResponse = "encrypted-response";
 
         Patient patient = new Patient();
         patient.setPrivateKey("encrypted-pk");
         patient.setId("123");
+
         Conversation conversation = new Conversation();
         conversation.setExternalId(externalId);
         conversation.setMessages(new ArrayList<>());
         conversation.setPatient(patient);
 
+        ChatbotTemplate chatbotTemplate = new ChatbotTemplate();
+        chatbotTemplate.setId("template-001");
+
         when(conversationRepository.getConversationByExternalId(externalId))
                 .thenReturn(Optional.of(conversation));
 
-        when(promptBuilderService.getResponse(eq(false), any(List.class), eq(inputMessage)))
-                .thenReturn(mockResponse);
+        when(chatbotTemplateRepository.findByPatientId(patient.getId()))
+                .thenReturn(List.of(chatbotTemplate));
+
+        when(promptBuilderService.getResponse(
+                eq(false),
+                any(List.class),
+                eq(inputMessage),
+                eq(chatbotTemplate)
+        )).thenReturn(mockResponse);
 
         // Return the actual message passed into save(), not a dummy one
         when(messageRepository.save(any()))
@@ -91,6 +107,7 @@ public class MessageServiceTest {
             verify(conversationRepository, times(2)).getConversationByExternalId(externalId);
         }
     }
+
 
     @Test
     void generateAnswer_shouldThrowIfConversationNotFoundInitially() {
@@ -137,25 +154,37 @@ public class MessageServiceTest {
         conversation.setMessages(new ArrayList<>());
         conversation.setPatient(patient);
 
-        try (MockedStatic<CryptographyUtil> utilities = mockStatic(CryptographyUtil.class)) {
-            when(conversationRepository.getConversationByExternalId(externalId)).thenReturn(Optional.of(conversation));
-            when(promptBuilderService.getResponse(eq(false), any(List.class), eq(inputMessage)))
-                    .thenReturn(mockResponse);
+        ChatbotTemplate chatbotTemplate = new ChatbotTemplate();
+        chatbotTemplate.setId("template-001");
 
+        when(conversationRepository.getConversationByExternalId(externalId))
+                .thenReturn(Optional.of(conversation));
+
+        when(chatbotTemplateRepository.findByPatientId(patient.getId()))
+                .thenReturn(List.of(chatbotTemplate));
+
+        when(promptBuilderService.getResponse(
+                eq(false),
+                any(List.class),
+                eq(inputMessage),
+                eq(chatbotTemplate)
+        )).thenReturn(mockResponse);
+
+        // The real object that is passed to save and returned
+        Message newMessage = new Message();
+        Instant presetTime = Instant.ofEpochSecond(1704103200);
+        newMessage.setCreatedAt(presetTime);
+
+        when(messageRepository.save(any(Message.class))).thenAnswer(invocation -> {
+            Message arg = invocation.getArgument(0);
+            arg.setCreatedAt(presetTime); // simulate it being set before returned
+            return arg;
+        });
+
+        try (MockedStatic<CryptographyUtil> utilities = mockStatic(CryptographyUtil.class)) {
             utilities.when(() -> CryptographyUtil.decrypt("encrypted-pk")).thenReturn(mockKey);
             utilities.when(() -> CryptographyUtil.encrypt(inputMessage, mockKey)).thenReturn(encryptedMessage);
             utilities.when(() -> CryptographyUtil.encrypt(mockResponse, mockKey)).thenReturn(encryptedResponse);
-
-            // The real object that is passed to save and returned
-            Message newMessage = new Message();
-            Instant presetTime = Instant.ofEpochSecond(1704103200);
-            newMessage.setCreatedAt(presetTime);
-
-            when(messageRepository.save(any(Message.class))).thenAnswer(invocation -> {
-                Message arg = invocation.getArgument(0);
-                arg.setCreatedAt(presetTime); // simulate it being set before returned
-                return arg;
-            });
 
             // Act
             Message result = messageService.generateAnswer(patient, externalId, inputMessage);
@@ -165,6 +194,7 @@ public class MessageServiceTest {
             assertEquals(presetTime, result.getCreatedAt(), "CreatedAt should not have been changed");
         }
     }
+
 
     @Test
     void testParseMessagesFromConversation_staticDecryptionMocked() throws Exception {

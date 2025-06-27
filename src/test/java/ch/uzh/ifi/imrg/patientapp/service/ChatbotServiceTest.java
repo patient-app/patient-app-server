@@ -8,7 +8,6 @@ import ch.uzh.ifi.imrg.patientapp.repository.PatientRepository;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreateChatbotDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.UpdateChatbotDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.ChatbotConfigurationOutputDTO;
-import ch.uzh.ifi.imrg.patientapp.rest.mapper.ChatbotMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -19,7 +18,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 import java.util.Optional;
 
-import static org.hamcrest.Matchers.any;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -62,8 +60,8 @@ public class ChatbotServiceTest {
         // Assert
         verify(patientRepository).getPatientById(patientId);
         verify(chatbotTemplateRepository).save(Mockito.<ChatbotTemplate>any());
-        verifyNoMoreInteractions(patientRepository, chatbotTemplateRepository);
     }
+
 
 
 

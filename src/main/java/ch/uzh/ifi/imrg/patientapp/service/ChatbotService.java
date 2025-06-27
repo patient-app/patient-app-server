@@ -26,11 +26,17 @@ public class ChatbotService {
 
 
     public void createChatbot(String patientId, CreateChatbotDTO createChatbotDTO) {
-        ChatbotTemplate chatbotTemplate = ChatbotMapper.INSTANCE.convertCreateChatbotDTOToChatbotTemplate(createChatbotDTO);
         Patient patient = patientRepository.getPatientById(patientId);
         if (patient == null) {
-            throw new IllegalArgumentException("No patient found with ID: " + patientId);
+            throw new IllegalArgumentException("No patient found with this ID");
         }
+
+        List<ChatbotTemplate> existing = chatbotTemplateRepository.findByPatientId(patient.getId());
+        if (!existing.isEmpty()) {
+            throw new IllegalStateException("Chatbot template already exists for this patient: ");
+        }
+
+        ChatbotTemplate chatbotTemplate = ChatbotMapper.INSTANCE.convertCreateChatbotDTOToChatbotTemplate(createChatbotDTO);
         chatbotTemplate.setPatient(patient);
         chatbotTemplateRepository.save(chatbotTemplate);
     }

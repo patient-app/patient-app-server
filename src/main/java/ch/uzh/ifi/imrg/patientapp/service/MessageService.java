@@ -1,8 +1,10 @@
 package ch.uzh.ifi.imrg.patientapp.service;
 
+import ch.uzh.ifi.imrg.patientapp.entity.ChatbotTemplate;
 import ch.uzh.ifi.imrg.patientapp.entity.Conversation;
 import ch.uzh.ifi.imrg.patientapp.entity.Message;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
+import ch.uzh.ifi.imrg.patientapp.repository.ChatbotTemplateRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.ConversationRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.MessageRepository;
 import ch.uzh.ifi.imrg.patientapp.service.aiService.PromptBuilderService;
@@ -23,14 +25,16 @@ public class MessageService {
 
     private final MessageRepository messageRepository;
     private final ConversationRepository conversationRepository;
+    private final ChatbotTemplateRepository chatbotTemplateRepository;
 
     private final PromptBuilderService promptBuilderService;
     private final AuthorizationService authorizationService;
 
-    public MessageService(MessageRepository messageRepository, ConversationRepository conversationRepository,
-            PromptBuilderService promptBuilderService, AuthorizationService authorizationService) {
+    public MessageService(MessageRepository messageRepository, ConversationRepository conversationRepository, ChatbotTemplateRepository chatbotTemplateRepository,
+                          PromptBuilderService promptBuilderService, AuthorizationService authorizationService) {
         this.messageRepository = messageRepository;
         this.conversationRepository = conversationRepository;
+        this.chatbotTemplateRepository = chatbotTemplateRepository;
         this.promptBuilderService = promptBuilderService;
         this.authorizationService = authorizationService;
     }
@@ -70,7 +74,8 @@ public class MessageService {
         newMessage.setRequest(CryptographyUtil.encrypt(message, key));
 
         List<Map<String, String>> priorMessages = parseMessagesFromConversation(conversation, key);
-        String rawAnswer = promptBuilderService.getResponse(patient.isAdmin(), priorMessages, message);
+        List<ChatbotTemplate> chatbotTemplates = chatbotTemplateRepository.findByPatientId(patient.getId());
+        String rawAnswer = promptBuilderService.getResponse(patient.isAdmin(), priorMessages, message, chatbotTemplates.get(0));
 
         //extract the answer part from the response
         String regex = "</think>\\s*([\\s\\S]*)";

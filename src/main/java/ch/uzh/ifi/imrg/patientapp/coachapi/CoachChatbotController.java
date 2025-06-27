@@ -28,6 +28,12 @@ public class CoachChatbotController {
         chatbotService.createChatbot(patientId, createChatbotDTO);
     }
 
+    @ExceptionHandler(IllegalStateException.class)
+    @ResponseStatus(HttpStatus.CONFLICT) // or BAD_REQUEST if you prefer
+    public String handleIllegalState(IllegalStateException ex) {
+        return ex.getMessage();
+    }
+
     @GetMapping("/coach/patients/{patientId}/chatbot")
     @ResponseStatus(HttpStatus.OK)
     @SecurityRequirement(name = "X-Coach-Key")
