@@ -4,13 +4,17 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+import java.lang.reflect.Method;
 import java.time.Instant;
 import java.util.*;
 
 import ch.uzh.ifi.imrg.patientapp.entity.JournalEntry;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.repository.JournalEntryRepository;
+import ch.uzh.ifi.imrg.patientapp.repository.PatientRepository;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.JournalEntryRequestDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.output.CoachGetAllJournalEntriesDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.output.CoachJournalEntryOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.GetAllJournalEntriesDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.JournalEntryOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.utils.CryptographyUtil;
@@ -27,6 +31,9 @@ public class JournalEntryServiceTest {
 
     @Mock
     private JournalEntryRepository repo;
+
+    @Mock
+    private PatientRepository patientRepository;
 
     @InjectMocks
     private JournalEntryService service;
@@ -227,6 +234,113 @@ public class JournalEntryServiceTest {
         when(repo.findById("nope")).thenReturn(Optional.empty());
         ResponseStatusException ex = assertThrows(ResponseStatusException.class,
                 () -> service.deleteEntry(patient, "nope"));
+        assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
+    }
+
+    @Test
+    void decryptJournalDTO_shouldDecryptAllFields() throws Exception {
+        // prepare DTO
+        CoachJournalEntryOutputDTO dto = new CoachJournalEntryOutputDTO();
+        dto.setTitle("encT");
+        dto.setContent("encC");
+        dto.setTags(Set.of("encX", "encY"));
+
+        // stub decrypt static
+        try (MockedStatic<CryptographyUtil> crypto = mockStatic(CryptographyUtil.class)) {
+            crypto.when(() -> CryptographyUtil.decrypt("encT", "rawKey")).thenReturn("T");
+            crypto.when(() -> CryptographyUtil.decrypt("encC", "rawKey")).thenReturn("C");
+            crypto.when(() -> CryptographyUtil.decrypt("encX", "rawKey")).thenReturn("X");
+            crypto.when(() -> CryptographyUtil.decrypt("encY", "rawKey")).thenReturn("Y");
+
+            // invoke private
+            Method m = JournalEntryService.class.getDeclaredMethod(
+                    "decryptJournalDTO", CoachJournalEntryOutputDTO.class, String.class);
+            m.setAccessible(true);
+            m.invoke(service, dto, "rawKey");
+
+            assertEquals("T", dto.getTitle());
+            assertEquals("C", dto.getContent());
+            assertEquals(Set.of("X", "Y"), dto.getTags());
+        }
+    }
+
+    @Test
+    void getEntriesForCoach_shouldMapAndDecrypt() {
+        // given
+        JournalEntry e = new JournalEntry();
+        e.setId("e1");
+        e.setPatient(patient);
+        e.setTitle("encTitle");
+        e.setCreatedAt(Instant.now());
+        e.setUpdatedAt(Instant.now());
+        e.setTags(Set.of("encA", "encB"));
+        when(repo.findAllByPatientIdAndSharedWithTherapistTrue("p1"))
+                .thenReturn(List.of(e));
+        when(patientRepository.getPatientById("p1")).thenReturn(patient);
+
+        try (MockedStatic<CryptographyUtil> crypto = mockStatic(CryptographyUtil.class)) {
+            crypto.when(() -> CryptographyUtil.decrypt("encKey")).thenReturn("rawKey");
+            crypto.when(() -> CryptographyUtil.decrypt("encTitle", "rawKey")).thenReturn("Title");
+            crypto.when(() -> CryptographyUtil.decrypt("encA", "rawKey")).thenReturn("A");
+            crypto.when(() -> CryptographyUtil.decrypt("encB", "rawKey")).thenReturn("B");
+
+            // when
+            List<CoachGetAllJournalEntriesDTO> list = service.getEntriesForCoach("p1");
+
+            // then
+            assertEquals(1, list.size());
+            CoachGetAllJournalEntriesDTO dto = list.get(0);
+            assertEquals("e1", dto.getId());
+            assertEquals("Title", dto.getTitle());
+            assertEquals(Set.of("A", "B"), dto.getTags());
+        }
+    }
+
+    @Test
+    void getOneEntryForCoach_success_shouldDecryptAndReturn() {
+        // given
+        JournalEntry e = new JournalEntry();
+        e.setId("e2");
+        e.setPatient(patient);
+        e.setTitle("encT");
+        e.setContent("encC");
+        e.setTags(Set.of("encX"));
+        when(repo.findByIdAndSharedWithTherapistTrue("e2"))
+                .thenReturn(Optional.of(e));
+        when(patientRepository.getPatientById("p1")).thenReturn(patient);
+
+        try (MockedStatic<CryptographyUtil> crypto = mockStatic(CryptographyUtil.class)) {
+            crypto.when(() -> CryptographyUtil.decrypt("encKey")).thenReturn("rawKey");
+            crypto.when(() -> CryptographyUtil.decrypt("encT", "rawKey")).thenReturn("T");
+            crypto.when(() -> CryptographyUtil.decrypt("encC", "rawKey")).thenReturn("C");
+            crypto.when(() -> CryptographyUtil.decrypt("encX", "rawKey")).thenReturn("X");
+
+            // when
+            CoachJournalEntryOutputDTO dto = service.getOneEntryForCoach("p1", "e2");
+
+            // then
+            assertEquals("e2", dto.getId());
+            assertEquals("T", dto.getTitle());
+            assertEquals("C", dto.getContent());
+            assertEquals(Set.of("X"), dto.getTags());
+        }
+    }
+
+    @Test
+    void getOneEntryForCoach_wrongPatient_shouldThrow() {
+        // given entry belonging to some other patient
+        Patient other = new Patient();
+        other.setId("other");
+        JournalEntry e = new JournalEntry();
+        e.setId("e3");
+        e.setPatient(other);
+        when(repo.findByIdAndSharedWithTherapistTrue("e3"))
+                .thenReturn(Optional.of(e));
+        when(patientRepository.getPatientById("p1")).thenReturn(patient);
+
+        // then
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> service.getOneEntryForCoach("p1", "e3"));
         assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
     }
 }

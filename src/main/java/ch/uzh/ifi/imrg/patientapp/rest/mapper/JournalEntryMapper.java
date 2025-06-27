@@ -6,6 +6,8 @@ import org.mapstruct.factory.Mappers;
 
 import ch.uzh.ifi.imrg.patientapp.entity.JournalEntry;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.JournalEntryRequestDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.output.CoachGetAllJournalEntriesDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.output.CoachJournalEntryOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.GetAllJournalEntriesDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.JournalEntryOutputDTO;
 
@@ -23,5 +25,9 @@ public interface JournalEntryMapper {
     JournalEntry convertJournalEntryRequestDTOToEntity(JournalEntryRequestDTO journalEntryRequestDTO);
 
     GetAllJournalEntriesDTO convertEntitytoGetAllJournalEntriesDTO(JournalEntry entry);
+
+    CoachGetAllJournalEntriesDTO convertEntityToCoachGetAllJournalEntriesDTO(JournalEntry entry);
+
+    CoachJournalEntryOutputDTO convertEntityToCoachJournalEntryOutputDTO(JournalEntry entry);
 
 }
