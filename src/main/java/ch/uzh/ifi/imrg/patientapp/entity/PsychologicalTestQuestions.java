@@ -1,0 +1,25 @@
+package ch.uzh.ifi.imrg.patientapp.entity;
+
+
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.util.UUID;
+
+@Getter
+@Setter
+@Entity
+public class PsychologicalTestQuestions {
+
+    @Id
+    @Column(unique = true)
+    private String id = UUID.randomUUID().toString();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "psychological_test_id", referencedColumnName = "id", nullable = false)
+    private PsychologicalTest psychologicalTest;
+
+    String question;
+    int score;
+}
