@@ -9,9 +9,12 @@ import ch.uzh.ifi.imrg.patientapp.entity.PsychologicalTestQuestions;
 import ch.uzh.ifi.imrg.patientapp.repository.PsychologicalTestRepository;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PsychologicalTestInputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseInputDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestNameOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.PsychologicalTestMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @Transactional
@@ -36,6 +39,10 @@ public class PsychologicalTestService {
         }
 
         psychologicalTestRepository.save(psychologicalTest);
+    }
+
+    public List<PsychologicalTestNameOutputDTO> getAllTestNamesForPatient(String patientId) {
+        return psychologicalTestRepository.findAllByPatientId(patientId);
     }
 
 }
