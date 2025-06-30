@@ -59,4 +59,5 @@ public class CoachExerciseController {
                                                                      @PathVariable String exerciseId) {
         return exerciseService.getExerciseInformation(patientId, exerciseId);
     }
+
 }

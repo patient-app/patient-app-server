@@ -24,4 +24,10 @@ public class ExerciseInformation {
     private Instant startTime;
     private Instant endTime;
     private String feedback;
+
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private ExerciseMoodContainer exerciseMoodBefore;
+
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private ExerciseMoodContainer exerciseMoodAfter;
 }

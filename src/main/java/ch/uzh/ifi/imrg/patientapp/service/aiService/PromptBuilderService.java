@@ -1,11 +1,16 @@
 package ch.uzh.ifi.imrg.patientapp.service.aiService;
 
+import ch.uzh.ifi.imrg.patientapp.entity.ChatbotTemplate;
+import ch.uzh.ifi.imrg.patientapp.repository.ChatbotTemplateRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -15,17 +20,22 @@ public class PromptBuilderService {
     public PromptBuilderService(ChatGPTService chatGPTService) {
         this.chatGPTService = chatGPTService;
     }
+    private String getIntroduction(ChatbotTemplate chatbotTemplate) {
+            return String.format(
+                    "Act as a %s, who cares about the other person. Your tone should be %s. You will interact with a human, that needs someone to talk to. You can be a friend, a family member, a therapist, or anyone else. You can ask questions, give advice, or just listen. Remember, you are not a therapist, but a friend. Please keep your own responses to the person short. No longer than 200 characters.",
+                    chatbotTemplate.getChatbotRole(),
+                    chatbotTemplate.getChatbotTone()
+            );
 
-    private String getIntroduction(){
-        return "Act as a person, who cares about the other person. You will interact with a human, that needs someone to talk to. You can be a friend, a family member, a therapist, or anyone else. You can ask questions, give advice, or just listen. Remember, you are not a therapist, but a friend. Please keep your own responses to the person short. No longer than 200 characters.";
     }
-    public String getResponse(boolean isAdmin, List<Map<String, String>> priorMessages,String message) {
+
+    public String getResponse(boolean isAdmin, List<Map<String, String>> priorMessages,String message, ChatbotTemplate chatbotTemplate) {
         List<Map<String, String>> messages = new ArrayList<>();
 
         // System prompt
         messages.add(Map.of(
                 "role", "system",
-                "content", getIntroduction()
+                "content", getIntroduction(chatbotTemplate)
         ));
 
         // Add prior chat history
@@ -38,19 +48,9 @@ public class PromptBuilderService {
                 "role", "user",
                 "content", message
         ));
+        System.out.println("system prompt: " + getIntroduction(chatbotTemplate));
 
         return chatGPTService.getResponse(messages, isAdmin);
     }
 
-
-    /* Single string implementation
-    public String getResponse(boolean isAdmin, String message){
-        String prompt = getIntroduction();
-        prompt += " " + message;
-        System.out.println("Prompt:");
-        System.out.println(prompt);
-        return chatGPTService.getResponse(prompt, isAdmin);
-
-    }
-    */
 }
