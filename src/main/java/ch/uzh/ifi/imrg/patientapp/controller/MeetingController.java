@@ -1,4 +1,4 @@
-package ch.uzh.ifi.imrg.patientapp.coachapi;
+package ch.uzh.ifi.imrg.patientapp.controller;
 
 import java.util.List;
 import java.util.stream.Collectors;
