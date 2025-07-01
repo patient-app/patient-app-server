@@ -1,9 +1,11 @@
 package ch.uzh.ifi.imrg.patientapp.entity;
 
+import ch.uzh.ifi.imrg.patientapp.entity.Document.PatientDocument;
 import ch.uzh.ifi.imrg.patientapp.entity.Exercise.Exercise;
 import jakarta.persistence.*;
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -72,6 +74,9 @@ public class Patient implements Serializable {
 
     @OneToOne(mappedBy = "patient", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
     private ChatbotTemplate chatbotTemplate;
+
+    @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PatientDocument> patientDocuments = new ArrayList<>();
 
     @Column(name = "coach_access_key", nullable = false)
     private String coachAccessKey;
