@@ -114,32 +114,39 @@ class PsychologicalTestServiceTest {
         verify(repository).findAllByPatientId(patientId);
         verifyNoMoreInteractions(repository);
     }
-
     @Test
     void getPsychologicalTestResults_shouldReturnListFromRepository() {
         String patientId = "p123";
         String testName = "DepressionTest";
 
-        PsychologicalTestOutputDTO dto1 = new PsychologicalTestOutputDTO("DepressionTest");
-        dto1.setDescription("Description1");
-        dto1.setPatientId(patientId);
-        dto1.setQuestions(List.of());
+        PsychologicalTest test1 = new PsychologicalTest();
+        test1.setName("DepressionTest");
+        test1.setDescription("Description1");
+        Patient patient = new Patient();
+        patient.setId(patientId);
+        test1.setPatient(patient);
+        test1.setPsychologicalTestsQuestions(List.of());
 
-        PsychologicalTestOutputDTO dto2 = new PsychologicalTestOutputDTO("DepressionTest");
-        dto2.setDescription("Description2");
-        dto2.setPatientId(patientId);
-        dto2.setQuestions(List.of());
+        PsychologicalTest test2 = new PsychologicalTest();
+        test2.setName("DepressionTest");
+        test2.setDescription("Description2");
+        test2.setPatient(patient);
+        test2.setPsychologicalTestsQuestions(List.of());
 
-        List<PsychologicalTestOutputDTO> expected = List.of(dto1, dto2);
+        List<PsychologicalTest> returnedEntities = List.of(test1, test2);
 
-        when(repository.findAllByPatientIdAndName(patientId, testName)).thenReturn(expected);
+        when(repository.findAllByPatientIdAndName(patientId, testName)).thenReturn(returnedEntities);
 
         List<PsychologicalTestOutputDTO> result = service.getPsychologicalTestResults(patientId, testName);
 
-        assertEquals(expected, result);
+        assertEquals(2, result.size());
+        assertEquals("Description1", result.get(0).getDescription());
+        assertEquals("Description2", result.get(1).getDescription());
+
         verify(repository).findAllByPatientIdAndName(patientId, testName);
         verifyNoMoreInteractions(repository);
     }
+
 
 }
 
