@@ -73,6 +73,9 @@ public class Patient implements Serializable {
     @OneToOne(mappedBy = "patient", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
     private ChatbotTemplate chatbotTemplate;
 
+    @OneToMany(mappedBy = "patient", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<PsychologicalTest> psychologicalTests;
+
     @Column(name = "coach_access_key", nullable = false)
     private String coachAccessKey;
 
