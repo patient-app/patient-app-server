@@ -20,7 +20,6 @@ public class PsychologicalTestOutputDTO {
 
     private List<PsychologicalTestQuestionOutputDTO> questions;
 
-
     public PsychologicalTestOutputDTO(String name) {
         this.name = name;
     }
