@@ -1,10 +1,8 @@
 package ch.uzh.ifi.imrg.patientapp.controller;
 
 
-import ch.uzh.ifi.imrg.patientapp.entity.Conversation;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PsychologicalTestInputDTO;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.output.CreateConversationOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.service.PatientService;
 import ch.uzh.ifi.imrg.patientapp.service.PsychologicalTestService;
 import jakarta.servlet.http.HttpServletRequest;

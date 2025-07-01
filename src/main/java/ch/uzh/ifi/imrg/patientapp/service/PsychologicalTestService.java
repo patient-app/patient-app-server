@@ -1,14 +1,11 @@
 package ch.uzh.ifi.imrg.patientapp.service;
 
 
-import ch.uzh.ifi.imrg.patientapp.entity.Exercise.Exercise;
-import ch.uzh.ifi.imrg.patientapp.entity.Exercise.ExerciseElement;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.entity.PsychologicalTest;
 import ch.uzh.ifi.imrg.patientapp.entity.PsychologicalTestQuestions;
 import ch.uzh.ifi.imrg.patientapp.repository.PsychologicalTestRepository;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PsychologicalTestInputDTO;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseInputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestNameOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.PsychologicalTestMapper;
@@ -45,6 +42,7 @@ public class PsychologicalTestService {
     public List<PsychologicalTestNameOutputDTO> getAllTestNamesForPatient(String patientId) {
         return psychologicalTestRepository.findAllByPatientId(patientId);
     }
+
     public List<PsychologicalTestOutputDTO> getPsychologicalTestResults(String patientId, String psychologicalTestName) {
         return psychologicalTestRepository.findAllByPatientIdAndName(patientId, psychologicalTestName);
     }

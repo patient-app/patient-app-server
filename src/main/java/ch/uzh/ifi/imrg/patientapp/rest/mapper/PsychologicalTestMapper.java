@@ -7,6 +7,8 @@ import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PsychologicalTestQuestionInputD
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestQuestionOutputDTO;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Mappings;
 import org.mapstruct.factory.Mappers;
 
 import java.util.List;
@@ -15,10 +17,13 @@ import java.util.List;
 public interface PsychologicalTestMapper {
     PsychologicalTestMapper INSTANCE = Mappers.getMapper(PsychologicalTestMapper.class);
 
+    @Mapping(source = "questions", target = "psychologicalTestsQuestions")
     PsychologicalTest convertPsychologicalTestInputDTOToPsychologicalTest(PsychologicalTestInputDTO dto);
     PsychologicalTestQuestions convertPsychologicalTestQuestionInputDTOToPsychologicalTestQuestions(PsychologicalTestQuestionInputDTO dto);
     List<PsychologicalTestQuestions> convertPsychologicalTestQuestionInputDTOsToPsychologicalTestQuestions(List<PsychologicalTestQuestionInputDTO> dtos);
 
+
+    @Mapping(source = "psychologicalTestsQuestions", target = "questions")
     PsychologicalTestOutputDTO convertPsychologicalTestToPsychologicalTestOutputDTO(PsychologicalTest entity);
     PsychologicalTestQuestionOutputDTO convertPsychologicalTestQuestionToPsychologicalTestQuestionOutputDTO(PsychologicalTestQuestions entity);
     List<PsychologicalTestQuestionOutputDTO> convertPsychologicalTestQuestionsToPsychologicalTestQuestionOutputDTOs(List<PsychologicalTestQuestions> entities);
