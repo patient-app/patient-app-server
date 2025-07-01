@@ -13,9 +13,7 @@ public class PsychologicalTestInputDTO {
 
     private String description;
 
-    // IDs of the questions to create with the test
     private List<PsychologicalTestQuestionInputDTO> questions;
 
-    // Optionally, the patient id this test belongs to
     private String patientId;
 }

@@ -1,8 +1,7 @@
 package ch.uzh.ifi.imrg.patientapp.coachapi;
 
-import ch.uzh.ifi.imrg.patientapp.entity.PsychologicalTest;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestNameOutputDTO;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExerciseInformationOutputDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.service.PsychologicalTestService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.http.HttpStatus;
@@ -23,7 +22,7 @@ public class CoachPsychologicalTestController {
     @GetMapping("/coach/patients/{patientId}/psychological-tests")
     @ResponseStatus(HttpStatus.OK)
     @SecurityRequirement(name = "X-Coach-Key")
-    public List<PsychologicalTestNameOutputDTO> getPsychologicalTestResults(@PathVariable String patientId) {
+    public List<PsychologicalTestNameOutputDTO> getPsychologicalTestNames(@PathVariable String patientId) {
         return psychologicalTestService.getAllTestNamesForPatient(patientId);
     }
 
@@ -31,7 +30,7 @@ public class CoachPsychologicalTestController {
     @ResponseStatus(HttpStatus.OK)
     @SecurityRequirement(name = "X-Coach-Key")
     public List<PsychologicalTestOutputDTO> getPsychologicalTestResults(@PathVariable String patientId,
-                                                          @PathVariable String exerciseId) {
-        return psychologicalTestService.getPsyhologicalTestResults(patientId, exerciseId);
+                                                                        @PathVariable String psychologicalTestName) {
+        return psychologicalTestService.getPsychologicalTestResults(patientId, psychologicalTestName);
     }
 }

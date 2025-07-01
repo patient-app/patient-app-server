@@ -13,6 +13,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity
+@Table(name = "psychological_tests")
 public class PsychologicalTest {
     @Id
     @Column(unique = true)
@@ -26,7 +27,7 @@ public class PsychologicalTest {
     @JoinColumn(name = "patient_id", referencedColumnName = "id", nullable = false)
     private Patient patient;
 
-    @OneToMany(mappedBy = "psychological_test", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(mappedBy = "psychologicalTest", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<PsychologicalTestQuestions> psychologicalTestsQuestions;
 
     String name;
