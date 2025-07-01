@@ -44,7 +44,10 @@ public class PsychologicalTestService {
     }
 
     public List<PsychologicalTestOutputDTO> getPsychologicalTestResults(String patientId, String psychologicalTestName) {
-        return psychologicalTestRepository.findAllByPatientIdAndName(patientId, psychologicalTestName);
+        return psychologicalTestRepository.findAllByPatientIdAndName(patientId, psychologicalTestName)
+                .stream()
+                .map(PsychologicalTestMapper.INSTANCE::convertPsychologicalTestToPsychologicalTestOutputDTO)
+                .toList();
     }
 
 }

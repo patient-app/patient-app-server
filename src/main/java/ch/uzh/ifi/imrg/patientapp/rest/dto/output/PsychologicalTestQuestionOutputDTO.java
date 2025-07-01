@@ -10,4 +10,5 @@ public class PsychologicalTestQuestionOutputDTO {
     private String question;
 
     private int score;
+
 }

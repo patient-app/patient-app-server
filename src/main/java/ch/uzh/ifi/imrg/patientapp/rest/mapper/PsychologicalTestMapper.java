@@ -24,6 +24,7 @@ public interface PsychologicalTestMapper {
 
 
     @Mapping(source = "psychologicalTestsQuestions", target = "questions")
+    @Mapping(source = "patient.id", target = "patientId")
     PsychologicalTestOutputDTO convertPsychologicalTestToPsychologicalTestOutputDTO(PsychologicalTest entity);
     PsychologicalTestQuestionOutputDTO convertPsychologicalTestQuestionToPsychologicalTestQuestionOutputDTO(PsychologicalTestQuestions entity);
     List<PsychologicalTestQuestionOutputDTO> convertPsychologicalTestQuestionsToPsychologicalTestQuestionOutputDTOs(List<PsychologicalTestQuestions> entities);

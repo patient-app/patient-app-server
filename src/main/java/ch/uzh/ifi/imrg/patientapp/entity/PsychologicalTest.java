@@ -19,7 +19,7 @@ public class PsychologicalTest {
     @Column(unique = true)
     private String id = UUID.randomUUID().toString();
 
-    @Column(name = "created_at", updatable = false)
+    @Column(name = "completed_at", updatable = false)
     @CreationTimestamp
     private Instant completedAt;
 
@@ -27,7 +27,7 @@ public class PsychologicalTest {
     @JoinColumn(name = "patient_id", referencedColumnName = "id", nullable = false)
     private Patient patient;
 
-    @OneToMany(mappedBy = "psychologicalTest", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(mappedBy = "psychologicalTest", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PsychologicalTestQuestions> psychologicalTestsQuestions;
 
     String name;

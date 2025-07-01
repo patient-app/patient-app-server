@@ -26,10 +26,8 @@ public class CoachPsychologicalTestControllerTest {
     void getPsychologicalTestNames_shouldCallServiceAndReturnList() {
         // Arrange
         String patientId = "patient123";
-        PsychologicalTestNameOutputDTO test1 = new PsychologicalTestNameOutputDTO();
-        test1.setName("Test1");
-        PsychologicalTestNameOutputDTO test2 = new PsychologicalTestNameOutputDTO();
-        test2.setName("Test2");
+        PsychologicalTestNameOutputDTO test1 = new PsychologicalTestNameOutputDTO("Test1");
+        PsychologicalTestNameOutputDTO test2 = new PsychologicalTestNameOutputDTO("Test2");
         List<PsychologicalTestNameOutputDTO> expected = List.of(test1, test2);
 
         when(psychologicalTestService.getAllTestNamesForPatient(patientId)).thenReturn(expected);

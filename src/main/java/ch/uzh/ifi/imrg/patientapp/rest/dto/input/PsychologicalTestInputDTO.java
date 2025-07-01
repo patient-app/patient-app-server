@@ -15,5 +15,4 @@ public class PsychologicalTestInputDTO {
 
     private List<PsychologicalTestQuestionInputDTO> questions;
 
-    private String patientId;
 }

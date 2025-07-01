@@ -100,10 +100,9 @@ class PsychologicalTestServiceTest {
     void getAllTestNamesForPatient_shouldReturnListFromRepository() {
         String patientId = "p123";
 
-        PsychologicalTestNameOutputDTO dto1 = new PsychologicalTestNameOutputDTO();
-        dto1.setName("Test1");
-        PsychologicalTestNameOutputDTO dto2 = new PsychologicalTestNameOutputDTO();
-        dto2.setName("Test2");
+        PsychologicalTestNameOutputDTO dto1 = new PsychologicalTestNameOutputDTO("Test1");
+
+        PsychologicalTestNameOutputDTO dto2 = new PsychologicalTestNameOutputDTO("Test2");
 
         List<PsychologicalTestNameOutputDTO> expected = List.of(dto1, dto2);
 

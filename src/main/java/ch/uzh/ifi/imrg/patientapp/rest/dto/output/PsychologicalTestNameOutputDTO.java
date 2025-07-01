@@ -8,4 +8,7 @@ import lombok.Setter;
 @Setter
 public class PsychologicalTestNameOutputDTO {
     private String name;
+    public PsychologicalTestNameOutputDTO(String name) {
+        this.name = name;
+    }
 }
