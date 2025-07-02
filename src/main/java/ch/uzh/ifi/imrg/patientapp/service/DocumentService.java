@@ -108,4 +108,12 @@ public class DocumentService {
         }
 
     }
+
+    public void removeAllDocumentsForPatient(String patientId) {
+        List<Document> docs = listDocumentsForPatient(patientId);
+
+        for (Document doc : docs) {
+            removeDocumentForPatient(patientId, doc.getId());
+        }
+    }
 }
