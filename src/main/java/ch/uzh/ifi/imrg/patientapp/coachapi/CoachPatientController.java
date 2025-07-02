@@ -2,6 +2,7 @@ package ch.uzh.ifi.imrg.patientapp.coachapi;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreatePatientDTO;
@@ -30,7 +31,14 @@ public class CoachPatientController {
             @Valid @RequestBody CreatePatientDTO patientInputDTO,
             HttpServletRequest httpServletRequest,
             HttpServletResponse httpServletResponse) {
-        // TODO: compare key in header and coachaccesskey in patient
+
+        String rawKey = httpServletRequest.getHeader("X-Coach-Key");
+
+        if (!patientInputDTO.getCoachAccessKey().equals(rawKey)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "coachAccessKey in request body does not match X-Coach-Key in header");
+        }
+
         Patient patient = PatientMapper.INSTANCE.convertCreatePatientDTOToEntity(patientInputDTO);
         Patient createdPatient = patientService.registerPatient(patient, httpServletRequest, httpServletResponse);
 

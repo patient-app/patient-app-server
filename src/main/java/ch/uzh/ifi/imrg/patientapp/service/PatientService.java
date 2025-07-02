@@ -26,11 +26,14 @@ import static ch.uzh.ifi.imrg.patientapp.utils.CryptographyUtil.decrypt;
 public class PatientService {
 
     private final PatientRepository patientRepository;
+    private final DocumentService documentService;
 
     @Autowired
     public PatientService(
-            @Qualifier("patientRepository") PatientRepository patientRepository) {
+            @Qualifier("patientRepository") PatientRepository patientRepository,
+            DocumentService documentService) {
         this.patientRepository = patientRepository;
+        this.documentService = documentService;
     }
 
     public Patient getCurrentlyLoggedInPatient(HttpServletRequest httpServletRequest) {
@@ -125,6 +128,9 @@ public class PatientService {
         if (!patientRepository.existsById(patientId)) {
             throw new EntityNotFoundException("Patient " + patientId + " not found");
         }
+
+        documentService.removeAllDocumentsForPatient(patientId);
+
         patientRepository.deleteById(patientId);
     }
 
