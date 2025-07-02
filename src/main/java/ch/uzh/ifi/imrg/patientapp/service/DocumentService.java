@@ -59,27 +59,12 @@ public class DocumentService {
 
         Document document = documentRepository.findBySha256(sha256).orElseGet(() -> {
             Document d = new Document();
-            d.setId(null);
             d.setFilename(file.getOriginalFilename());
             d.setContentType(file.getContentType());
             d.setData(bytes);
             d.setSha256(sha256);
             return documentRepository.save(d);
         });
-
-        // Optional<Document> existing = documentRepository.findBySha256(sha256);
-        // Document document;
-        // if (existing.isPresent()) {
-        // document = existing.get();
-        // } else {
-        // Document d = new Document();
-        // d.setFilename(file.getOriginalFilename());
-        // d.setContentType(file.getContentType());
-        // d.setData(bytes);
-        // d.setSha256(sha256);
-        // document = documentRepository.save(d); // only new entity ever goes through
-        // save()
-        // }
 
         patientDocumentRepository.save(new PatientDocument(patient, document));
 

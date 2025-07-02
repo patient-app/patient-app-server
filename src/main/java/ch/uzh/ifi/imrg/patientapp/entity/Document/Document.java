@@ -18,7 +18,7 @@ import org.hibernate.annotations.CreationTimestamp;
 public class Document {
 
     @Id
-    @GeneratedValue
+    @Column
     private String id = UUID.randomUUID().toString();
 
     @Column(nullable = false)
@@ -37,8 +37,5 @@ public class Document {
     @Column(nullable = false, updatable = false)
     @CreationTimestamp
     private Instant uploadedAt;
-
-    @Version
-    private long version;
 
 }
