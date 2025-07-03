@@ -31,10 +31,6 @@ public abstract class Conversation implements Serializable {
     @JoinColumn(name = "patient_id", nullable = false)
     private Patient patient;
 
-    @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "chatbot_template_id")
-    private ChatbotTemplate chatbotTemplate;
-
     @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Message> messages = new ArrayList<>();
 
