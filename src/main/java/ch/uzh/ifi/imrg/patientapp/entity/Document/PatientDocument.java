@@ -31,6 +31,9 @@ public class PatientDocument {
     @JoinColumn(name = "document_id", nullable = false)
     private Document document;
 
+    @OneToOne(mappedBy = "patientDocument", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private DocumentConversation conversation;
+
     @Column(nullable = false, updatable = false)
     @CreationTimestamp
     private Instant grantedAt;
@@ -40,5 +43,6 @@ public class PatientDocument {
         this.document = document;
         this.id.setPatientId(patient.getId());
         this.id.setDocumentId(document.getId());
+        this.conversation = new DocumentConversation(this);
     }
 }
