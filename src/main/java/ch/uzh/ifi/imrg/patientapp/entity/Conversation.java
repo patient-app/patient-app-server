@@ -16,6 +16,7 @@ import org.hibernate.annotations.CreationTimestamp;
 @Setter
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
+@DiscriminatorColumn(name = "conversation_type")
 @Table(name = "conversations")
 public abstract class Conversation implements Serializable {
 
