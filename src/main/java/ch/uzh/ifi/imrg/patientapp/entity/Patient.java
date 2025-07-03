@@ -61,7 +61,7 @@ public class Patient implements Serializable {
     private String privateKey;
 
     @OneToMany(mappedBy = "patient", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
-    private List<Conversation> conversations;
+    private List<GeneralConversation> conversations;
 
     @OneToMany(mappedBy = "patient", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<Exercise> exercises;

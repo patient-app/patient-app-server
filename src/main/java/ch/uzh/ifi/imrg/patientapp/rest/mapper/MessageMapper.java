@@ -8,13 +8,10 @@ import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 import org.springframework.stereotype.Component;
 
-
 @Mapper
 public interface MessageMapper {
     MessageMapper INSTANCE = Mappers.getMapper(MessageMapper.class);
 
-
-    @Mapping(source ="externalId", target = "id")
     @Mapping(source = "externalConversationId", target = "conversationId")
     @Mapping(source = "response", target = "responseMessage")
     @Mapping(source = "request", target = "requestMessage")

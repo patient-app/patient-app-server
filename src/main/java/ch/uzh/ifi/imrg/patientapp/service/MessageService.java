@@ -1,7 +1,7 @@
 package ch.uzh.ifi.imrg.patientapp.service;
 
 import ch.uzh.ifi.imrg.patientapp.entity.ChatbotTemplate;
-import ch.uzh.ifi.imrg.patientapp.entity.Conversation;
+import ch.uzh.ifi.imrg.patientapp.entity.GeneralConversation;
 import ch.uzh.ifi.imrg.patientapp.entity.Message;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.repository.ChatbotTemplateRepository;
@@ -30,8 +30,9 @@ public class MessageService {
     private final PromptBuilderService promptBuilderService;
     private final AuthorizationService authorizationService;
 
-    public MessageService(MessageRepository messageRepository, ConversationRepository conversationRepository, ChatbotTemplateRepository chatbotTemplateRepository,
-                          PromptBuilderService promptBuilderService, AuthorizationService authorizationService) {
+    public MessageService(MessageRepository messageRepository, ConversationRepository conversationRepository,
+            ChatbotTemplateRepository chatbotTemplateRepository,
+            PromptBuilderService promptBuilderService, AuthorizationService authorizationService) {
         this.messageRepository = messageRepository;
         this.conversationRepository = conversationRepository;
         this.chatbotTemplateRepository = chatbotTemplateRepository;
@@ -39,7 +40,8 @@ public class MessageService {
         this.authorizationService = authorizationService;
     }
 
-    private static List<Map<String, String>> parseMessagesFromConversation(Conversation conversation, String key) {
+    private static List<Map<String, String>> parseMessagesFromConversation(GeneralConversation conversation,
+            String key) {
         List<Map<String, String>> priorMessages = new ArrayList<>();
 
         for (Message msg : conversation.getMessages()) {
@@ -60,11 +62,10 @@ public class MessageService {
         return priorMessages;
     }
 
-    public Message generateAnswer(Patient patient, String externalConversationId, String message) {
+    public Message generateAnswer(Patient patient, String conversationId, String message) {
 
-        Optional<Conversation> optionalConversation = conversationRepository
-                .getConversationByExternalId(externalConversationId);
-        Conversation conversation = optionalConversation
+        Optional<GeneralConversation> optionalConversation = conversationRepository.findById(conversationId);
+        GeneralConversation conversation = optionalConversation
                 .orElseThrow(() -> new IllegalArgumentException("Conversation not found"));
         authorizationService.checkConversationAccess(conversation, patient,
                 "You are trying to send a message to another persons chat.");
@@ -75,9 +76,10 @@ public class MessageService {
 
         List<Map<String, String>> priorMessages = parseMessagesFromConversation(conversation, key);
         List<ChatbotTemplate> chatbotTemplates = chatbotTemplateRepository.findByPatientId(patient.getId());
-        String rawAnswer = promptBuilderService.getResponse(patient.isAdmin(), priorMessages, message, chatbotTemplates.get(0));
+        String rawAnswer = promptBuilderService.getResponse(patient.isAdmin(), priorMessages, message,
+                chatbotTemplates.get(0));
 
-        //extract the answer part from the response
+        // extract the answer part from the response
         String regex = "</think>\\s*([\\s\\S]*)";
         Pattern pattern = Pattern.compile(regex, Pattern.DOTALL);
         Matcher matcher = pattern.matcher(rawAnswer);
@@ -99,7 +101,7 @@ public class MessageService {
         messageRepository.save(newMessage);
         messageRepository.flush();
 
-    Conversation refreshedConversation = conversationRepository.getConversationByExternalId(externalConversationId)
+        GeneralConversation refreshedConversation = conversationRepository.findById(conversationId)
                 .orElseThrow(() -> new IllegalArgumentException("Conversation not found"));
 
         // Make a frontend version
@@ -108,7 +110,7 @@ public class MessageService {
         frontendMessage.setConversation(null);
         frontendMessage.setResponse(answer);
         frontendMessage.setRequest(message);
-        frontendMessage.setExternalConversationId(refreshedConversation.getExternalId());
+        frontendMessage.setExternalConversationId(refreshedConversation.getId());
         frontendMessage.setExternalId(newMessage.getExternalId());
         frontendMessage.setCreatedAt(newMessage.getCreatedAt());
         return frontendMessage;

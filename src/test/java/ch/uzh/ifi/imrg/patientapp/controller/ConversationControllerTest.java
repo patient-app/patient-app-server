@@ -1,6 +1,6 @@
 package ch.uzh.ifi.imrg.patientapp.controller;
 
-import ch.uzh.ifi.imrg.patientapp.entity.Conversation;
+import ch.uzh.ifi.imrg.patientapp.entity.GeneralConversation;
 import ch.uzh.ifi.imrg.patientapp.entity.Message;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.repository.ConversationRepository;
@@ -61,8 +61,8 @@ public class ConversationControllerTest {
     @Test
     void createConversation_shouldReturnOutputDTO() {
         Patient patient = new Patient();
-        Conversation conversation = new Conversation();
-        conversation.setExternalId("12345");
+        GeneralConversation conversation = new GeneralConversation();
+        conversation.setId("12345");
 
         when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
         when(conversationService.createConversation(patient)).thenReturn(conversation);
@@ -96,8 +96,8 @@ public class ConversationControllerTest {
         Patient patient = new Patient();
         patient.setPrivateKey("encKey");
 
-        Conversation conversation = new Conversation();
-        conversation.setExternalId("cid123");
+        GeneralConversation conversation = new GeneralConversation();
+        conversation.setId("cid123");
 
         Message message = new Message();
         message.setRequest("encReq");
@@ -105,7 +105,7 @@ public class ConversationControllerTest {
         conversation.setMessages(Collections.singletonList(message));
 
         when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
-        when(conversationService.getAllMessagesFromConversation("cid123",patient)).thenReturn(conversation);
+        when(conversationService.getAllMessagesFromConversation("cid123", patient)).thenReturn(conversation);
 
         try (var cryptoMock = mockStatic(CryptographyUtil.class)) {
             cryptoMock.when(() -> CryptographyUtil.decrypt("encKey")).thenReturn("plainKey");
@@ -121,17 +121,16 @@ public class ConversationControllerTest {
         }
     }
 
-
     @Test
     void nameConversationDTO_shouldReturnMappedConversationList() {
         // Arrange
         Patient mockPatient = new Patient();
 
-        Conversation conversation = new Conversation();
-        conversation.setExternalId("cid123");
+        GeneralConversation conversation = new GeneralConversation();
+        conversation.setId("cid123");
         conversation.setName("Test Conversation");
 
-        List<Conversation> conversationList = Collections.singletonList(conversation);
+        List<GeneralConversation> conversationList = Collections.singletonList(conversation);
 
         when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
         when(conversationService.getAllConversationsFromPatient(mockPatient)).thenReturn(conversationList);
@@ -144,7 +143,6 @@ public class ConversationControllerTest {
         assertEquals("cid123", result.getFirst().getId());
         assertEquals("Test Conversation", result.getFirst().getName());
     }
-
 
     @Test
     void testUpdateSharing_CallsServicesCorrectly() {
@@ -191,6 +189,5 @@ public class ConversationControllerTest {
         verify(patientService).getCurrentlyLoggedInPatient(request);
         verify(conversationService).deleteConversation(conversationId, mockPatient);
     }
-
 
 }

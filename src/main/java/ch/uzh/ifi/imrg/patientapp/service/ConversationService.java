@@ -1,6 +1,6 @@
 package ch.uzh.ifi.imrg.patientapp.service;
 
-import ch.uzh.ifi.imrg.patientapp.entity.Conversation;
+import ch.uzh.ifi.imrg.patientapp.entity.GeneralConversation;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.repository.ConversationRepository;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutSharingDTO;
@@ -18,56 +18,59 @@ public class ConversationService {
     private final ConversationRepository conversationRepository;
     private final AuthorizationService authorizationService;
 
-    public ConversationService(ConversationRepository conversationRepository, AuthorizationService authorizationService) {
+    public ConversationService(ConversationRepository conversationRepository,
+            AuthorizationService authorizationService) {
         this.conversationRepository = conversationRepository;
         this.authorizationService = authorizationService;
     }
 
-    public Conversation createConversation(Patient patient) {
-        Conversation conversation = new Conversation();
+    public GeneralConversation createConversation(Patient patient) {
+        GeneralConversation conversation = new GeneralConversation();
         conversation.setPatient(patient);
         return this.conversationRepository.save(conversation);
     }
 
-    public void deleteConversation(String externalConversationId, Patient loggedInPatient ){
-        Optional<Conversation> optionalConversation = conversationRepository.getConversationByExternalId(externalConversationId);
-        Conversation conversation;
+    public void deleteConversation(String conversationId, Patient loggedInPatient) {
+        Optional<GeneralConversation> optionalConversation = conversationRepository.findById(conversationId);
+        GeneralConversation conversation;
         if (optionalConversation.isPresent()) {
             conversation = optionalConversation.get();
-        }else {
-            throw new NoSuchElementException("No conversation found with external ID: " + externalConversationId);
+        } else {
+            throw new NoSuchElementException("No conversation found with external ID: " + conversationId);
         }
-        authorizationService.checkConversationAccess(conversation, loggedInPatient, "You can't delete chats of a different user.");
+        authorizationService.checkConversationAccess(conversation, loggedInPatient,
+                "You can't delete chats of a different user.");
         conversationRepository.delete(conversation);
     }
 
-    public void updateSharing(PutSharingDTO putSharingDTO, String externalConversationId, Patient loggedInPatient) {
-        Optional<Conversation> optionalConversation = conversationRepository.getConversationByExternalId(externalConversationId);
-        Conversation conversation;
+    public void updateSharing(PutSharingDTO putSharingDTO, String conversationId, Patient loggedInPatient) {
+        Optional<GeneralConversation> optionalConversation = conversationRepository.findById(conversationId);
+        GeneralConversation conversation;
         if (optionalConversation.isPresent()) {
             conversation = optionalConversation.get();
-        }else {
-            throw new NoSuchElementException("No conversation found with external ID: " + externalConversationId);
+        } else {
+            throw new NoSuchElementException("No conversation found with external ID: " + conversationId);
         }
-        authorizationService.checkConversationAccess(conversation, loggedInPatient, "You can't set access rights for chats of a different user.");
+        authorizationService.checkConversationAccess(conversation, loggedInPatient,
+                "You can't set access rights for chats of a different user.");
         ConversationMapper.INSTANCE.updateConversationFromPutSharingDTO(putSharingDTO, conversation);
         conversationRepository.save(conversation);
     }
 
-    public Conversation getAllMessagesFromConversation(String externalConversationId, Patient patient) {
-        Optional<Conversation> optionalConversation = this.conversationRepository.getConversationByExternalId(externalConversationId);
+    public GeneralConversation getAllMessagesFromConversation(String conversationId, Patient patient) {
+        Optional<GeneralConversation> optionalConversation = this.conversationRepository.findById(conversationId);
 
         if (optionalConversation.isPresent()) {
-            authorizationService.checkConversationAccess(optionalConversation.get(), patient, "You can't retrieve the messages of an other user.");
+            authorizationService.checkConversationAccess(optionalConversation.get(), patient,
+                    "You can't retrieve the messages of an other user.");
             return optionalConversation.get();
         } else {
-            throw new NoSuchElementException("No conversation found with external ID: " + externalConversationId);
+            throw new NoSuchElementException("No conversation found with external ID: " + conversationId);
         }
     }
-    public List<Conversation> getAllConversationsFromPatient(Patient patient){
+
+    public List<GeneralConversation> getAllConversationsFromPatient(Patient patient) {
         return this.conversationRepository.getConversationByPatientId(patient.getId());
     }
-
-
 
 }
