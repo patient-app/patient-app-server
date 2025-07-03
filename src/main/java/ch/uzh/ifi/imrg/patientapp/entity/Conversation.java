@@ -35,10 +35,7 @@ public abstract class Conversation implements Serializable {
     @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Message> messages = new ArrayList<>();
 
-    @Column(name = "conversation_context", unique = false)
-    private String conversationContext;
-
-    @Column(name = "conversation_instruction", unique = false)
-    private String conversationInstruction;
+    @Column(name = "system_prompt", unique = false)
+    private String systemPrompt;
 
 }
