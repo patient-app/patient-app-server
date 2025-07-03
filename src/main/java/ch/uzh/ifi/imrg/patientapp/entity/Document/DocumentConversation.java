@@ -23,8 +23,8 @@ public class DocumentConversation extends Conversation {
     })
     private PatientDocument patientDocument;
 
-    @Column(name = "document_context", unique = false)
-    private String documentContext;
+    // @Column(name = "document_context", unique = false)
+    // private String documentContext;
 
     public DocumentConversation(PatientDocument patientDocument) {
         this.patient = patientDocument.getPatient();
