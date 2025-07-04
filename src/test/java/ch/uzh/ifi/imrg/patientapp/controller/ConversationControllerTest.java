@@ -122,7 +122,7 @@ public class ConversationControllerTest {
     }
 
     @Test
-    void nameConversationDTO_shouldReturnMappedConversationList() {
+    void getConversationDTO_shouldReturnMappedConversationList() {
         // Arrange
         Patient mockPatient = new Patient();
 
@@ -136,7 +136,7 @@ public class ConversationControllerTest {
         when(conversationService.getAllConversationsFromPatient(mockPatient)).thenReturn(conversationList);
 
         // Act
-        List<NameConversationOutputDTO> result = conversationController.nameConversationDTO(request);
+        List<NameConversationOutputDTO> result = conversationController.getConversationNames(request);
 
         // Assert
         assertEquals(1, result.size());

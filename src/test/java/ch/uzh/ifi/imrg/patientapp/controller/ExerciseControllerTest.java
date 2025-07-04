@@ -60,7 +60,7 @@ class ExerciseControllerTest {
     }
 
     @Test
-    void testGetExerciseOutputDTOMock_ReturnsExpectedDTO() {
+    void testGetExercise() {
         // Arrange
         HttpServletRequest request = mock(HttpServletRequest.class);
         String exerciseId = "exercise456";

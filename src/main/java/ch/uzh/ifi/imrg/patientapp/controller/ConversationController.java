@@ -59,7 +59,7 @@ public class ConversationController {
 
         @GetMapping("/patients/conversations/{patientId}")
         @ResponseStatus(HttpStatus.OK)
-        public List<NameConversationOutputDTO> nameConversationDTO(HttpServletRequest httpServletRequest) {
+        public List<NameConversationOutputDTO> getConversationNames(HttpServletRequest httpServletRequest) {
                 Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
                 List<GeneralConversation> conversationList = conversationService
                                 .getAllConversationsFromPatient(loggedInPatient);

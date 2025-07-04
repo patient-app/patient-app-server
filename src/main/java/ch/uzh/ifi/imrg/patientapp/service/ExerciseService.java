@@ -11,10 +11,7 @@ import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.repository.*;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseInformationInputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseInputDTO;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExerciseInformationOutputDTO;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExerciseMediaOutputDTO;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExerciseOutputDTO;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExercisesOverviewOutputDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.*;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.ExerciseMapper;
 import ch.uzh.ifi.imrg.patientapp.service.aiService.PromptBuilderService;
 import jakarta.transaction.Transactional;
@@ -106,7 +103,17 @@ public class ExerciseService {
         exerciseConversationRepository.save(exerciseConversation);
     }
 
-
+    public ExerciseChatbotOutputDTO getExerciseChatbot(String exerciseId) {
+        Exercise exercise = exerciseRepository.getExerciseById(exerciseId);
+        if (exercise == null) {
+            throw new IllegalArgumentException("No exercise found with ID: " + exerciseId);
+        }
+        ExerciseConversation conversation = exercise.getExerciseConversation();
+        if (conversation == null) {
+            throw new IllegalArgumentException("No conversation found for exercise with ID: " + exerciseId);
+        }
+        return exerciseMapper.exerciseConversationToExerciseChatbotOutputDTO(conversation);
+    }
     public void updateExercise(String patientId, String exerciseId, ExerciseInputDTO exerciseInputDTO) {
         Exercise exercise = exerciseRepository.getExerciseById(exerciseId);
         if (exercise == null) {

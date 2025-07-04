@@ -35,7 +35,9 @@ public abstract class Conversation implements Serializable {
     @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Message> messages = new ArrayList<>();
 
-    @Column(name = "system_prompt", unique = false)
+    @Column(name = "system_prompt")
     private String systemPrompt;
+
+    private String chatbotIcon;
 
 }
