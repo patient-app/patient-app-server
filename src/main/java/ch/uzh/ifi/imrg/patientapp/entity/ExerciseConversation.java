@@ -18,4 +18,5 @@ import lombok.Setter;
 @Table(name = "exercise_conversations")
 public class ExerciseConversation extends Conversation{
 
+
 }

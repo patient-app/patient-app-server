@@ -20,12 +20,21 @@ public class PromptBuilderService {
     public PromptBuilderService(ChatGPTService chatGPTService) {
         this.chatGPTService = chatGPTService;
     }
-    private String getIntroduction(ChatbotTemplate chatbotTemplate) {
+    public String getSystemPrompt(ChatbotTemplate chatbotTemplate) {
             return String.format(
                     "Act as a %s, who cares about the other person. Your tone should be %s. You will interact with a human, that needs someone to talk to. You can be a friend, a family member, a therapist, or anyone else. You can ask questions, give advice, or just listen. Remember, you are not a therapist, but a friend. Please keep your own responses to the person short. No longer than 200 characters.",
                     chatbotTemplate.getChatbotRole(),
                     chatbotTemplate.getChatbotTone()
             );
+
+    }
+    public String getSystemPrompt(ChatbotTemplate chatbotTemplate, String context) {
+        return String.format(
+                "Act as a %s, who cares about the other person. Your tone should be %s. You will interact with a human, that needs someone to talk to. You should help the person to understand this exercise: %s When answering questions about the exercise only use the description from before. It is really important to stick to this description. Please keep your own responses to the person short. No longer than 400 characters.",
+                chatbotTemplate.getChatbotRole(),
+                chatbotTemplate.getChatbotTone(),
+                context
+        );
 
     }
 

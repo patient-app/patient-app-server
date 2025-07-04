@@ -1,6 +1,7 @@
 package ch.uzh.ifi.imrg.patientapp.service;
 
 
+import ch.uzh.ifi.imrg.patientapp.entity.ChatbotTemplate;
 import ch.uzh.ifi.imrg.patientapp.entity.Exercise.Exercise;
 import ch.uzh.ifi.imrg.patientapp.entity.Exercise.ExerciseElement;
 import ch.uzh.ifi.imrg.patientapp.entity.Exercise.ExerciseInformation;
@@ -15,6 +16,7 @@ import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExerciseMediaOutputDT
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExerciseOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExercisesOverviewOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.ExerciseMapper;
+import ch.uzh.ifi.imrg.patientapp.service.aiService.PromptBuilderService;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -24,22 +26,24 @@ import java.util.Optional;
 @Service
 @Transactional
 public class ExerciseService {
-    private final PatientService patientService;
     private final ExerciseRepository exerciseRepository;
     private final PatientRepository patientRepository;
     private final ExerciseMapper exerciseMapper;
     private final StoredExerciseFileRepository storedExerciseFileRepository;
     private final ExerciseInformationRepository exerciseInformationRepository;
     private final ExerciseConversationRepository exerciseConversationRepository;
+    private final PromptBuilderService promptBuilderService;
+    private final ChatbotTemplateRepository chatbotTemplateRepository;
 
-    public ExerciseService(PatientService patientService, ExerciseRepository exerciseRepository, PatientRepository patientRepository, ExerciseMapper exerciseMapper, StoredExerciseFileRepository storedExerciseFileRepository, ExerciseInformationRepository exerciseInformationRepository, ExerciseConversationRepository exerciseConversationRepository) {
-        this.patientService = patientService;
+    public ExerciseService(ExerciseRepository exerciseRepository, PatientRepository patientRepository, ExerciseMapper exerciseMapper, StoredExerciseFileRepository storedExerciseFileRepository, ExerciseInformationRepository exerciseInformationRepository, ExerciseConversationRepository exerciseConversationRepository, PromptBuilderService promptBuilderService, ChatbotTemplateRepository chatbotTemplateRepository) {
         this.exerciseRepository = exerciseRepository;
         this.patientRepository = patientRepository;
         this.exerciseMapper = exerciseMapper;
         this.storedExerciseFileRepository = storedExerciseFileRepository;
         this.exerciseInformationRepository = exerciseInformationRepository;
         this.exerciseConversationRepository = exerciseConversationRepository;
+        this.promptBuilderService = promptBuilderService;
+        this.chatbotTemplateRepository = chatbotTemplateRepository;
     }
 
     public List<ExercisesOverviewOutputDTO>getAllExercisesForCoach(String patientId){
@@ -91,11 +95,18 @@ public class ExerciseService {
             }
         }
         exerciseRepository.save(exercise);
+
+        ChatbotTemplate chatbotTemplate = chatbotTemplateRepository.findByPatientId(patientId).stream()
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("No chatbot template found for patient with ID: " + patientId));
+
         ExerciseConversation exerciseConversation = new ExerciseConversation();
         exerciseConversation.setPatient(patient);
-        exerciseConversation.setSystemPrompt(exerciseInputDTO.getExerciseDescription());
+        exerciseConversation.setSystemPrompt(promptBuilderService.getSystemPrompt(chatbotTemplate,exerciseInputDTO.getExerciseDescription()));
         exerciseConversationRepository.save(exerciseConversation);
     }
+
+
     public void updateExercise(String patientId, String exerciseId, ExerciseInputDTO exerciseInputDTO) {
         Exercise exercise = exerciseRepository.getExerciseById(exerciseId);
         if (exercise == null) {
