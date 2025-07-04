@@ -70,11 +70,10 @@ public class ConversationController {
         @ResponseStatus(HttpStatus.OK)
         public MessageOutputDTO sendMessage(HttpServletRequest httpServletRequest,
                         @RequestBody CreateMessageDTO createMessageDTO,
-                        @PathVariable String conversationId) throws AccessDeniedException {
+                        @PathVariable String conversationId) {
                 Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
                 Message answeredMessage = messageService.generateAnswer(loggedInPatient, conversationId,
                                 createMessageDTO.getMessage());
-                System.out.println("Message sent: " + answeredMessage.getResponse());
                 return MessageMapper.INSTANCE.convertEntityToMessageOutputDTO(answeredMessage);
         }
 
