@@ -53,4 +53,11 @@ public class PromptBuilderService {
         return chatGPTService.getResponse(messages, isAdmin);
     }
 
+    public String getSummary(List<Map<String, String>> allMessages, String oldSummary, boolean isAdmin) {
+        List<Map<String, String>> messages = new ArrayList<>();
+
+
+        return chatGPTService.getResponse(messages, isAdmin);
+    }
+
 }

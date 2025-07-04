@@ -5,11 +5,9 @@ import ch.uzh.ifi.imrg.patientapp.entity.Exercise.Exercise;
 import ch.uzh.ifi.imrg.patientapp.entity.Exercise.ExerciseElement;
 import ch.uzh.ifi.imrg.patientapp.entity.Exercise.ExerciseInformation;
 import ch.uzh.ifi.imrg.patientapp.entity.Exercise.StoredExerciseFile;
+import ch.uzh.ifi.imrg.patientapp.entity.ExerciseConversation;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
-import ch.uzh.ifi.imrg.patientapp.repository.ExerciseInformationRepository;
-import ch.uzh.ifi.imrg.patientapp.repository.ExerciseRepository;
-import ch.uzh.ifi.imrg.patientapp.repository.PatientRepository;
-import ch.uzh.ifi.imrg.patientapp.repository.StoredExerciseFileRepository;
+import ch.uzh.ifi.imrg.patientapp.repository.*;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseInformationInputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseInputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExerciseInformationOutputDTO;
@@ -32,14 +30,16 @@ public class ExerciseService {
     private final ExerciseMapper exerciseMapper;
     private final StoredExerciseFileRepository storedExerciseFileRepository;
     private final ExerciseInformationRepository exerciseInformationRepository;
+    private final ExerciseConversationRepository exerciseConversationRepository;
 
-    public ExerciseService(PatientService patientService, ExerciseRepository exerciseRepository, PatientRepository patientRepository, ExerciseMapper exerciseMapper, StoredExerciseFileRepository storedExerciseFileRepository, ExerciseInformationRepository exerciseInformationRepository) {
+    public ExerciseService(PatientService patientService, ExerciseRepository exerciseRepository, PatientRepository patientRepository, ExerciseMapper exerciseMapper, StoredExerciseFileRepository storedExerciseFileRepository, ExerciseInformationRepository exerciseInformationRepository, ExerciseConversationRepository exerciseConversationRepository) {
         this.patientService = patientService;
         this.exerciseRepository = exerciseRepository;
         this.patientRepository = patientRepository;
         this.exerciseMapper = exerciseMapper;
         this.storedExerciseFileRepository = storedExerciseFileRepository;
         this.exerciseInformationRepository = exerciseInformationRepository;
+        this.exerciseConversationRepository = exerciseConversationRepository;
     }
 
     public List<ExercisesOverviewOutputDTO>getAllExercisesForCoach(String patientId){
@@ -91,6 +91,10 @@ public class ExerciseService {
             }
         }
         exerciseRepository.save(exercise);
+        ExerciseConversation exerciseConversation = new ExerciseConversation();
+        exerciseConversation.setPatient(patient);
+        exerciseConversation.setSystemPrompt(exerciseInputDTO.getExerciseDescription());
+        exerciseConversationRepository.save(exerciseConversation);
     }
     public void updateExercise(String patientId, String exerciseId, ExerciseInputDTO exerciseInputDTO) {
         Exercise exercise = exerciseRepository.getExerciseById(exerciseId);
