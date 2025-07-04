@@ -1,8 +1,11 @@
 package ch.uzh.ifi.imrg.patientapp.service;
 
+import ch.uzh.ifi.imrg.patientapp.entity.Conversation;
+import ch.uzh.ifi.imrg.patientapp.entity.ExerciseConversation;
 import ch.uzh.ifi.imrg.patientapp.entity.GeneralConversation;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.repository.ConversationRepository;
+import ch.uzh.ifi.imrg.patientapp.repository.ExerciseConversationRepository;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutSharingDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.ConversationMapper;
 import jakarta.transaction.Transactional;
@@ -17,11 +20,13 @@ import java.util.Optional;
 public class ConversationService {
     private final ConversationRepository conversationRepository;
     private final AuthorizationService authorizationService;
+    private final ExerciseConversationRepository exerciseConversationRepository;
 
     public ConversationService(ConversationRepository conversationRepository,
-            AuthorizationService authorizationService) {
+                               AuthorizationService authorizationService, ExerciseConversationRepository exerciseConversationRepository) {
         this.conversationRepository = conversationRepository;
         this.authorizationService = authorizationService;
+        this.exerciseConversationRepository = exerciseConversationRepository;
     }
 
     public GeneralConversation createConversation(Patient patient) {
@@ -71,6 +76,17 @@ public class ConversationService {
 
     public List<GeneralConversation> getAllConversationsFromPatient(Patient patient) {
         return this.conversationRepository.getConversationByPatientId(patient.getId());
+    }
+
+    public void deleteAllMessagesFromExerciseConversation(String conversationId){
+        Optional<ExerciseConversation> optionalConversation = this.conversationRepository.findById(conversationId);
+        if (optionalConversation.isPresent()) {
+            Conversation conversation = optionalConversation.get();
+            conversation.getMessages().clear();
+            this.exerciseConversationRepository.save(conversation);
+        } else {
+            throw new NoSuchElementException("No conversation found with external ID: " + conversationId);
+        }
     }
 
 }
