@@ -9,6 +9,8 @@ import lombok.Setter;
 @Getter
 @Setter
 public class CreatePatientDTO {
+    private String id;
+
     private String email;
 
     @NotBlank

@@ -21,6 +21,8 @@ import jakarta.validation.Valid;
 
 import static ch.uzh.ifi.imrg.patientapp.utils.CryptographyUtil.decrypt;
 
+import java.util.UUID;
+
 @Service
 @Transactional
 public class PatientService {
@@ -81,8 +83,12 @@ public class PatientService {
         patient.setPrivateKey(CryptographyUtil.encrypt(CryptographyUtil.generatePrivateKey()));
 
         patient.setCoachAccessKey(PasswordUtil.encryptPassword(patient.getCoachAccessKey()));
-
+        if (patient.getId() == null) {
+            patient.setId(UUID.randomUUID().toString());
+        }
+        System.out.println("Before saving: " + patient.getId());
         Patient createdPatient = this.patientRepository.save(patient);
+        System.out.println("After saving: " + patient.getId());
         String jwt = JwtUtil.createJWT(patient.getEmail());
         JwtUtil.addJwtCookie(httpServletResponse, httpServletRequest, jwt);
         return createdPatient;
