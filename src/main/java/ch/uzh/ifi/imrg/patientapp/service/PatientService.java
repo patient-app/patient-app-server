@@ -86,9 +86,7 @@ public class PatientService {
         if (patient.getId() == null) {
             patient.setId(UUID.randomUUID().toString());
         }
-        System.out.println("Before saving: " + patient.getId());
         Patient createdPatient = this.patientRepository.save(patient);
-        System.out.println("After saving: " + patient.getId());
         String jwt = JwtUtil.createJWT(patient.getEmail());
         JwtUtil.addJwtCookie(httpServletResponse, httpServletRequest, jwt);
         return createdPatient;
