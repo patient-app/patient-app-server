@@ -71,6 +71,6 @@ public class ExerciseConversationController {
     public void deleteChat(HttpServletRequest httpServletRequest,
                            @PathVariable String conversationId) {
         Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
-        conversationService.deleteConversation(conversationId, loggedInPatient);
+        conversationService.deleteAllMessagesFromExerciseConversation(conversationId, loggedInPatient);
     }
 }

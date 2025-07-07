@@ -78,12 +78,15 @@ public class ConversationService {
         return this.conversationRepository.getConversationByPatientId(patient.getId());
     }
 
-    public void deleteAllMessagesFromExerciseConversation(String conversationId){
-        Optional<ExerciseConversation> optionalConversation = this.conversationRepository.findById(conversationId);
-        if (optionalConversation.isPresent()) {
-            Conversation conversation = optionalConversation.get();
-            conversation.getMessages().clear();
-            this.exerciseConversationRepository.save(conversation);
+    public void deleteAllMessagesFromExerciseConversation(String conversationId, Patient loggedInPatient) {
+
+        Optional<ExerciseConversation> optionalExerciseConversation = this.exerciseConversationRepository.findById(conversationId);
+        if (optionalExerciseConversation.isPresent()) {
+            ExerciseConversation exerciseConversation = optionalExerciseConversation.get();
+            authorizationService.checkConversationAccess(exerciseConversation, loggedInPatient,
+                    "You can't delete chats of a different user.");
+            exerciseConversation.getMessages().clear();
+            this.exerciseConversationRepository.save(exerciseConversation);
         } else {
             throw new NoSuchElementException("No conversation found with external ID: " + conversationId);
         }

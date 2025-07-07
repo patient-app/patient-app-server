@@ -1,5 +1,6 @@
 package ch.uzh.ifi.imrg.patientapp.service;
 
+import ch.uzh.ifi.imrg.patientapp.entity.Conversation;
 import ch.uzh.ifi.imrg.patientapp.entity.GeneralConversation;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import org.springframework.security.access.AccessDeniedException;
@@ -14,7 +15,7 @@ public class AuthorizationService {
         this.error = error;
     }
 
-    public void checkConversationAccess(GeneralConversation conversation, Patient patient, String errorMessage) {
+    public void checkConversationAccess(Conversation conversation, Patient patient, String errorMessage) {
         if (!conversation.getPatient().getId().equals(patient.getId())) {
             throw new AccessDeniedException(errorMessage);
         }
