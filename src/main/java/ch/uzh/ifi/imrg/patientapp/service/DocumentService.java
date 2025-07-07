@@ -65,7 +65,14 @@ public class DocumentService {
             return documentRepository.save(d);
         });
 
-        patientDocumentRepository.save(new PatientDocument(patient, document));
+        PatientDocument patientDocument = new PatientDocument(patient, document);
+
+        // TODO: write helper function to create sysprompt
+        String systemPrompt = "this will be the system prompt";
+
+        patientDocument.getConversation().setSystemPrompt(systemPrompt);
+
+        patientDocumentRepository.save(patientDocument);
 
         return document;
 
