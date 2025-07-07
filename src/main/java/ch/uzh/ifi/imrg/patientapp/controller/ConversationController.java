@@ -11,6 +11,7 @@ import ch.uzh.ifi.imrg.patientapp.rest.dto.output.MessageOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.NameConversationOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.ConversationMapper;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.MessageMapper;
+import ch.uzh.ifi.imrg.patientapp.service.ChatbotService;
 import ch.uzh.ifi.imrg.patientapp.service.ConversationService;
 import ch.uzh.ifi.imrg.patientapp.service.MessageService;
 import ch.uzh.ifi.imrg.patientapp.service.PatientService;
@@ -29,14 +30,16 @@ public class ConversationController {
         private final PatientService patientService;
         private final ConversationService conversationService;
         private final MessageService messageService;
+        private final ChatbotService chatbotService;
 
         ConversationController(PatientService patientService,
-                        ConversationService conversationService,
-                        MessageService messageService) {
+                               ConversationService conversationService,
+                               MessageService messageService, ChatbotService chatbotService) {
                 this.patientService = patientService;
                 this.conversationService = conversationService;
                 this.messageService = messageService;
 
+            this.chatbotService = chatbotService;
         }
 
         @PostMapping("/patients/conversations")
@@ -46,7 +49,7 @@ public class ConversationController {
                 GeneralConversation createdConversation = conversationService.createConversation(loggedInPatient);
                 // add the conversation to the patient
                 patientService.addConversationToPatient(loggedInPatient, createdConversation);
-                return new CreateConversationOutputDTO(createdConversation.getId());
+                return new CreateConversationOutputDTO(createdConversation.getId(), chatbotService.getWelcomeMessage(loggedInPatient.getId()));
         }
 
         @PutMapping("/patients/conversations/{conversationId}")
