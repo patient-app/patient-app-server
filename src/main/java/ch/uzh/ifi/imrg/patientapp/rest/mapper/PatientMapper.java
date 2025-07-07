@@ -20,6 +20,7 @@ public interface PatientMapper {
     @Mapping(source = "onboarded", target = "onboarded")
     PatientOutputDTO convertEntityToPatientOutputDTO(Patient patient);
 
+    @Mapping(source = "id", target = "id")
     @Mapping(source = "email", target = "email")
     @Mapping(source = "password", target = "password")
     @Mapping(source = "coachAccessKey", target = "coachAccessKey")
