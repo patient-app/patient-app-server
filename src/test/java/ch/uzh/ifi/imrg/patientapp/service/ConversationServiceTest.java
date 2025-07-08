@@ -79,7 +79,7 @@ public class ConversationServiceTest {
         Patient patient = new Patient();
         when(conversationRepository.findById(externalId)).thenReturn(Optional.of(conversation));
 
-        GeneralConversation result = conversationService.getAllMessagesFromConversation(externalId, patient);
+        Conversation result = conversationService.getAllMessagesFromConversation(externalId, patient);
 
         assertEquals(conversation, result);
         verify(conversationRepository).findById(externalId);
@@ -95,7 +95,8 @@ public class ConversationServiceTest {
                 NoSuchElementException.class,
                 () -> conversationService.getAllMessagesFromConversation(externalId, patient));
 
-        assertTrue(exception.getMessage().contains("No conversation found with external ID"));
+        System.out.println("Actual exception message: " + exception.getMessage());
+        assertTrue(exception.getMessage().contains("No conversation found with this ID: nonexistent-id"));
     }
 
     @Test

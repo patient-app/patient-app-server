@@ -1,5 +1,6 @@
 package ch.uzh.ifi.imrg.patientapp.controller;
 
+import ch.uzh.ifi.imrg.patientapp.entity.ExerciseConversation;
 import ch.uzh.ifi.imrg.patientapp.entity.GeneralConversation;
 import ch.uzh.ifi.imrg.patientapp.entity.Message;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
@@ -81,7 +82,7 @@ class ExerciseConversationControllerTest {
         message.setRequest("encReq");
         message.setResponse("encRes");
 
-        GeneralConversation conversation = new GeneralConversation();
+        ExerciseConversation conversation = new ExerciseConversation();
         conversation.setId(conversationId);
         conversation.setMessages(List.of(message));
 
