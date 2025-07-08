@@ -1,12 +1,11 @@
 package ch.uzh.ifi.imrg.patientapp.service;
 
-import ch.uzh.ifi.imrg.patientapp.entity.ExerciseConversation;
-import ch.uzh.ifi.imrg.patientapp.entity.GeneralConversation;
-import ch.uzh.ifi.imrg.patientapp.entity.Message;
-import ch.uzh.ifi.imrg.patientapp.entity.Patient;
+import ch.uzh.ifi.imrg.patientapp.entity.*;
+import ch.uzh.ifi.imrg.patientapp.repository.ChatbotTemplateRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.ConversationRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.ExerciseConversationRepository;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutSharingDTO;
+import ch.uzh.ifi.imrg.patientapp.service.aiService.PromptBuilderService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,22 +33,43 @@ public class ConversationServiceTest {
 
     @Mock
     private ExerciseConversationRepository exerciseConversationRepository;
+    @Mock
+    private ChatbotTemplateRepository chatbotTemplateRepository;
+
+    @Mock
+    private PromptBuilderService promptBuilderService;
+
 
     @InjectMocks
     private ConversationService conversationService;
 
+
     @Test
     void createConversation_shouldSetPatientAndSave() {
         Patient patient = new Patient();
+        patient.setId("p1");
+
         GeneralConversation savedConversation = new GeneralConversation();
         savedConversation.setPatient(patient);
 
-        when(conversationRepository.save(any(GeneralConversation.class))).thenReturn(savedConversation);
+        // Provide a fake template
+        ChatbotTemplate template = new ChatbotTemplate();
+        template.setChatbotRole("role");
+        template.setChatbotTone("tone");
+
+        when(chatbotTemplateRepository.findByPatientId("p1"))
+                .thenReturn(List.of(template));
+
+        when(promptBuilderService.getSystemPrompt(any(ChatbotTemplate.class)))
+                .thenReturn("dummy system prompt");
+
+        when(conversationRepository.save(any(GeneralConversation.class)))
+                .thenReturn(savedConversation);
 
         GeneralConversation result = conversationService.createConversation(patient);
 
         assertEquals(patient, result.getPatient());
-        verify(conversationRepository, times(1)).save(any(GeneralConversation.class));
+        verify(conversationRepository).save(any(GeneralConversation.class));
     }
 
     @Test

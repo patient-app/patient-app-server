@@ -4,10 +4,12 @@ import ch.uzh.ifi.imrg.patientapp.entity.Conversation;
 import ch.uzh.ifi.imrg.patientapp.entity.ExerciseConversation;
 import ch.uzh.ifi.imrg.patientapp.entity.GeneralConversation;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
+import ch.uzh.ifi.imrg.patientapp.repository.ChatbotTemplateRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.ConversationRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.ExerciseConversationRepository;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutSharingDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.ConversationMapper;
+import ch.uzh.ifi.imrg.patientapp.service.aiService.PromptBuilderService;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -21,16 +23,21 @@ public class ConversationService {
     private final ConversationRepository conversationRepository;
     private final AuthorizationService authorizationService;
     private final ExerciseConversationRepository exerciseConversationRepository;
+    private final PromptBuilderService promptBuilderService;
+    private final ChatbotTemplateRepository chatbotTemplateRepository;
 
     public ConversationService(ConversationRepository conversationRepository,
-                               AuthorizationService authorizationService, ExerciseConversationRepository exerciseConversationRepository) {
+                               AuthorizationService authorizationService, ExerciseConversationRepository exerciseConversationRepository, PromptBuilderService promptBuilderService, ChatbotTemplateRepository chatbotTemplateRepository) {
         this.conversationRepository = conversationRepository;
         this.authorizationService = authorizationService;
         this.exerciseConversationRepository = exerciseConversationRepository;
+        this.promptBuilderService = promptBuilderService;
+        this.chatbotTemplateRepository = chatbotTemplateRepository;
     }
 
     public GeneralConversation createConversation(Patient patient) {
         GeneralConversation conversation = new GeneralConversation();
+        conversation.setSystemPrompt(promptBuilderService.getSystemPrompt(chatbotTemplateRepository.findByPatientId(patient.getId()).getFirst()));
         conversation.setPatient(patient);
         return this.conversationRepository.save(conversation);
     }

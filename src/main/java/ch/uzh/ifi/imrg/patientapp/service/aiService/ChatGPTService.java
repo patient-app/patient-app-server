@@ -11,7 +11,6 @@ import java.util.Map;
 
 @Service
 public class ChatGPTService {
-    boolean USE_CHATGPT = false;
     private final RestTemplate restTemplate;
     private static final String LOCAL_AI_API_URL = "https://vllm-imrg.ifi.uzh.ch/v1/chat/completions";
 
