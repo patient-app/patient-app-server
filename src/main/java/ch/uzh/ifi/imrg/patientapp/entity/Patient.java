@@ -22,7 +22,7 @@ public class Patient implements Serializable {
 
     @Id
     @Column(unique = true)
-    private String id = UUID.randomUUID().toString();
+    private String id;
 
     @Column(name = "created_at", updatable = false)
     @CreationTimestamp
