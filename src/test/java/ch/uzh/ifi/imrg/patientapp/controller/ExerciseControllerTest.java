@@ -2,10 +2,7 @@ package ch.uzh.ifi.imrg.patientapp.controller;
 
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseInformationInputDTO;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExerciseInformationOutputDTO;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExerciseMediaOutputDTO;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExerciseOutputDTO;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExercisesOverviewOutputDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.*;
 import ch.uzh.ifi.imrg.patientapp.service.ExerciseService;
 import ch.uzh.ifi.imrg.patientapp.service.PatientService;
 
@@ -127,6 +124,31 @@ class ExerciseControllerTest {
         verify(exerciseService).putExerciseFeedback(mockPatient, exerciseId, inputDTO);
         verifyNoMoreInteractions(patientService, exerciseService);
     }
+
+    @Test
+    void testGetExerciseChatbot_ReturnsOutputDTO() {
+        // Arrange
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        String exerciseId = "exerciseChatbot123";
+
+        Patient mockPatient = new Patient();
+        mockPatient.setId("p123");
+
+        ExerciseChatbotOutputDTO expectedDTO = new ExerciseChatbotOutputDTO();
+
+        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
+        when(exerciseService.getExerciseChatbot(exerciseId)).thenReturn(expectedDTO);
+
+        // Act
+        ExerciseChatbotOutputDTO result = exerciseController.getExerciseChatbot(request, exerciseId);
+
+        // Assert
+        assertEquals(expectedDTO, result);
+        verify(patientService).getCurrentlyLoggedInPatient(request);
+        verify(exerciseService).getExerciseChatbot(exerciseId);
+        verifyNoMoreInteractions(patientService, exerciseService);
+    }
+
 
 
 
