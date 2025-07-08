@@ -58,7 +58,6 @@ public class ConversationControllerTest {
 
         when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
         when(conversationService.createConversation(patient)).thenReturn(conversation);
-        when(chatbotService.getWelcomeMessage(anyString())).thenReturn("Welcome!");
 
         CreateConversationOutputDTO result = conversationController.createConversation(request);
 

@@ -125,7 +125,6 @@ public class PatientServiceTest {
         patient.setPassword("plain");
 
         when(patientRepository.existsByEmail(EMAIL)).thenReturn(false);
-        when(patientRepository.existsById(any())).thenReturn(false);
         when(patientRepository.save(any())).thenReturn(patient);
 
         try (MockedStatic<PasswordUtil> pwMock = mockStatic(PasswordUtil.class);
