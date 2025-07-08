@@ -2,7 +2,8 @@ package ch.uzh.ifi.imrg.patientapp.repository;
 
 import org.springframework.test.context.ActiveProfiles;
 
-import ch.uzh.ifi.imrg.patientapp.entity.Conversation;
+import ch.uzh.ifi.imrg.patientapp.entity.ChatbotTemplate;
+import ch.uzh.ifi.imrg.patientapp.entity.GeneralConversation;
 import ch.uzh.ifi.imrg.patientapp.entity.JournalEntry;
 import ch.uzh.ifi.imrg.patientapp.entity.Meeting;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
@@ -76,9 +77,8 @@ public class PatientRepositoryCascadeTest {
         patient.setCoachAccessKey("saveKey");
         patient = patientRepository.saveAndFlush(patient);
 
-        Conversation conversation = new Conversation();
+        GeneralConversation conversation = new GeneralConversation();
         conversation.setId("convoId");
-        conversation.setExternalId("exId");
         conversation.setPatient(patient);
         conversationRepository.saveAndFlush(conversation);
 

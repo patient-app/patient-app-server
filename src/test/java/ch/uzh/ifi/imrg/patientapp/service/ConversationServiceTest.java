@@ -1,9 +1,11 @@
 package ch.uzh.ifi.imrg.patientapp.service;
 
-import ch.uzh.ifi.imrg.patientapp.entity.Conversation;
-import ch.uzh.ifi.imrg.patientapp.entity.Patient;
+import ch.uzh.ifi.imrg.patientapp.entity.*;
+import ch.uzh.ifi.imrg.patientapp.repository.ChatbotTemplateRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.ConversationRepository;
+import ch.uzh.ifi.imrg.patientapp.repository.ExerciseConversationRepository;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutSharingDTO;
+import ch.uzh.ifi.imrg.patientapp.service.aiService.PromptBuilderService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.parameters.P;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -24,51 +27,76 @@ public class ConversationServiceTest {
 
     @Mock
     private ConversationRepository conversationRepository;
-    @InjectMocks
-    private ConversationService conversationService;
+
     @Mock
     private AuthorizationService authorizationService;
+
+    @Mock
+    private ExerciseConversationRepository exerciseConversationRepository;
+    @Mock
+    private ChatbotTemplateRepository chatbotTemplateRepository;
+
+    @Mock
+    private PromptBuilderService promptBuilderService;
+
+
+    @InjectMocks
+    private ConversationService conversationService;
 
 
     @Test
     void createConversation_shouldSetPatientAndSave() {
         Patient patient = new Patient();
-        Conversation savedConversation = new Conversation();
+        patient.setId("p1");
+
+        GeneralConversation savedConversation = new GeneralConversation();
         savedConversation.setPatient(patient);
 
-        when(conversationRepository.save(any(Conversation.class))).thenReturn(savedConversation);
+        // Provide a fake template
+        ChatbotTemplate template = new ChatbotTemplate();
+        template.setChatbotRole("role");
+        template.setChatbotTone("tone");
 
-        Conversation result = conversationService.createConversation(patient);
+        when(chatbotTemplateRepository.findByPatientId("p1"))
+                .thenReturn(List.of(template));
+
+        when(promptBuilderService.getSystemPrompt(any(ChatbotTemplate.class)))
+                .thenReturn("dummy system prompt");
+
+        when(conversationRepository.save(any(GeneralConversation.class)))
+                .thenReturn(savedConversation);
+
+        GeneralConversation result = conversationService.createConversation(patient);
 
         assertEquals(patient, result.getPatient());
-        verify(conversationRepository, times(1)).save(any(Conversation.class));
+        verify(conversationRepository).save(any(GeneralConversation.class));
     }
 
     @Test
     void getAllMessagesFromConversation_shouldReturnConversationIfExists() {
         String externalId = "conv-123";
-        Conversation conversation = new Conversation();
+        GeneralConversation conversation = new GeneralConversation();
         Patient patient = new Patient();
-        when(conversationRepository.getConversationByExternalId(externalId)).thenReturn(Optional.of(conversation));
+        when(conversationRepository.findById(externalId)).thenReturn(Optional.of(conversation));
 
-        Conversation result = conversationService.getAllMessagesFromConversation(externalId,patient);
+        Conversation result = conversationService.getAllMessagesFromConversation(externalId, patient);
 
         assertEquals(conversation, result);
-        verify(conversationRepository).getConversationByExternalId(externalId);
+        verify(conversationRepository).findById(externalId);
     }
 
     @Test
     void getAllMessagesFromConversation_shouldThrowIfNotFound() {
         String externalId = "nonexistent-id";
         Patient patient = new Patient();
-        when(conversationRepository.getConversationByExternalId(externalId)).thenReturn(Optional.empty());
+        when(conversationRepository.findById(externalId)).thenReturn(Optional.empty());
 
         NoSuchElementException exception = assertThrows(
                 NoSuchElementException.class,
-                () -> conversationService.getAllMessagesFromConversation(externalId, patient)
-        );
+                () -> conversationService.getAllMessagesFromConversation(externalId, patient));
 
-        assertTrue(exception.getMessage().contains("No conversation found with external ID"));
+        System.out.println("Actual exception message: " + exception.getMessage());
+        assertTrue(exception.getMessage().contains("No conversation found with this ID: nonexistent-id"));
     }
 
     @Test
@@ -76,16 +104,16 @@ public class ConversationServiceTest {
         // Arrange
         String externalId = "conv123";
         Patient patient = new Patient();
-        Conversation conversation = new Conversation();
+        GeneralConversation conversation = new GeneralConversation();
 
-        when(conversationRepository.getConversationByExternalId(externalId))
+        when(conversationRepository.findById(externalId))
                 .thenReturn(Optional.of(conversation));
 
         // Act
         conversationService.deleteConversation(externalId, patient);
 
         // Assert
-        verify(conversationRepository).getConversationByExternalId(externalId);
+        verify(conversationRepository).findById(externalId);
         verify(conversationRepository).delete(conversation);
     }
 
@@ -95,15 +123,14 @@ public class ConversationServiceTest {
         String externalId = "nonexistent";
         Patient patient = new Patient();
 
-        when(conversationRepository.getConversationByExternalId(externalId)).thenReturn(Optional.empty());
+        when(conversationRepository.findById(externalId)).thenReturn(Optional.empty());
 
         // Act & Assert
-        NoSuchElementException exception = assertThrows(NoSuchElementException.class, () ->
-                conversationService.deleteConversation(externalId, patient)
-        );
+        NoSuchElementException exception = assertThrows(NoSuchElementException.class,
+                () -> conversationService.deleteConversation(externalId, patient));
 
         assertEquals("No conversation found with external ID: " + externalId, exception.getMessage());
-        verify(conversationRepository).getConversationByExternalId(externalId);
+        verify(conversationRepository).findById(externalId);
         verifyNoInteractions(authorizationService);
         verify(conversationRepository, never()).delete(any());
     }
@@ -115,19 +142,20 @@ public class ConversationServiceTest {
         Patient patient = new Patient();
         PutSharingDTO dto = new PutSharingDTO();
 
-        Conversation conversation = new Conversation();
+        GeneralConversation conversation = new GeneralConversation();
 
-        when(conversationRepository.getConversationByExternalId(externalId)).thenReturn(Optional.of(conversation));
+        when(conversationRepository.findById(externalId)).thenReturn(Optional.of(conversation));
 
         // Act
         conversationService.updateSharing(dto, externalId, patient);
 
         // Assert
-        verify(conversationRepository).getConversationByExternalId(externalId);
+        verify(conversationRepository).findById(externalId);
         verify(authorizationService).checkConversationAccess(conversation, patient,
                 "You can't set access rights for chats of a different user.");
         verify(conversationRepository).save(conversation);
     }
+
     @Test
     void testUpdateSharing_ConversationNotFound_ThrowsException() {
         // Arrange
@@ -135,15 +163,14 @@ public class ConversationServiceTest {
         Patient patient = new Patient();
         PutSharingDTO dto = new PutSharingDTO();
 
-        when(conversationRepository.getConversationByExternalId(externalId)).thenReturn(Optional.empty());
+        when(conversationRepository.findById(externalId)).thenReturn(Optional.empty());
 
         // Act & Assert
-        NoSuchElementException exception = assertThrows(NoSuchElementException.class, () ->
-                conversationService.updateSharing(dto, externalId, patient)
-        );
+        NoSuchElementException exception = assertThrows(NoSuchElementException.class,
+                () -> conversationService.updateSharing(dto, externalId, patient));
 
         assertEquals("No conversation found with external ID: " + externalId, exception.getMessage());
-        verify(conversationRepository).getConversationByExternalId(externalId);
+        verify(conversationRepository).findById(externalId);
         verifyNoInteractions(authorizationService);
         verify(conversationRepository, never()).save(any());
     }
@@ -154,20 +181,62 @@ public class ConversationServiceTest {
         Patient patient = new Patient();
         patient.setId("p123");
 
-        Conversation conv1 = new Conversation();
-        Conversation conv2 = new Conversation();
-        List<Conversation> expectedConversations = List.of(conv1, conv2);
+        GeneralConversation conv1 = new GeneralConversation();
+        GeneralConversation conv2 = new GeneralConversation();
+        List<GeneralConversation> expectedConversations = List.of(conv1, conv2);
 
         when(conversationRepository.getConversationByPatientId("p123"))
                 .thenReturn(expectedConversations);
 
         // Act
-        List<Conversation> result = conversationService.getAllConversationsFromPatient(patient);
+        List<GeneralConversation> result = conversationService.getAllConversationsFromPatient(patient);
 
         // Assert
         assertEquals(expectedConversations, result);
         verify(conversationRepository).getConversationByPatientId("p123");
     }
+
+    @Test
+    void testDeleteAllMessagesFromExerciseConversation_ValidConversation_ClearsMessagesAndSaves() {
+        // Arrange
+        String conversationId = "conv123";
+        Patient patient = new Patient();
+
+        ExerciseConversation exerciseConversation = new ExerciseConversation();
+        exerciseConversation.setMessages(new ArrayList<>(List.of(new Message(), new Message())));
+
+        when(exerciseConversationRepository.findById(conversationId)).thenReturn(Optional.of(exerciseConversation));
+        when(exerciseConversationRepository.findById(conversationId)).thenReturn(Optional.of(exerciseConversation));
+
+        // Act
+        conversationService.deleteAllMessagesFromExerciseConversation(conversationId, patient);
+
+        // Assert
+        verify(exerciseConversationRepository).findById(conversationId);
+        verify(authorizationService).checkConversationAccess(eq(exerciseConversation), eq(patient),
+                contains("You can't delete chats of a different user."));
+        assertTrue(exerciseConversation.getMessages().isEmpty(), "Messages should be cleared");
+        verify(exerciseConversationRepository).save(exerciseConversation);
+    }
+
+    @Test
+    void testDeleteAllMessagesFromExerciseConversation_ConversationNotFound_ThrowsException() {
+        // Arrange
+        String conversationId = "nonexistent";
+        Patient patient = new Patient();
+
+        when(exerciseConversationRepository.findById(conversationId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        NoSuchElementException exception = assertThrows(NoSuchElementException.class,
+                () -> conversationService.deleteAllMessagesFromExerciseConversation(conversationId, patient));
+
+        assertEquals("No conversation found with external ID: " + conversationId, exception.getMessage());
+        verify(exerciseConversationRepository).findById(conversationId);
+        verifyNoInteractions(authorizationService);
+        verify(exerciseConversationRepository, never()).save(any());
+    }
+
 
 
 }

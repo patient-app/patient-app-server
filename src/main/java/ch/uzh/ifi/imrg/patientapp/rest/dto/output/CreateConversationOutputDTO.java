@@ -10,4 +10,5 @@ import lombok.Setter;
 @Setter
 public class CreateConversationOutputDTO {
     private String id;
+    private String welcomeMessage;
 }

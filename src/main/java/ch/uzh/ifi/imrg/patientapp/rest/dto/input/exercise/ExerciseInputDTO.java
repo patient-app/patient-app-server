@@ -8,17 +8,9 @@ import java.util.List;
 @Setter
 public class ExerciseInputDTO {
     private String name;
+    private String exerciseDescription;
+    private String exerciseExplanation;
     private String description;
     private String pictureData;
     private List<ExerciseElementInputDTO> exerciseElements;
-    @Override
-    public String toString() {
-        return "ExerciseInputDTO{" +
-                "pictureUrl='" + pictureData + '\'' +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", exerciseElements=" + (exerciseElements != null ? exerciseElements.toString() : "[]") +
-                '}';
-    }
-
 }

@@ -193,5 +193,97 @@ public class ChatbotServiceTest {
         verifyNoInteractions(chatbotTemplateRepository);
     }
 
+    @Test
+    void testCreateChatbot_ThrowsWhenTemplateAlreadyExists() {
+        // Arrange
+        String patientId = "patient123";
+        CreateChatbotDTO createChatbotDTO = new CreateChatbotDTO();
+
+        Patient patient = new Patient();
+        patient.setId(patientId);
+
+        ChatbotTemplate existingTemplate = new ChatbotTemplate();
+
+        when(patientRepository.getPatientById(patientId)).thenReturn(patient);
+        when(chatbotTemplateRepository.findByPatientId(patientId)).thenReturn(List.of(existingTemplate));
+
+        // Act & Assert
+        IllegalStateException ex = assertThrows(
+                IllegalStateException.class,
+                () -> chatbotService.createChatbot(patientId, createChatbotDTO)
+        );
+
+        assertTrue(ex.getMessage().contains("Chatbot template already exists"));
+
+        verify(patientRepository).getPatientById(patientId);
+        verify(chatbotTemplateRepository).findByPatientId(patientId);
+        verifyNoMoreInteractions(patientRepository, chatbotTemplateRepository);
+    }
+
+    @Test
+    void testGetWelcomeMessage_ThrowsWhenPatientNotFound() {
+        // Arrange
+        String patientId = "patient123";
+        when(patientRepository.getPatientById(patientId)).thenReturn(null);
+
+        // Act & Assert
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> chatbotService.getWelcomeMessage(patientId)
+        );
+        assertTrue(ex.getMessage().contains("No patient found with ID: " + patientId));
+
+        verify(patientRepository).getPatientById(patientId);
+        verifyNoMoreInteractions(patientRepository);
+        verifyNoInteractions(chatbotTemplateRepository);
+    }
+
+    @Test
+    void testGetWelcomeMessage_ReturnsDefaultMessageWhenNoTemplates() {
+        // Arrange
+        String patientId = "patient123";
+        Patient patient = new Patient();
+        patient.setId(patientId);
+
+        when(patientRepository.getPatientById(patientId)).thenReturn(patient);
+        when(chatbotTemplateRepository.findByPatientId(patientId)).thenReturn(List.of());
+
+        // Act
+        String result = chatbotService.getWelcomeMessage(patientId);
+
+        // Assert
+        assertEquals("Welcome to your chatbot! Please configure it first.", result);
+
+        verify(patientRepository).getPatientById(patientId);
+        verify(chatbotTemplateRepository).findByPatientId(patientId);
+        verifyNoMoreInteractions(patientRepository, chatbotTemplateRepository);
+    }
+
+    @Test
+    void testGetWelcomeMessage_ReturnsTemplateMessageWhenTemplateExists() {
+        // Arrange
+        String patientId = "patient123";
+        Patient patient = new Patient();
+        patient.setId(patientId);
+
+        ChatbotTemplate template = new ChatbotTemplate();
+        template.setWelcomeMessage("Hello, welcome back!");
+
+        when(patientRepository.getPatientById(patientId)).thenReturn(patient);
+        when(chatbotTemplateRepository.findByPatientId(patientId)).thenReturn(List.of(template));
+
+        // Act
+        String result = chatbotService.getWelcomeMessage(patientId);
+
+        // Assert
+        assertEquals("Hello, welcome back!", result);
+
+        verify(patientRepository).getPatientById(patientId);
+        verify(chatbotTemplateRepository).findByPatientId(patientId);
+        verifyNoMoreInteractions(patientRepository, chatbotTemplateRepository);
+    }
+
+
+
 
 }

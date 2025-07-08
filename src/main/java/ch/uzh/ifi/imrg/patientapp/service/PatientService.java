@@ -1,6 +1,6 @@
 package ch.uzh.ifi.imrg.patientapp.service;
 
-import ch.uzh.ifi.imrg.patientapp.entity.Conversation;
+import ch.uzh.ifi.imrg.patientapp.entity.GeneralConversation;
 import ch.uzh.ifi.imrg.patientapp.utils.CryptographyUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -48,7 +48,7 @@ public class PatientService {
                 HttpStatus.UNAUTHORIZED, "Client could not be found. Please check, username and password");
     }
 
-    public Patient addConversationToPatient(Patient patient, Conversation conversation) {
+    public Patient addConversationToPatient(Patient patient, GeneralConversation conversation) {
         patient.getConversations().add(conversation);
         patientRepository.save(patient);
         return patient;
