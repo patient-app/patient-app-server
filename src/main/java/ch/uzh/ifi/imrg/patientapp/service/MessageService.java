@@ -1,9 +1,6 @@
 package ch.uzh.ifi.imrg.patientapp.service;
 
-import ch.uzh.ifi.imrg.patientapp.entity.ChatbotTemplate;
-import ch.uzh.ifi.imrg.patientapp.entity.GeneralConversation;
-import ch.uzh.ifi.imrg.patientapp.entity.Message;
-import ch.uzh.ifi.imrg.patientapp.entity.Patient;
+import ch.uzh.ifi.imrg.patientapp.entity.*;
 import ch.uzh.ifi.imrg.patientapp.repository.ChatbotTemplateRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.ConversationRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.MessageRepository;
@@ -37,7 +34,7 @@ public class MessageService {
         this.authorizationService = authorizationService;
     }
 
-    private static List<Map<String, String>> parseMessagesFromConversation(GeneralConversation conversation,
+    private static List<Map<String, String>> parseMessagesFromConversation(Conversation conversation,
             String key) {
         List<Map<String, String>> priorMessages = new ArrayList<>();
 
@@ -61,8 +58,9 @@ public class MessageService {
 
     public Message generateAnswer(Patient patient, String conversationId, String message) {
 
-        Optional<GeneralConversation> optionalConversation = conversationRepository.findById(conversationId);
-        GeneralConversation conversation = optionalConversation
+        Optional<Conversation> optionalConversation = conversationRepository.findById(conversationId);
+
+        Conversation conversation = optionalConversation
                 .orElseThrow(() -> new IllegalArgumentException("Conversation not found"));
         authorizationService.checkConversationAccess(conversation, patient,
                 "You are trying to send a message to another persons chat.");
@@ -96,7 +94,7 @@ public class MessageService {
         messageRepository.save(newMessage);
         messageRepository.flush();
 
-        GeneralConversation refreshedConversation = conversationRepository.findById(conversationId)
+        Conversation refreshedConversation = conversationRepository.findById(conversationId)
                 .orElseThrow(() -> new IllegalArgumentException("Conversation not found"));
 
         // Make a frontend version

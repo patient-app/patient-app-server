@@ -1,5 +1,6 @@
 package ch.uzh.ifi.imrg.patientapp.controller;
 
+import ch.uzh.ifi.imrg.patientapp.entity.Conversation;
 import ch.uzh.ifi.imrg.patientapp.entity.GeneralConversation;
 import ch.uzh.ifi.imrg.patientapp.entity.Message;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
@@ -85,11 +86,13 @@ public class ConversationController {
         public CompleteConversationOutputDTO getAllMessages(HttpServletRequest httpServletRequest,
                         @PathVariable String conversationId) {
                 Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
-                GeneralConversation completeConversation = conversationService.getAllMessagesFromConversation(
+                Conversation completeConversation = conversationService.getAllMessagesFromConversation(
                                 conversationId,
                                 loggedInPatient);
+                GeneralConversation generalConversation = (GeneralConversation) completeConversation;
+
                 CompleteConversationOutputDTO completeConversationOutputDTO = ConversationMapper.INSTANCE
-                                .convertEntityToCompleteConversationOutputDTO(completeConversation);
+                                .convertEntityToCompleteConversationOutputDTO(generalConversation);
                 completeConversationOutputDTO.setMessages(new ArrayList<>());
 
                 for (Message message : completeConversation.getMessages()) {

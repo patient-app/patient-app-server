@@ -6,6 +6,7 @@ import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreateMessageDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.CompleteConversationOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.MessageOutputDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.CompleteExerciseConversationOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.service.ConversationService;
 import ch.uzh.ifi.imrg.patientapp.service.MessageService;
 import ch.uzh.ifi.imrg.patientapp.service.PatientService;
@@ -94,7 +95,7 @@ class ExerciseConversationControllerTest {
             cryptoMock.when(() -> CryptographyUtil.decrypt("encRes", "plainKey")).thenReturn("DecryptedRes");
 
             // Act
-            CompleteConversationOutputDTO result = controller.getAllMessages(request, conversationId);
+            CompleteExerciseConversationOutputDTO result = controller.getAllMessages(request, conversationId);
 
             // Assert
             assertEquals(conversationId, result.getId());

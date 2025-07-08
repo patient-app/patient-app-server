@@ -1,11 +1,10 @@
 package ch.uzh.ifi.imrg.patientapp.controller;
 
-import ch.uzh.ifi.imrg.patientapp.entity.GeneralConversation;
-import ch.uzh.ifi.imrg.patientapp.entity.Message;
-import ch.uzh.ifi.imrg.patientapp.entity.Patient;
+import ch.uzh.ifi.imrg.patientapp.entity.*;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreateMessageDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.CompleteConversationOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.MessageOutputDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.CompleteExerciseConversationOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.ConversationMapper;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.MessageMapper;
 import ch.uzh.ifi.imrg.patientapp.service.ConversationService;
@@ -44,25 +43,27 @@ public class ExerciseConversationController {
 
     @GetMapping("/patients/exercise-conversation/{conversationId}/messages")
     @ResponseStatus(HttpStatus.OK)
-    public CompleteConversationOutputDTO getAllMessages(HttpServletRequest httpServletRequest,
+    public CompleteExerciseConversationOutputDTO getAllMessages(HttpServletRequest httpServletRequest,
                                                         @PathVariable String conversationId) {
         Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
-        GeneralConversation completeConversation = conversationService.getAllMessagesFromConversation(
+        Conversation completeConversation = conversationService.getAllMessagesFromConversation(
                 conversationId,
                 loggedInPatient);
-        CompleteConversationOutputDTO completeConversationOutputDTO = ConversationMapper.INSTANCE
-                .convertEntityToCompleteConversationOutputDTO(completeConversation);
-        completeConversationOutputDTO.setMessages(new ArrayList<>());
+        ExerciseConversation exerciseConversation = (ExerciseConversation) completeConversation;
+
+        CompleteExerciseConversationOutputDTO completeExerciseConversationOutputDTO = ConversationMapper.INSTANCE
+                .convertEntityToCompleteExerciseConversationOutputDTO(exerciseConversation);
+        completeExerciseConversationOutputDTO.setMessages(new ArrayList<>());
 
         for (Message message : completeConversation.getMessages()) {
             message.setResponse(CryptographyUtil.decrypt(message.getResponse(),
                     CryptographyUtil.decrypt(loggedInPatient.getPrivateKey())));
             message.setRequest(CryptographyUtil.decrypt(message.getRequest(),
                     CryptographyUtil.decrypt(loggedInPatient.getPrivateKey())));
-            completeConversationOutputDTO.getMessages()
+            completeExerciseConversationOutputDTO.getMessages()
                     .add(MessageMapper.INSTANCE.convertEntityToMessageOutputDTO(message));
         }
-        return completeConversationOutputDTO;
+        return completeExerciseConversationOutputDTO;
 
     }
 

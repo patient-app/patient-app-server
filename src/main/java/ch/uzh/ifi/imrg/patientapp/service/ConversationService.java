@@ -43,10 +43,10 @@ public class ConversationService {
     }
 
     public void deleteConversation(String conversationId, Patient loggedInPatient) {
-        Optional<GeneralConversation> optionalConversation = conversationRepository.findById(conversationId);
+        Optional<Conversation> optionalConversation = conversationRepository.findById(conversationId);
         GeneralConversation conversation;
         if (optionalConversation.isPresent()) {
-            conversation = optionalConversation.get();
+            conversation = (GeneralConversation) optionalConversation.get();
         } else {
             throw new NoSuchElementException("No conversation found with external ID: " + conversationId);
         }
@@ -56,10 +56,10 @@ public class ConversationService {
     }
 
     public void updateSharing(PutSharingDTO putSharingDTO, String conversationId, Patient loggedInPatient) {
-        Optional<GeneralConversation> optionalConversation = conversationRepository.findById(conversationId);
+        Optional<Conversation> optionalConversation = conversationRepository.findById(conversationId);
         GeneralConversation conversation;
         if (optionalConversation.isPresent()) {
-            conversation = optionalConversation.get();
+            conversation = (GeneralConversation) optionalConversation.get();
         } else {
             throw new NoSuchElementException("No conversation found with external ID: " + conversationId);
         }
@@ -69,20 +69,19 @@ public class ConversationService {
         conversationRepository.save(conversation);
     }
 
-    public GeneralConversation getAllMessagesFromConversation(String conversationId, Patient patient) {
-        Optional<GeneralConversation> optionalConversation = this.conversationRepository.findById(conversationId);
+    public Conversation getAllMessagesFromConversation(String conversationId, Patient patient) {
+        Conversation conversation = this.conversationRepository.findById(conversationId)
+                .orElseThrow(() -> new NoSuchElementException("No conversation found with this ID: " + conversationId));
 
-        if (optionalConversation.isPresent()) {
-            authorizationService.checkConversationAccess(optionalConversation.get(), patient,
-                    "You can't retrieve the messages of an other user.");
-            return optionalConversation.get();
-        } else {
-            throw new NoSuchElementException("No conversation found with external ID: " + conversationId);
-        }
+        authorizationService.checkConversationAccess(conversation, patient,
+                "You can't retrieve the messages of another user.");
+
+        return conversation;
     }
 
+
     public List<GeneralConversation> getAllConversationsFromPatient(Patient patient) {
-        return this.conversationRepository.getConversationByPatientId(patient.getId());
+        return  this.conversationRepository.getConversationByPatientId(patient.getId());
     }
 
     public void deleteAllMessagesFromExerciseConversation(String conversationId, Patient loggedInPatient) {
