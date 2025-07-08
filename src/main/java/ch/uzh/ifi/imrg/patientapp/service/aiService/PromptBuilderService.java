@@ -38,13 +38,13 @@ public class PromptBuilderService {
 
     }
 
-    public String getResponse(boolean isAdmin, List<Map<String, String>> priorMessages,String message, ChatbotTemplate chatbotTemplate) {
+    public String getResponse(List<Map<String, String>> priorMessages,String message, String systemPrompt) {
         List<Map<String, String>> messages = new ArrayList<>();
 
         // System prompt
         messages.add(Map.of(
                 "role", "system",
-                "content", getIntroduction(chatbotTemplate)
+                "content", systemPrompt
         ));
 
         // Add prior chat history
@@ -57,16 +57,15 @@ public class PromptBuilderService {
                 "role", "user",
                 "content", message
         ));
-        System.out.println("system prompt: " + getIntroduction(chatbotTemplate));
 
-        return chatGPTService.getResponse(messages, isAdmin);
+        return chatGPTService.getResponse(messages);
     }
 
-    public String getSummary(List<Map<String, String>> allMessages, String oldSummary, boolean isAdmin) {
+    public String getSummary(List<Map<String, String>> allMessages, String oldSummary) {
         List<Map<String, String>> messages = new ArrayList<>();
 
 
-        return chatGPTService.getResponse(messages, isAdmin);
+        return chatGPTService.getResponse(messages);
     }
 
 }

@@ -31,7 +31,7 @@ public class ExerciseConversationController {
     }
 
 
-    @PostMapping("/patients/exercises/chatbot/{conversationId}/messages")
+    @PostMapping("/patients/exercise-conversation/{conversationId}/messages")
     @ResponseStatus(HttpStatus.OK)
     public MessageOutputDTO sendMessage(HttpServletRequest httpServletRequest,
                                         @RequestBody CreateMessageDTO createMessageDTO,
@@ -42,7 +42,7 @@ public class ExerciseConversationController {
         return MessageMapper.INSTANCE.convertEntityToMessageOutputDTO(answeredMessage);
     }
 
-    @GetMapping("/patients/conversations/{conversationId}/messages")
+    @GetMapping("/patients/exercise-conversation/{conversationId}/messages")
     @ResponseStatus(HttpStatus.OK)
     public CompleteConversationOutputDTO getAllMessages(HttpServletRequest httpServletRequest,
                                                         @PathVariable String conversationId) {
@@ -66,9 +66,9 @@ public class ExerciseConversationController {
 
     }
 
-    @DeleteMapping("/patients/conversations/{conversationId}")
+    @DeleteMapping("/patients/exercise-conversation/{conversationId}")
     @ResponseStatus(HttpStatus.OK)
-    public void deleteChat(HttpServletRequest httpServletRequest,
+    public void deleteExerciseChat(HttpServletRequest httpServletRequest,
                            @PathVariable String conversationId) {
         Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
         conversationService.deleteAllMessagesFromExerciseConversation(conversationId, loggedInPatient);

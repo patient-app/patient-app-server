@@ -34,7 +34,7 @@ public class ChatGPTService {
     public ChatGPTService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
-    public String getResponse(List<Map<String, String>> messages, boolean isAdmin){
+    public String getResponse(List<Map<String, String>> messages){
         /*isAdmin = true;
 
         if (!USE_CHATGPT || !isAdmin){

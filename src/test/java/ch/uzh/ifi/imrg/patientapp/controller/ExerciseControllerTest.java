@@ -74,7 +74,7 @@ class ExerciseControllerTest {
         when(exerciseService.getExercise(exerciseId)).thenReturn(expectedDTO);
 
         // Act
-        ExerciseOutputDTO result = exerciseController.getExerciseOutputDTO(request, exerciseId);
+        ExerciseOutputDTO result = exerciseController.getExercise(request, exerciseId);
 
         // Assert
         assertEquals(expectedDTO, result);

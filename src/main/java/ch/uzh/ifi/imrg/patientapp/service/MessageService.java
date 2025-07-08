@@ -25,17 +25,14 @@ public class MessageService {
 
     private final MessageRepository messageRepository;
     private final ConversationRepository conversationRepository;
-    private final ChatbotTemplateRepository chatbotTemplateRepository;
 
     private final PromptBuilderService promptBuilderService;
     private final AuthorizationService authorizationService;
 
     public MessageService(MessageRepository messageRepository, ConversationRepository conversationRepository,
-            ChatbotTemplateRepository chatbotTemplateRepository,
             PromptBuilderService promptBuilderService, AuthorizationService authorizationService) {
         this.messageRepository = messageRepository;
         this.conversationRepository = conversationRepository;
-        this.chatbotTemplateRepository = chatbotTemplateRepository;
         this.promptBuilderService = promptBuilderService;
         this.authorizationService = authorizationService;
     }
@@ -75,9 +72,7 @@ public class MessageService {
         newMessage.setRequest(CryptographyUtil.encrypt(message, key));
 
         List<Map<String, String>> priorMessages = parseMessagesFromConversation(conversation, key);
-        List<ChatbotTemplate> chatbotTemplates = chatbotTemplateRepository.findByPatientId(patient.getId());
-        String rawAnswer = promptBuilderService.getResponse(patient.isAdmin(), priorMessages, message,
-                chatbotTemplates.get(0));
+        String rawAnswer = promptBuilderService.getResponse(priorMessages, message, conversation.getSystemPrompt());
 
         // extract the answer part from the response
         String regex = "</think>\\s*([\\s\\S]*)";

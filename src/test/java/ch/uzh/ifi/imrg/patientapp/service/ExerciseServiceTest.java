@@ -1,11 +1,9 @@
 package ch.uzh.ifi.imrg.patientapp.service;
 
+import ch.uzh.ifi.imrg.patientapp.entity.ChatbotTemplate;
 import ch.uzh.ifi.imrg.patientapp.entity.Exercise.*;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
-import ch.uzh.ifi.imrg.patientapp.repository.ExerciseInformationRepository;
-import ch.uzh.ifi.imrg.patientapp.repository.ExerciseRepository;
-import ch.uzh.ifi.imrg.patientapp.repository.PatientRepository;
-import ch.uzh.ifi.imrg.patientapp.repository.StoredExerciseFileRepository;
+import ch.uzh.ifi.imrg.patientapp.repository.*;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseInformationInputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseInputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExerciseInformationOutputDTO;
@@ -13,6 +11,7 @@ import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExerciseMediaOutputDT
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExerciseOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExercisesOverviewOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.ExerciseMapper;
+import ch.uzh.ifi.imrg.patientapp.service.aiService.PromptBuilderService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -30,7 +29,7 @@ import static org.mockito.Mockito.*;
 class ExerciseServiceTest {
 
     @Mock
-    private PatientService patientService;
+    private PromptBuilderService promptBuilderService;
 
     @Mock
     private ExerciseRepository exerciseRepository;
@@ -47,8 +46,16 @@ class ExerciseServiceTest {
     @Mock
     private ExerciseInformationRepository exerciseInformationRepository;
 
+    @Mock
+    private ChatbotTemplateRepository chatbotTemplateRepository;
+
+    @Mock
+    private ExerciseConversationRepository exerciseConversationRepository;
+
+
     @InjectMocks
     private ExerciseService exerciseService;
+
 
     @Test
     void testGetExercisesOverview_ReturnsMappedDTOs() {
@@ -220,6 +227,15 @@ class ExerciseServiceTest {
 
         when(exerciseMapper.exerciseInputDTOToExercise(inputDTO)).thenReturn(exercise);
         when(patientRepository.getPatientById(patientId)).thenReturn(patient);
+        when(chatbotTemplateRepository.findByPatientId(patientId))
+                .thenReturn(List.of(new ChatbotTemplate()));
+
+        when(promptBuilderService.getSystemPrompt(any(ChatbotTemplate.class), nullable(String.class)))
+                .thenReturn("dummy system prompt");
+
+        when(exerciseConversationRepository.save(any()))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
 
         // Act
         exerciseService.createExercise(patientId, inputDTO);
@@ -245,6 +261,15 @@ class ExerciseServiceTest {
 
         when(exerciseMapper.exerciseInputDTOToExercise(inputDTO)).thenReturn(exercise);
         when(patientRepository.getPatientById(patientId)).thenReturn(patient);
+        when(chatbotTemplateRepository.findByPatientId(patientId))
+                .thenReturn(List.of(new ChatbotTemplate()));
+        when(promptBuilderService.getSystemPrompt(any(ChatbotTemplate.class), nullable(String.class)))
+                .thenReturn("dummy system prompt");
+        when(exerciseConversationRepository.save(any()))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+
+
 
         // Act
         exerciseService.createExercise(patientId, inputDTO);

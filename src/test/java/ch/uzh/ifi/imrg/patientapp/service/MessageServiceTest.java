@@ -41,9 +41,6 @@ public class MessageServiceTest {
         @Mock
         private AuthorizationService authorizationService;
 
-        @Mock
-        private ChatbotTemplateRepository chatbotTemplateRepository;
-
         @InjectMocks
         private MessageService messageService;
 
@@ -74,14 +71,17 @@ public class MessageServiceTest {
                 when(conversationRepository.findById(externalId))
                                 .thenReturn(Optional.of(conversation));
 
-                when(chatbotTemplateRepository.findByPatientId(patient.getId()))
-                                .thenReturn(List.of(chatbotTemplate));
-
                 when(promptBuilderService.getResponse(
-                                eq(false),
                                 any(List.class),
                                 eq(inputMessage),
-                                eq(chatbotTemplate))).thenReturn(mockResponse);
+                                nullable(String.class))).thenReturn(mockResponse);
+
+                doNothing().when(authorizationService).checkConversationAccess(
+                        eq(conversation),
+                        eq(patient),
+                        anyString()
+                );
+
 
                 // Return the actual message passed into save(), not a dummy one
                 when(messageRepository.save(any()))
@@ -160,14 +160,10 @@ public class MessageServiceTest {
                 when(conversationRepository.findById(externalId))
                                 .thenReturn(Optional.of(conversation));
 
-                when(chatbotTemplateRepository.findByPatientId(patient.getId()))
-                                .thenReturn(List.of(chatbotTemplate));
-
                 when(promptBuilderService.getResponse(
-                                eq(false),
                                 any(List.class),
                                 eq(inputMessage),
-                                eq(chatbotTemplate))).thenReturn(mockResponse);
+                                nullable(String.class))).thenReturn(mockResponse);
 
                 // The real object that is passed to save and returned
                 Message newMessage = new Message();
