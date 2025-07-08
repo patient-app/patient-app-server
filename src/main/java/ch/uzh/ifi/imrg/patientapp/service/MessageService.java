@@ -1,9 +1,6 @@
 package ch.uzh.ifi.imrg.patientapp.service;
 
-import ch.uzh.ifi.imrg.patientapp.entity.ChatbotTemplate;
-import ch.uzh.ifi.imrg.patientapp.entity.Conversation;
-import ch.uzh.ifi.imrg.patientapp.entity.Message;
-import ch.uzh.ifi.imrg.patientapp.entity.Patient;
+import ch.uzh.ifi.imrg.patientapp.entity.*;
 import ch.uzh.ifi.imrg.patientapp.repository.ChatbotTemplateRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.ConversationRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.MessageRepository;
@@ -25,21 +22,20 @@ public class MessageService {
 
     private final MessageRepository messageRepository;
     private final ConversationRepository conversationRepository;
-    private final ChatbotTemplateRepository chatbotTemplateRepository;
 
     private final PromptBuilderService promptBuilderService;
     private final AuthorizationService authorizationService;
 
-    public MessageService(MessageRepository messageRepository, ConversationRepository conversationRepository, ChatbotTemplateRepository chatbotTemplateRepository,
-                          PromptBuilderService promptBuilderService, AuthorizationService authorizationService) {
+    public MessageService(MessageRepository messageRepository, ConversationRepository conversationRepository,
+            PromptBuilderService promptBuilderService, AuthorizationService authorizationService) {
         this.messageRepository = messageRepository;
         this.conversationRepository = conversationRepository;
-        this.chatbotTemplateRepository = chatbotTemplateRepository;
         this.promptBuilderService = promptBuilderService;
         this.authorizationService = authorizationService;
     }
 
-    private static List<Map<String, String>> parseMessagesFromConversation(Conversation conversation, String key) {
+    private static List<Map<String, String>> parseMessagesFromConversation(Conversation conversation,
+            String key) {
         List<Map<String, String>> priorMessages = new ArrayList<>();
 
         for (Message msg : conversation.getMessages()) {
@@ -60,10 +56,10 @@ public class MessageService {
         return priorMessages;
     }
 
-    public Message generateAnswer(Patient patient, String externalConversationId, String message) {
+    public Message generateAnswer(Patient patient, String conversationId, String message) {
 
-        Optional<Conversation> optionalConversation = conversationRepository
-                .getConversationByExternalId(externalConversationId);
+        Optional<Conversation> optionalConversation = conversationRepository.findById(conversationId);
+
         Conversation conversation = optionalConversation
                 .orElseThrow(() -> new IllegalArgumentException("Conversation not found"));
         authorizationService.checkConversationAccess(conversation, patient,
@@ -74,10 +70,9 @@ public class MessageService {
         newMessage.setRequest(CryptographyUtil.encrypt(message, key));
 
         List<Map<String, String>> priorMessages = parseMessagesFromConversation(conversation, key);
-        List<ChatbotTemplate> chatbotTemplates = chatbotTemplateRepository.findByPatientId(patient.getId());
-        String rawAnswer = promptBuilderService.getResponse(patient.isAdmin(), priorMessages, message, chatbotTemplates.get(0));
+        String rawAnswer = promptBuilderService.getResponse(priorMessages, message, conversation.getSystemPrompt());
 
-        //extract the answer part from the response
+        // extract the answer part from the response
         String regex = "</think>\\s*([\\s\\S]*)";
         Pattern pattern = Pattern.compile(regex, Pattern.DOTALL);
         Matcher matcher = pattern.matcher(rawAnswer);
@@ -99,7 +94,7 @@ public class MessageService {
         messageRepository.save(newMessage);
         messageRepository.flush();
 
-    Conversation refreshedConversation = conversationRepository.getConversationByExternalId(externalConversationId)
+        Conversation refreshedConversation = conversationRepository.findById(conversationId)
                 .orElseThrow(() -> new IllegalArgumentException("Conversation not found"));
 
         // Make a frontend version
@@ -108,7 +103,7 @@ public class MessageService {
         frontendMessage.setConversation(null);
         frontendMessage.setResponse(answer);
         frontendMessage.setRequest(message);
-        frontendMessage.setExternalConversationId(refreshedConversation.getExternalId());
+        frontendMessage.setExternalConversationId(refreshedConversation.getId());
         frontendMessage.setExternalId(newMessage.getExternalId());
         frontendMessage.setCreatedAt(newMessage.getCreatedAt());
         return frontendMessage;

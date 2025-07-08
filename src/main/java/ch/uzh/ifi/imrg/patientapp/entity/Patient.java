@@ -53,15 +53,11 @@ public class Patient implements Serializable {
     @Column(nullable = true)
     private boolean onboarded;
 
-    @Getter
-    @Column(nullable = false)
-    private boolean admin = false;
-
     @Column(name = "private_key", unique = true)
     private String privateKey;
 
     @OneToMany(mappedBy = "patient", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
-    private List<Conversation> conversations;
+    private List<GeneralConversation> conversations;
 
     @OneToMany(mappedBy = "patient", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<Exercise> exercises;
@@ -84,22 +80,5 @@ public class Patient implements Serializable {
     @Column(name = "coach_access_key", nullable = false)
     private String coachAccessKey;
 
-    @Override
-    public String toString() {
-        return "Patient{" +
-                "id='" + id + '\'' +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
-                ", name='" + name + '\'' +
-                ", gender='" + gender + '\'' +
-                ", email='" + email + '\'' +
-                ", description='" + description + '\'' +
-                ", admin=" + admin +
-                ",language:" + language + '\'' +
-                ",onboarded:" + onboarded + '\'' +
-                ", privateKey=" + (privateKey != null ? privateKey : "null") +
-                ", conversationCount=" + (conversations != null ? conversations.size() : 0) +
-                '}';
-    }
 
 }

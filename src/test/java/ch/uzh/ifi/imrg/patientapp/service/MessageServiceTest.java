@@ -1,9 +1,6 @@
 package ch.uzh.ifi.imrg.patientapp.service;
 
-import ch.uzh.ifi.imrg.patientapp.entity.ChatbotTemplate;
-import ch.uzh.ifi.imrg.patientapp.entity.Conversation;
-import ch.uzh.ifi.imrg.patientapp.entity.Message;
-import ch.uzh.ifi.imrg.patientapp.entity.Patient;
+import ch.uzh.ifi.imrg.patientapp.entity.*;
 import ch.uzh.ifi.imrg.patientapp.repository.ChatbotTemplateRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.ConversationRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.MessageRepository;
@@ -29,206 +26,203 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class MessageServiceTest {
-    @Mock
-    private MessageRepository messageRepository;
+        @Mock
+        private MessageRepository messageRepository;
 
-    @Mock
-    private ConversationRepository conversationRepository;
+        @Mock
+        private ConversationRepository conversationRepository;
 
-    @Mock
-    private PromptBuilderService promptBuilderService;
+        @Mock
+        private PromptBuilderService promptBuilderService;
 
-    @Mock
-    private AuthorizationService authorizationService;
+        @Mock
+        private AuthorizationService authorizationService;
 
-    @Mock
-    private ChatbotTemplateRepository chatbotTemplateRepository;
+        @InjectMocks
+        private MessageService messageService;
 
-    @InjectMocks
-    private MessageService messageService;
+        @Test
+        void generateAnswer_shouldEncryptMessageAndResponse_andSetFieldsCorrectly() {
+                // Arrange
+                String externalId = "conv-001";
+                String inputMessage = "How are you?";
+                String mockKey = "mock-decrypted-key";
+                String encryptedMessage = "encrypted-message";
+                String mockResponse = "<think>\n"
+                                + "...some reasoning...\n"
+                                + "</think> I’m fine, thank you!";
+                String encryptedResponse = "encrypted-response";
 
-    @Test
-    void generateAnswer_shouldEncryptMessageAndResponse_andSetFieldsCorrectly() {
-        // Arrange
-        String externalId = "conv-001";
-        String inputMessage = "How are you?";
-        String mockKey = "mock-decrypted-key";
-        String encryptedMessage = "encrypted-message";
-        String mockResponse = "<think>\n"
-                + "...some reasoning...\n"
-                + "</think> I’m fine, thank you!";
-        String encryptedResponse = "encrypted-response";
+                Patient patient = new Patient();
+                patient.setPrivateKey("encrypted-pk");
+                patient.setId("123");
 
-        Patient patient = new Patient();
-        patient.setPrivateKey("encrypted-pk");
-        patient.setId("123");
+                GeneralConversation conversation = new GeneralConversation();
+                conversation.setId(externalId);
+                conversation.setMessages(new ArrayList<>());
+                conversation.setPatient(patient);
 
-        Conversation conversation = new Conversation();
-        conversation.setExternalId(externalId);
-        conversation.setMessages(new ArrayList<>());
-        conversation.setPatient(patient);
+                ChatbotTemplate chatbotTemplate = new ChatbotTemplate();
+                chatbotTemplate.setId("template-001");
 
-        ChatbotTemplate chatbotTemplate = new ChatbotTemplate();
-        chatbotTemplate.setId("template-001");
+                when(conversationRepository.findById(externalId))
+                                .thenReturn(Optional.of(conversation));
 
-        when(conversationRepository.getConversationByExternalId(externalId))
-                .thenReturn(Optional.of(conversation));
+                when(promptBuilderService.getResponse(
+                                any(List.class),
+                                eq(inputMessage),
+                                nullable(String.class))).thenReturn(mockResponse);
 
-        when(chatbotTemplateRepository.findByPatientId(patient.getId()))
-                .thenReturn(List.of(chatbotTemplate));
+                doNothing().when(authorizationService).checkConversationAccess(
+                        eq(conversation),
+                        eq(patient),
+                        anyString()
+                );
 
-        when(promptBuilderService.getResponse(
-                eq(false),
-                any(List.class),
-                eq(inputMessage),
-                eq(chatbotTemplate)
-        )).thenReturn(mockResponse);
 
-        // Return the actual message passed into save(), not a dummy one
-        when(messageRepository.save(any()))
-                .thenAnswer(invocation -> invocation.getArgument(0));
+                // Return the actual message passed into save(), not a dummy one
+                when(messageRepository.save(any()))
+                                .thenAnswer(invocation -> invocation.getArgument(0));
 
-        try (MockedStatic<CryptographyUtil> mocked = mockStatic(CryptographyUtil.class)) {
-            // Mock static CryptographyUtil methods
-            mocked.when(() -> CryptographyUtil.decrypt("encrypted-pk")).thenReturn(mockKey);
-            mocked.when(() -> CryptographyUtil.encrypt(inputMessage, mockKey)).thenReturn(encryptedMessage);
-            mocked.when(() -> CryptographyUtil.encrypt(mockResponse, mockKey)).thenReturn(encryptedResponse);
+                try (MockedStatic<CryptographyUtil> mocked = mockStatic(CryptographyUtil.class)) {
+                        // Mock static CryptographyUtil methods
+                        mocked.when(() -> CryptographyUtil.decrypt("encrypted-pk")).thenReturn(mockKey);
+                        mocked.when(() -> CryptographyUtil.encrypt(inputMessage, mockKey)).thenReturn(encryptedMessage);
+                        mocked.when(() -> CryptographyUtil.encrypt(mockResponse, mockKey))
+                                        .thenReturn(encryptedResponse);
 
-            // Act
-            Message result = messageService.generateAnswer(patient, externalId, inputMessage);
+                        // Act
+                        Message result = messageService.generateAnswer(patient, externalId, inputMessage);
 
-            // Assert
-            assertNotNull(result);
-            assertEquals(inputMessage, result.getRequest());
-            assertEquals(externalId, result.getExternalConversationId());
+                        // Assert
+                        assertNotNull(result);
+                        assertEquals(inputMessage, result.getRequest());
+                        assertEquals(externalId, result.getExternalConversationId());
 
-            verify(messageRepository).save(any(Message.class));
-            verify(messageRepository).flush();
-            verify(conversationRepository, times(2)).getConversationByExternalId(externalId);
+                        verify(messageRepository).save(any(Message.class));
+                        verify(messageRepository).flush();
+                        verify(conversationRepository, times(2)).findById(externalId);
+                }
         }
-    }
 
+        @Test
+        void generateAnswer_shouldThrowIfConversationNotFoundInitially() {
+                // Arrange
+                String externalId = "not-found-id";
+                Patient patient = new Patient();
+                when(conversationRepository.findById(externalId)).thenReturn(Optional.empty());
 
-    @Test
-    void generateAnswer_shouldThrowIfConversationNotFoundInitially() {
-        // Arrange
-        String externalId = "not-found-id";
-        Patient patient = new Patient();
-        when(conversationRepository.getConversationByExternalId(externalId)).thenReturn(Optional.empty());
-
-        // Act & Assert
-        assertThrows(IllegalArgumentException.class,
-                () -> messageService.generateAnswer(patient, externalId, "message"));
-    }
-
-    @Test
-    void generateAnswer_shouldThrowIfConversationNullCheckFails() {
-        // Arrange
-        String externalId = "conv-null";
-        Patient patient = new Patient();
-        when(conversationRepository.getConversationByExternalId(externalId)).thenReturn(Optional.ofNullable(null));
-
-        // Act & Assert
-        assertThrows(IllegalArgumentException.class,
-                () -> messageService.generateAnswer(patient, externalId, "message"));
-    }
-
-    @Test
-    void generateAnswer_shouldNotOverrideCreatedAt_whenAlreadySet() {
-        // Arrange
-        String externalId = "conv-001";
-        String inputMessage = "How are you?";
-        String mockKey = "mock-decrypted-key";
-        String encryptedMessage = "encrypted-message";
-        String mockResponse = "<think>\n" +
-                "...some reasoning...\n" +
-                "</think> I’m fine, thanks!";
-        String encryptedResponse = "encrypted-response";
-
-        Patient patient = new Patient();
-        patient.setPrivateKey("encrypted-pk");
-        patient.setId("123");
-
-        Conversation conversation = new Conversation();
-        conversation.setExternalId(externalId);
-        conversation.setMessages(new ArrayList<>());
-        conversation.setPatient(patient);
-
-        ChatbotTemplate chatbotTemplate = new ChatbotTemplate();
-        chatbotTemplate.setId("template-001");
-
-        when(conversationRepository.getConversationByExternalId(externalId))
-                .thenReturn(Optional.of(conversation));
-
-        when(chatbotTemplateRepository.findByPatientId(patient.getId()))
-                .thenReturn(List.of(chatbotTemplate));
-
-        when(promptBuilderService.getResponse(
-                eq(false),
-                any(List.class),
-                eq(inputMessage),
-                eq(chatbotTemplate)
-        )).thenReturn(mockResponse);
-
-        // The real object that is passed to save and returned
-        Message newMessage = new Message();
-        Instant presetTime = Instant.ofEpochSecond(1704103200);
-        newMessage.setCreatedAt(presetTime);
-
-        when(messageRepository.save(any(Message.class))).thenAnswer(invocation -> {
-            Message arg = invocation.getArgument(0);
-            arg.setCreatedAt(presetTime); // simulate it being set before returned
-            return arg;
-        });
-
-        try (MockedStatic<CryptographyUtil> utilities = mockStatic(CryptographyUtil.class)) {
-            utilities.when(() -> CryptographyUtil.decrypt("encrypted-pk")).thenReturn(mockKey);
-            utilities.when(() -> CryptographyUtil.encrypt(inputMessage, mockKey)).thenReturn(encryptedMessage);
-            utilities.when(() -> CryptographyUtil.encrypt(mockResponse, mockKey)).thenReturn(encryptedResponse);
-
-            // Act
-            Message result = messageService.generateAnswer(patient, externalId, inputMessage);
-
-            // Assert
-            assertNotNull(result.getCreatedAt());
-            assertEquals(presetTime, result.getCreatedAt(), "CreatedAt should not have been changed");
+                // Act & Assert
+                assertThrows(IllegalArgumentException.class,
+                                () -> messageService.generateAnswer(patient, externalId, "message"));
         }
-    }
 
+        @Test
+        void generateAnswer_shouldThrowIfConversationNullCheckFails() {
+                // Arrange
+                String externalId = "conv-null";
+                Patient patient = new Patient();
+                when(conversationRepository.findById(externalId))
+                                .thenReturn(Optional.ofNullable(null));
 
-    @Test
-    void testParseMessagesFromConversation_staticDecryptionMocked() throws Exception {
-        // Arrange
-        String key = "whateverKey";
-        Message msg = new Message();
-        msg.setRequest("encryptedRequest123");
-        msg.setResponse("encryptedResponse456");
-
-        Conversation conversation = new Conversation();
-        conversation.setMessages(List.of(msg));
-
-        try (MockedStatic<CryptographyUtil> mocked = org.mockito.Mockito.mockStatic(CryptographyUtil.class)) {
-            mocked.when(() -> CryptographyUtil.decrypt("encryptedRequest123", key))
-                    .thenReturn("Hello");
-            mocked.when(() -> CryptographyUtil.decrypt("encryptedResponse456", key))
-                    .thenReturn("Hi there!");
-
-            // Access private static method
-            Method method = MessageService.class.getDeclaredMethod("parseMessagesFromConversation", Conversation.class,
-                    String.class);
-            method.setAccessible(true);
-
-            // Act
-            List<Map<String, String>> result = (List<Map<String, String>>) method.invoke(null, conversation, key);
-
-            // Assert
-            assertEquals(2, result.size());
-            assertEquals("user", result.get(0).get("role"));
-            assertEquals("Hello", result.get(0).get("content"));
-            assertEquals("assistant", result.get(1).get("role"));
-            assertEquals("Hi there!", result.get(1).get("content"));
+                // Act & Assert
+                assertThrows(IllegalArgumentException.class,
+                                () -> messageService.generateAnswer(patient, externalId, "message"));
         }
-    }
 
+        @Test
+        void generateAnswer_shouldNotOverrideCreatedAt_whenAlreadySet() {
+                // Arrange
+                String externalId = "conv-001";
+                String inputMessage = "How are you?";
+                String mockKey = "mock-decrypted-key";
+                String encryptedMessage = "encrypted-message";
+                String mockResponse = "<think>\n" +
+                                "...some reasoning...\n" +
+                                "</think> I’m fine, thanks!";
+                String encryptedResponse = "encrypted-response";
+
+                Patient patient = new Patient();
+                patient.setPrivateKey("encrypted-pk");
+                patient.setId("123");
+
+                GeneralConversation conversation = new GeneralConversation();
+                conversation.setId(externalId);
+                conversation.setMessages(new ArrayList<>());
+                conversation.setPatient(patient);
+
+                ChatbotTemplate chatbotTemplate = new ChatbotTemplate();
+                chatbotTemplate.setId("template-001");
+
+                when(conversationRepository.findById(externalId))
+                                .thenReturn(Optional.of(conversation));
+
+                when(promptBuilderService.getResponse(
+                                any(List.class),
+                                eq(inputMessage),
+                                nullable(String.class))).thenReturn(mockResponse);
+
+                // The real object that is passed to save and returned
+                Message newMessage = new Message();
+                Instant presetTime = Instant.ofEpochSecond(1704103200);
+                newMessage.setCreatedAt(presetTime);
+
+                when(messageRepository.save(any(Message.class))).thenAnswer(invocation -> {
+                        Message arg = invocation.getArgument(0);
+                        arg.setCreatedAt(presetTime); // simulate it being set before returned
+                        return arg;
+                });
+
+                try (MockedStatic<CryptographyUtil> utilities = mockStatic(CryptographyUtil.class)) {
+                        utilities.when(() -> CryptographyUtil.decrypt("encrypted-pk")).thenReturn(mockKey);
+                        utilities.when(() -> CryptographyUtil.encrypt(inputMessage, mockKey))
+                                        .thenReturn(encryptedMessage);
+                        utilities.when(() -> CryptographyUtil.encrypt(mockResponse, mockKey))
+                                        .thenReturn(encryptedResponse);
+
+                        // Act
+                        Message result = messageService.generateAnswer(patient, externalId, inputMessage);
+
+                        // Assert
+                        assertNotNull(result.getCreatedAt());
+                        assertEquals(presetTime, result.getCreatedAt(), "CreatedAt should not have been changed");
+                }
+        }
+
+        @Test
+        void testParseMessagesFromConversation_staticDecryptionMocked() throws Exception {
+                // Arrange
+                String key = "whateverKey";
+                Message msg = new Message();
+                msg.setRequest("encryptedRequest123");
+                msg.setResponse("encryptedResponse456");
+
+                GeneralConversation conversation = new GeneralConversation();
+                conversation.setMessages(List.of(msg));
+
+                try (MockedStatic<CryptographyUtil> mocked = org.mockito.Mockito.mockStatic(CryptographyUtil.class)) {
+                        mocked.when(() -> CryptographyUtil.decrypt("encryptedRequest123", key))
+                                        .thenReturn("Hello");
+                        mocked.when(() -> CryptographyUtil.decrypt("encryptedResponse456", key))
+                                        .thenReturn("Hi there!");
+
+                        // Access private static method
+                        Method method = MessageService.class.getDeclaredMethod("parseMessagesFromConversation",
+                                        Conversation.class,
+                                        String.class);
+                        method.setAccessible(true);
+
+                        // Act
+                        List<Map<String, String>> result = (List<Map<String, String>>) method.invoke(null, conversation,
+                                        key);
+
+                        // Assert
+                        assertEquals(2, result.size());
+                        assertEquals("user", result.get(0).get("role"));
+                        assertEquals("Hello", result.get(0).get("content"));
+                        assertEquals("assistant", result.get(1).get("role"));
+                        assertEquals("Hi there!", result.get(1).get("content"));
+                }
+        }
 
 }

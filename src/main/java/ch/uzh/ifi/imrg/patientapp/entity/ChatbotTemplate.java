@@ -33,10 +33,8 @@ public class ChatbotTemplate implements Serializable {
     private Instant updatedAt;
 
     private String chatbotIcon;
-    private String chatbotLanguage;
     private String chatbotRole;
     private String chatbotTone;
     private String welcomeMessage;
-
 
 }

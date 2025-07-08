@@ -1,6 +1,6 @@
 package ch.uzh.ifi.imrg.patientapp.service;
 
-import ch.uzh.ifi.imrg.patientapp.entity.Conversation;
+import ch.uzh.ifi.imrg.patientapp.entity.GeneralConversation;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.repository.PatientRepository;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.ChangePasswordDTO;
@@ -71,7 +71,7 @@ public class PatientServiceTest {
     void addConversationToPatient_shouldAddAndSave() {
         Patient patient = new Patient();
         patient.setConversations(new ArrayList<>());
-        Conversation conversation = new Conversation();
+        GeneralConversation conversation = new GeneralConversation();
 
         Patient saved = new Patient();
         when(patientRepository.save(patient)).thenReturn(saved);
@@ -125,7 +125,6 @@ public class PatientServiceTest {
         patient.setPassword("plain");
 
         when(patientRepository.existsByEmail(EMAIL)).thenReturn(false);
-        when(patientRepository.existsById(any())).thenReturn(false);
         when(patientRepository.save(any())).thenReturn(patient);
 
         try (MockedStatic<PasswordUtil> pwMock = mockStatic(PasswordUtil.class);
@@ -246,6 +245,7 @@ public class PatientServiceTest {
             jwtMock.verify(() -> JwtUtil.removeJwtCookie(response));
         }
     }
+
     @Test
     void setField_shouldSavePatient() {
         // Arrange
@@ -271,12 +271,10 @@ public class PatientServiceTest {
         when(patientRepository.getPatientByEmail(email)).thenReturn(null);
 
         // Act + Assert
-        Error error = assertThrows(Error.class, () ->
-                patientService.loginPatient(loginDTO, request, response)
-        );
+        Error error = assertThrows(Error.class, () -> patientService.loginPatient(loginDTO, request, response));
 
         // Verify exception message
-        assert(error.getMessage().contains("No client with email: " + email + " exists"));
+        assert (error.getMessage().contains("No client with email: " + email + " exists"));
     }
 
     @Test

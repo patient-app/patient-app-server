@@ -62,4 +62,16 @@ public class ChatbotService {
         List<ChatbotTemplate> chatbotTemplates = chatbotTemplateRepository.findByPatientId(patient.getId());
         return ChatbotMapper.INSTANCE.chatbotTemplatesToChatbotConfigurationOutputDTOs(chatbotTemplates);
     }
+
+    public String getWelcomeMessage(String patientId) {
+        Patient patient = patientRepository.getPatientById(patientId);
+        if (patient == null) {
+            throw new IllegalArgumentException("No patient found with ID: " + patientId);
+        }
+        List<ChatbotTemplate> chatbotTemplates = chatbotTemplateRepository.findByPatientId(patient.getId());
+        if (chatbotTemplates.isEmpty()) {
+            return "Welcome to your chatbot! Please configure it first.";
+        }
+        return chatbotTemplates.getFirst().getWelcomeMessage();
+    }
 }

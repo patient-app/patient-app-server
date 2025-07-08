@@ -29,7 +29,7 @@ public class CoachChatbotController {
     }
 
     @ExceptionHandler(IllegalStateException.class)
-    @ResponseStatus(HttpStatus.CONFLICT) // or BAD_REQUEST if you prefer
+    @ResponseStatus(HttpStatus.CONFLICT)
     public String handleIllegalState(IllegalStateException ex) {
         return ex.getMessage();
     }

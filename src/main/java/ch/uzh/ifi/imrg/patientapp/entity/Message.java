@@ -42,27 +42,4 @@ public class Message implements Serializable {
         @Transient
         private String externalConversationId;
 
-        @Override
-        public String toString() {
-                return "Message{" +
-                                "id='" + id + '\'' +
-                                ", externalId='" + externalId + '\'' +
-                                ", createdAt=" + createdAt +
-                                ", request='"
-                                + (request != null
-                                                ? request.replaceAll("\\s+", " ").substring(0,
-                                                                Math.min(30, request.length())) + "..."
-                                                : "null")
-                                + '\'' +
-                                ", response='"
-                                + (response != null
-                                                ? response.replaceAll("\\s+", " ").substring(0,
-                                                                Math.min(30, response.length())) + "..."
-                                                : "null")
-                                + '\'' +
-                                ", messageContext='" + messageContext + '\'' +
-                                ", externalConversationId='" + externalConversationId + '\'' +
-                                '}';
-        }
-
 }
