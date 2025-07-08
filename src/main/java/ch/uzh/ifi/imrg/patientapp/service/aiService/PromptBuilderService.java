@@ -62,7 +62,7 @@ public class PromptBuilderService {
         return chatGPTService.getResponse(messages);
     }
 
-    public String getSummary(List<Map<String, String>> allMessages, String oldSummary) {
+    public String getSummary(List<Map<String, String>> allMessages, String oldSystemPrompt) {
         List<Map<String, String>> messages = new ArrayList<>();
 
 

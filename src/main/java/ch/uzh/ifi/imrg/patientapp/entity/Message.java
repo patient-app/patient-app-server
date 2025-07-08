@@ -39,6 +39,9 @@ public class Message implements Serializable {
         @JoinColumn(name = "conversation_id", nullable = false)
         private Conversation conversation;
 
+        @Column(name = "is_user_message", nullable = false)
+        boolean inSystemPromptSummary = false;
+
         @Transient
         private String externalConversationId;
 

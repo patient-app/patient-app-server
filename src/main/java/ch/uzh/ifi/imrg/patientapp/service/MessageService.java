@@ -39,11 +39,11 @@ public class MessageService {
         List<Map<String, String>> priorMessages = new ArrayList<>();
 
         for (Message msg : conversation.getMessages()) {
-            if (msg.getRequest() != null && !msg.getRequest().trim().isEmpty()) {
+            if (msg.getRequest() != null && !msg.getRequest().trim().isEmpty()&& !msg.isInSystemPromptSummary()) {
                 String decryptedRequest = CryptographyUtil.decrypt(msg.getRequest(), key);
                 priorMessages.add(Map.of(
                         "role", "user",
-                        "content", decryptedRequest.trim()));
+                        "content", decryptedRequest.trim())) ;
             }
             if (msg.getResponse() != null && !msg.getResponse().trim().isEmpty()) {
                 String decryptedResponse = CryptographyUtil.decrypt(msg.getResponse(), key);
@@ -57,7 +57,7 @@ public class MessageService {
     }
 
     public Message generateAnswer(Patient patient, String conversationId, String message) {
-
+        int summaryThreshold = 150;
         Optional<Conversation> optionalConversation = conversationRepository.findById(conversationId);
 
         Conversation conversation = optionalConversation
@@ -70,6 +70,15 @@ public class MessageService {
         newMessage.setRequest(CryptographyUtil.encrypt(message, key));
 
         List<Map<String, String>> priorMessages = parseMessagesFromConversation(conversation, key);
+        if(priorMessages.size()> summaryThreshold) {
+            List<Map<String, String>> oldMessages = priorMessages.subList( 0, priorMessages.size() - 10);
+            conversation.setSystemPrompt(promptBuilderService.getSummary(oldMessages, conversation.getSystemPrompt()));
+            priorMessages = priorMessages.subList(priorMessages.size() - 10, priorMessages.size());
+
+            //get all messages that are not in the system prompt summary
+            // set all except the newest 10 messages to inSystemPromptSummary = true
+        }
+
         String rawAnswer = promptBuilderService.getResponse(priorMessages, message, conversation.getSystemPrompt());
 
         // extract the answer part from the response
