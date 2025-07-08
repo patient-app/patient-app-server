@@ -9,4 +9,5 @@ import lombok.Setter;
 public class ExerciseChatbotOutputDTO {
     private String name;
     private String chatbotIcon;
+    private String id;
 }

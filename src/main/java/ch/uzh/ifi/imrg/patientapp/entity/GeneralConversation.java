@@ -17,8 +17,6 @@ import java.time.Instant;
 @Table(name = "general_conversations")
 public class GeneralConversation extends Conversation {
 
-    @Column(nullable = true)
-    private String name;
 
     @Column(name = "updated_last")
     @UpdateTimestamp

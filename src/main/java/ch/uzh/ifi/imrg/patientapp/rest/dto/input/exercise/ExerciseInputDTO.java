@@ -9,6 +9,7 @@ import java.util.List;
 public class ExerciseInputDTO {
     private String name;
     private String exerciseDescription;
+    private String exerciseExplanation;
     private String description;
     private String pictureData;
     private List<ExerciseElementInputDTO> exerciseElements;

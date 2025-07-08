@@ -85,13 +85,13 @@ public class ExerciseService {
         Exercise exercise = exerciseMapper.exerciseInputDTOToExercise(exerciseInputDTO);
         Patient patient = patientRepository.getPatientById(patientId);
         exercise.setPatient(patient);
+
         //manually set the exercise in the exercise elements
         if (exercise.getExerciseElements() != null) {
             for (ExerciseElement element : exercise.getExerciseElements()) {
                 element.setExercise(exercise);
             }
         }
-        exerciseRepository.save(exercise);
 
         ChatbotTemplate chatbotTemplate = chatbotTemplateRepository.findByPatientId(patientId).stream()
                 .findFirst()
@@ -99,8 +99,13 @@ public class ExerciseService {
 
         ExerciseConversation exerciseConversation = new ExerciseConversation();
         exerciseConversation.setPatient(patient);
-        exerciseConversation.setSystemPrompt(promptBuilderService.getSystemPrompt(chatbotTemplate,exerciseInputDTO.getExerciseDescription()));
+        exerciseConversation.setSystemPrompt(promptBuilderService.getSystemPrompt(chatbotTemplate,exerciseInputDTO.getExerciseExplanation()));
+        exerciseConversation.setName(exerciseInputDTO.getName()+ " - chatbot");
         exerciseConversationRepository.save(exerciseConversation);
+
+        exercise.setExerciseConversation(exerciseConversation);
+        exerciseRepository.save(exercise);
+
     }
 
     public ExerciseChatbotOutputDTO getExerciseChatbot(String exerciseId) {

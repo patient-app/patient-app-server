@@ -32,9 +32,13 @@ public abstract class Conversation implements Serializable {
     @JoinColumn(name = "patient_id", nullable = false)
     protected Patient patient;
 
+    @Column(nullable = true)
+    private String name;
+
     @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Message> messages = new ArrayList<>();
 
+    @Lob
     @Column(name = "system_prompt")
     private String systemPrompt;
 
