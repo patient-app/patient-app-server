@@ -114,6 +114,7 @@ public class ExerciseService {
         }
         return exerciseMapper.exerciseConversationToExerciseChatbotOutputDTO(conversation);
     }
+
     public void updateExercise(String patientId, String exerciseId, ExerciseInputDTO exerciseInputDTO) {
         Exercise exercise = exerciseRepository.getExerciseById(exerciseId);
         if (exercise == null) {

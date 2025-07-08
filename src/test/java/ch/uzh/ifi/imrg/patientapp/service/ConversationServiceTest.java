@@ -1,8 +1,11 @@
 package ch.uzh.ifi.imrg.patientapp.service;
 
+import ch.uzh.ifi.imrg.patientapp.entity.ExerciseConversation;
 import ch.uzh.ifi.imrg.patientapp.entity.GeneralConversation;
+import ch.uzh.ifi.imrg.patientapp.entity.Message;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.repository.ConversationRepository;
+import ch.uzh.ifi.imrg.patientapp.repository.ExerciseConversationRepository;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutSharingDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,6 +15,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.parameters.P;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -24,10 +28,15 @@ public class ConversationServiceTest {
 
     @Mock
     private ConversationRepository conversationRepository;
-    @InjectMocks
-    private ConversationService conversationService;
+
     @Mock
     private AuthorizationService authorizationService;
+
+    @Mock
+    private ExerciseConversationRepository exerciseConversationRepository;
+
+    @InjectMocks
+    private ConversationService conversationService;
 
     @Test
     void createConversation_shouldSetPatientAndSave() {
@@ -165,5 +174,48 @@ public class ConversationServiceTest {
         assertEquals(expectedConversations, result);
         verify(conversationRepository).getConversationByPatientId("p123");
     }
+
+    @Test
+    void testDeleteAllMessagesFromExerciseConversation_ValidConversation_ClearsMessagesAndSaves() {
+        // Arrange
+        String conversationId = "conv123";
+        Patient patient = new Patient();
+
+        ExerciseConversation exerciseConversation = new ExerciseConversation();
+        exerciseConversation.setMessages(new ArrayList<>(List.of(new Message(), new Message())));
+
+        when(exerciseConversationRepository.findById(conversationId)).thenReturn(Optional.of(exerciseConversation));
+        when(exerciseConversationRepository.findById(conversationId)).thenReturn(Optional.of(exerciseConversation));
+
+        // Act
+        conversationService.deleteAllMessagesFromExerciseConversation(conversationId, patient);
+
+        // Assert
+        verify(exerciseConversationRepository).findById(conversationId);
+        verify(authorizationService).checkConversationAccess(eq(exerciseConversation), eq(patient),
+                contains("You can't delete chats of a different user."));
+        assertTrue(exerciseConversation.getMessages().isEmpty(), "Messages should be cleared");
+        verify(exerciseConversationRepository).save(exerciseConversation);
+    }
+
+    @Test
+    void testDeleteAllMessagesFromExerciseConversation_ConversationNotFound_ThrowsException() {
+        // Arrange
+        String conversationId = "nonexistent";
+        Patient patient = new Patient();
+
+        when(exerciseConversationRepository.findById(conversationId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        NoSuchElementException exception = assertThrows(NoSuchElementException.class,
+                () -> conversationService.deleteAllMessagesFromExerciseConversation(conversationId, patient));
+
+        assertEquals("No conversation found with external ID: " + conversationId, exception.getMessage());
+        verify(exerciseConversationRepository).findById(conversationId);
+        verifyNoInteractions(authorizationService);
+        verify(exerciseConversationRepository, never()).save(any());
+    }
+
+
 
 }

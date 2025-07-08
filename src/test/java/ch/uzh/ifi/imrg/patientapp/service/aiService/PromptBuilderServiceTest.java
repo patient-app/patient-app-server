@@ -63,4 +63,40 @@ public class PromptBuilderServiceTest {
         assertEquals(mockResponse, actualResponse);
     }
 
+
+    @Test
+    void getSystemPrompt_withoutContext_returnsFormattedString() {
+        // Arrange
+        ChatbotTemplate template = new ChatbotTemplate();
+        template.setChatbotRole("friendly coach");
+        template.setChatbotTone("encouraging");
+
+        // Act
+        String result = promptBuilderService.getSystemPrompt(template);
+
+        // Assert
+        assertTrue(result.contains("Act as a friendly coach, who cares about the other person."));
+        assertTrue(result.contains("Your tone should be encouraging."));
+        assertTrue(result.contains("No longer than 200 characters."));
+    }
+
+    @Test
+    void getSystemPrompt_withContext_returnsFormattedStringIncludingContext() {
+        // Arrange
+        ChatbotTemplate template = new ChatbotTemplate();
+        template.setChatbotRole("helpful guide");
+        template.setChatbotTone("warm");
+        String context = "This exercise helps you reflect on gratitude.";
+
+        // Act
+        String result = promptBuilderService.getSystemPrompt(template, context);
+
+        // Assert
+        assertTrue(result.contains("Act as a helpful guide, who cares about the other person."));
+        assertTrue(result.contains("Your tone should be warm."));
+        assertTrue(result.contains(context));
+        assertTrue(result.contains("No longer than 400 characters."));
+    }
+
+
 }

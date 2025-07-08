@@ -2,14 +2,12 @@ package ch.uzh.ifi.imrg.patientapp.service;
 
 import ch.uzh.ifi.imrg.patientapp.entity.ChatbotTemplate;
 import ch.uzh.ifi.imrg.patientapp.entity.Exercise.*;
+import ch.uzh.ifi.imrg.patientapp.entity.ExerciseConversation;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.repository.*;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseInformationInputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseInputDTO;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExerciseInformationOutputDTO;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExerciseMediaOutputDTO;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExerciseOutputDTO;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExercisesOverviewOutputDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.*;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.ExerciseMapper;
 import ch.uzh.ifi.imrg.patientapp.service.aiService.PromptBuilderService;
 import org.junit.jupiter.api.Test;
@@ -611,6 +609,66 @@ class ExerciseServiceTest {
         verify(exerciseRepository).getExerciseById(exerciseId);
         verifyNoMoreInteractions(exerciseRepository, exerciseInformationRepository, exerciseMapper);
     }
+
+    @Test
+    void testGetExerciseChatbot_ThrowsWhenExerciseNotFound() {
+        // Arrange
+        String exerciseId = "e404";
+        when(exerciseRepository.getExerciseById(exerciseId)).thenReturn(null);
+
+        // Act + Assert
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> exerciseService.getExerciseChatbot(exerciseId)
+        );
+        assertEquals("No exercise found with ID: " + exerciseId, ex.getMessage());
+
+        verify(exerciseRepository).getExerciseById(exerciseId);
+        verifyNoInteractions(exerciseMapper);
+    }
+
+    @Test
+    void testGetExerciseChatbot_ThrowsWhenConversationNotFound() {
+        // Arrange
+        String exerciseId = "e123";
+        Exercise exercise = new Exercise();
+        exercise.setExerciseConversation(null);
+
+        when(exerciseRepository.getExerciseById(exerciseId)).thenReturn(exercise);
+
+        // Act + Assert
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> exerciseService.getExerciseChatbot(exerciseId)
+        );
+        assertEquals("No conversation found for exercise with ID: " + exerciseId, ex.getMessage());
+
+        verify(exerciseRepository).getExerciseById(exerciseId);
+        verifyNoInteractions(exerciseMapper);
+    }
+
+    @Test
+    void testGetExerciseChatbot_ReturnsDTO_WhenConversationExists() {
+        // Arrange
+        String exerciseId = "e123";
+        ExerciseConversation conversation = new ExerciseConversation();
+        Exercise exercise = new Exercise();
+        exercise.setExerciseConversation(conversation);
+
+        ExerciseChatbotOutputDTO expectedDTO = new ExerciseChatbotOutputDTO();
+
+        when(exerciseRepository.getExerciseById(exerciseId)).thenReturn(exercise);
+        when(exerciseMapper.exerciseConversationToExerciseChatbotOutputDTO(conversation)).thenReturn(expectedDTO);
+
+        // Act
+        ExerciseChatbotOutputDTO result = exerciseService.getExerciseChatbot(exerciseId);
+
+        // Assert
+        assertEquals(expectedDTO, result);
+        verify(exerciseRepository).getExerciseById(exerciseId);
+        verify(exerciseMapper).exerciseConversationToExerciseChatbotOutputDTO(conversation);
+    }
+
 
 
 }
