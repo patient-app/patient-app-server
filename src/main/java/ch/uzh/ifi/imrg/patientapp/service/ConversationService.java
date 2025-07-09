@@ -1,9 +1,6 @@
 package ch.uzh.ifi.imrg.patientapp.service;
 
-import ch.uzh.ifi.imrg.patientapp.entity.Conversation;
-import ch.uzh.ifi.imrg.patientapp.entity.ExerciseConversation;
-import ch.uzh.ifi.imrg.patientapp.entity.GeneralConversation;
-import ch.uzh.ifi.imrg.patientapp.entity.Patient;
+import ch.uzh.ifi.imrg.patientapp.entity.*;
 import ch.uzh.ifi.imrg.patientapp.repository.ChatbotTemplateRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.ConversationRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.ExerciseConversationRepository;
@@ -37,7 +34,9 @@ public class ConversationService {
 
     public GeneralConversation createConversation(Patient patient) {
         GeneralConversation conversation = new GeneralConversation();
-        conversation.setSystemPrompt(promptBuilderService.getSystemPrompt(chatbotTemplateRepository.findByPatientId(patient.getId()).getFirst()));
+        ChatbotTemplate chatbotTemplate = chatbotTemplateRepository.findByPatientId(patient.getId()).getFirst();
+        conversation.setSystemPrompt(promptBuilderService.getSystemPrompt(chatbotTemplate));
+        conversation.setWelcomeMessage(chatbotTemplate.getWelcomeMessage());
         conversation.setPatient(patient);
         return this.conversationRepository.save(conversation);
     }
