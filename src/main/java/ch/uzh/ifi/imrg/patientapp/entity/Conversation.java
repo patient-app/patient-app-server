@@ -43,5 +43,6 @@ public abstract class Conversation implements Serializable {
     private String systemPrompt;
 
     private String chatbotIcon;
+    private String welcomeMessage;
 
 }
