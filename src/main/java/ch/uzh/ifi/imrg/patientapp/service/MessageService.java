@@ -31,8 +31,8 @@ public class MessageService {
         this.authorizationService = authorizationService;
     }
 
-    private static List<Map<String, String>> parseMessagesFromConversation(Conversation conversation,
-            String key) {
+    static List<Map<String, String>> parseMessagesFromConversation(Conversation conversation,
+                                                                   String key) {
         List<Map<String, String>> priorMessages = new ArrayList<>();
 
         for (Message msg : conversation.getMessages()) {
@@ -54,7 +54,7 @@ public class MessageService {
     }
 
     public Message generateAnswer(Patient patient, String conversationId, String message) {
-        int summaryThreshold = 30;
+        int summaryThreshold = 100; // Must be double of number of messages to summarize
         Optional<Conversation> optionalConversation = conversationRepository.findById(conversationId);
 
         Conversation conversation = optionalConversation
@@ -67,21 +67,24 @@ public class MessageService {
         newMessage.setRequest(CryptographyUtil.encrypt(message, key));
 
         List<Map<String, String>> priorMessages = parseMessagesFromConversation(conversation, key);
-        if(priorMessages.size()> summaryThreshold) {
-            List<Map<String, String>> oldMessages = priorMessages.subList( 0, priorMessages.size() - 10);
+        if(priorMessages.size() > summaryThreshold) {
+            List<Map<String, String>> oldMessages = priorMessages.subList( 0, priorMessages.size() - 20);
             System.out.println("oldMessages:"+ oldMessages);
             String rawSummary = promptBuilderService.getSummary(oldMessages, conversation.getChatSummary());
             conversation.setChatSummary(promptBuilderService.extractContentFromResponse(rawSummary));
-            priorMessages = priorMessages.subList(priorMessages.size() - 10, priorMessages.size());
+            priorMessages = priorMessages.subList(priorMessages.size() - 20, priorMessages.size());
 
             List<Message> conversationMessages = messageRepository.findByConversationIdAndInSystemPromptSummaryFalseOrderByCreatedAt(conversationId);
             // Mark all except the last 10 as summarized
             int messagesToSummarize = conversationMessages.size() - 10;
-            for (Message m : conversationMessages.subList(0, messagesToSummarize)) {
-                m.setInSystemPromptSummary(true);
-                System.out.println("Marking message as summarized: " + m.getId());
+            if (messagesToSummarize > 0) {
+                for (Message m : conversationMessages.subList(0, messagesToSummarize)) {
+                    m.setInSystemPromptSummary(true);
+                }
+                messageRepository.flush();
+
             }
-            messageRepository.flush();
+
         }
 
         String rawAnswer = promptBuilderService.getResponse(priorMessages, message, conversation.getSystemPrompt());
