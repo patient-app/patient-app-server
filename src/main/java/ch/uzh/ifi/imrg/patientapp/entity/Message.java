@@ -32,14 +32,11 @@ public class Message implements Serializable {
         @Column(nullable = true, columnDefinition = "TEXT")
         private String response;
 
-        @Column(name = "message_context", nullable = true)
-        private String messageContext;
-
         @ManyToOne(fetch = FetchType.LAZY)
         @JoinColumn(name = "conversation_id", nullable = false)
         private Conversation conversation;
 
-        @Column(name = "is_user_message", nullable = false)
+        @Column(name = "in_system_prompt_summary", nullable = false)
         boolean inSystemPromptSummary = false;
 
         @Transient

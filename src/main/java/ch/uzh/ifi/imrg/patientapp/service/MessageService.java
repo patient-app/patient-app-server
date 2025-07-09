@@ -10,10 +10,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.*;
 
 @Service
@@ -57,7 +54,7 @@ public class MessageService {
     }
 
     public Message generateAnswer(Patient patient, String conversationId, String message) {
-        int summaryThreshold = 150;
+        int summaryThreshold = 30;
         Optional<Conversation> optionalConversation = conversationRepository.findById(conversationId);
 
         Conversation conversation = optionalConversation
@@ -72,27 +69,24 @@ public class MessageService {
         List<Map<String, String>> priorMessages = parseMessagesFromConversation(conversation, key);
         if(priorMessages.size()> summaryThreshold) {
             List<Map<String, String>> oldMessages = priorMessages.subList( 0, priorMessages.size() - 10);
-            conversation.setSystemPrompt(promptBuilderService.getSummary(oldMessages, conversation.getSystemPrompt()));
+            System.out.println("oldMessages:"+ oldMessages);
+            String rawSummary = promptBuilderService.getSummary(oldMessages, conversation.getChatSummary());
+            conversation.setChatSummary(promptBuilderService.extractContentFromResponse(rawSummary));
             priorMessages = priorMessages.subList(priorMessages.size() - 10, priorMessages.size());
 
-            //get all messages that are not in the system prompt summary
-            // set all except the newest 10 messages to inSystemPromptSummary = true
+            List<Message> conversationMessages = messageRepository.findByConversationIdAndInSystemPromptSummaryFalseOrderByCreatedAt(conversationId);
+            // Mark all except the last 10 as summarized
+            int messagesToSummarize = conversationMessages.size() - 10;
+            for (Message m : conversationMessages.subList(0, messagesToSummarize)) {
+                m.setInSystemPromptSummary(true);
+                System.out.println("Marking message as summarized: " + m.getId());
+            }
+            messageRepository.flush();
         }
 
         String rawAnswer = promptBuilderService.getResponse(priorMessages, message, conversation.getSystemPrompt());
 
-        // extract the answer part from the response
-        String regex = "</think>\\s*([\\s\\S]*)";
-        Pattern pattern = Pattern.compile(regex, Pattern.DOTALL);
-        Matcher matcher = pattern.matcher(rawAnswer);
-
-        String answer;
-
-        if (matcher.find()) {
-            answer = matcher.group(1).trim();
-        } else {
-            throw new IllegalStateException("No <think> closing tag found in response:\n" + rawAnswer);
-        }
+        String answer = promptBuilderService.extractContentFromResponse(rawAnswer);
 
         newMessage.setResponse(CryptographyUtil.encrypt(answer, key));
         newMessage.setConversation(conversation);
