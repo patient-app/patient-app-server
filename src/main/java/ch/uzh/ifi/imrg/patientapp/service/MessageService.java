@@ -66,6 +66,12 @@ public class MessageService {
         Message newMessage = new Message();
         newMessage.setRequest(CryptographyUtil.encrypt(message, key));
 
+        String rawHarm = promptBuilderService.getHarmRating(message);
+        String harm = promptBuilderService.extractContentFromResponse(rawHarm);
+        if(harm.equals("true")){
+            System.out.println("Message contains harmful content.");
+        }
+
         List<Map<String, String>> priorMessages = parseMessagesFromConversation(conversation, key);
         if(priorMessages.size() > summaryThreshold) {
             List<Map<String, String>> oldMessages = priorMessages.subList( 0, priorMessages.size() - 20);

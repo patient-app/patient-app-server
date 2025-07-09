@@ -95,6 +95,24 @@ public class PromptBuilderService {
         return chatGPTService.getResponse(messages);
     }
 
+    public String getHarmRating(String message) {
+        List<Map<String, String>> messages = new ArrayList<>();
+
+        // System prompt
+        messages.add(Map.of(
+                "role", "system",
+                "content", "You are a classifier that detects suicide risk and self harm in text messages. Respond ONLY with 'true' or 'false'. If either appear Respond with 'true'."
+        ));
+
+        // Current user message
+        messages.add(Map.of(
+                "role", "user",
+                "content", message
+        ));
+
+        return chatGPTService.getResponse(messages);
+    }
+
     public String extractContentFromResponse(String rawAnswer) {
         // extract the answer part from the response
         String regex = "</think>\\s*([\\s\\S]*)";
