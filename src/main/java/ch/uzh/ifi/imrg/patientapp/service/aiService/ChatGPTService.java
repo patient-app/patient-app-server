@@ -45,7 +45,7 @@ public class ChatGPTService {
                     Map<String, Object> firstChoice = choices.get(0);
                     Map<String, Object> message = (Map<String, Object>) firstChoice.get("message");
                     if (message != null) {
-                        String text = (String) message.get("content"); // ✅ FIXED
+                        String text = (String) message.get("content");
                         if (text != null && !text.isEmpty()) {
                             System.out.println("Returned response:");
                             System.out.println(text);
@@ -62,6 +62,5 @@ public class ChatGPTService {
             return "Error calling OpenAI API: " + e.getMessage();
         }
     }
-
 
 }

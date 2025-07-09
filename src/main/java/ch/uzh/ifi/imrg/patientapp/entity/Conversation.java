@@ -42,7 +42,10 @@ public abstract class Conversation implements Serializable {
     @Column(name = "system_prompt")
     private String systemPrompt;
 
+    @Lob
+    @Column(name = "chat_summary")
+    private String chatSummary;
+
     private String chatbotIcon;
-    private String welcomeMessage;
 
 }

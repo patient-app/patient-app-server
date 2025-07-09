@@ -10,10 +10,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.*;
 
 @Service
@@ -34,16 +31,16 @@ public class MessageService {
         this.authorizationService = authorizationService;
     }
 
-    private static List<Map<String, String>> parseMessagesFromConversation(Conversation conversation,
-            String key) {
+    static List<Map<String, String>> parseMessagesFromConversation(Conversation conversation,
+                                                                   String key) {
         List<Map<String, String>> priorMessages = new ArrayList<>();
 
         for (Message msg : conversation.getMessages()) {
-            if (msg.getRequest() != null && !msg.getRequest().trim().isEmpty()) {
+            if (msg.getRequest() != null && !msg.getRequest().trim().isEmpty()&& !msg.isInSystemPromptSummary()) {
                 String decryptedRequest = CryptographyUtil.decrypt(msg.getRequest(), key);
                 priorMessages.add(Map.of(
                         "role", "user",
-                        "content", decryptedRequest.trim()));
+                        "content", decryptedRequest.trim())) ;
             }
             if (msg.getResponse() != null && !msg.getResponse().trim().isEmpty()) {
                 String decryptedResponse = CryptographyUtil.decrypt(msg.getResponse(), key);
@@ -57,7 +54,7 @@ public class MessageService {
     }
 
     public Message generateAnswer(Patient patient, String conversationId, String message) {
-
+        int summaryThreshold = 100; // Must be double of number of messages to summarize
         Optional<Conversation> optionalConversation = conversationRepository.findById(conversationId);
 
         Conversation conversation = optionalConversation
@@ -70,20 +67,29 @@ public class MessageService {
         newMessage.setRequest(CryptographyUtil.encrypt(message, key));
 
         List<Map<String, String>> priorMessages = parseMessagesFromConversation(conversation, key);
+        if(priorMessages.size() > summaryThreshold) {
+            List<Map<String, String>> oldMessages = priorMessages.subList( 0, priorMessages.size() - 20);
+            System.out.println("oldMessages:"+ oldMessages);
+            String rawSummary = promptBuilderService.getSummary(oldMessages, conversation.getChatSummary());
+            conversation.setChatSummary(promptBuilderService.extractContentFromResponse(rawSummary));
+            priorMessages = priorMessages.subList(priorMessages.size() - 20, priorMessages.size());
+
+            List<Message> conversationMessages = messageRepository.findByConversationIdAndInSystemPromptSummaryFalseOrderByCreatedAt(conversationId);
+            // Mark all except the last 10 as summarized
+            int messagesToSummarize = conversationMessages.size() - 10;
+            if (messagesToSummarize > 0) {
+                for (Message m : conversationMessages.subList(0, messagesToSummarize)) {
+                    m.setInSystemPromptSummary(true);
+                }
+                messageRepository.flush();
+
+            }
+
+        }
+
         String rawAnswer = promptBuilderService.getResponse(priorMessages, message, conversation.getSystemPrompt());
 
-        // extract the answer part from the response
-        String regex = "</think>\\s*([\\s\\S]*)";
-        Pattern pattern = Pattern.compile(regex, Pattern.DOTALL);
-        Matcher matcher = pattern.matcher(rawAnswer);
-
-        String answer;
-
-        if (matcher.find()) {
-            answer = matcher.group(1).trim();
-        } else {
-            throw new IllegalStateException("No <think> closing tag found in response:\n" + rawAnswer);
-        }
+        String answer = promptBuilderService.extractContentFromResponse(rawAnswer);
 
         newMessage.setResponse(CryptographyUtil.encrypt(answer, key));
         newMessage.setConversation(conversation);
