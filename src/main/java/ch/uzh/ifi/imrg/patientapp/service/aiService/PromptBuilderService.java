@@ -94,6 +94,7 @@ public class PromptBuilderService {
 
         return chatGPTService.getResponse(messages);
     }
+
     public String getHarmRating(String message) {
         List<Map<String, String>> messages = new ArrayList<>();
 
