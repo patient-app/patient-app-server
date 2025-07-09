@@ -61,6 +61,15 @@ public class ConversationController {
                 conversationService.updateSharing(putSharingDTO, conversationId, loggedInPatient);
         }
 
+        @GetMapping("/patients/conversations/{conversationId}")
+        @ResponseStatus(HttpStatus.OK)
+        public NameConversationOutputDTO getWelcomeMessage(HttpServletRequest httpServletRequest) {
+                Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
+                List<GeneralConversation> conversationList = conversationService
+                        .getAllConversationsFromPatient(loggedInPatient);
+                return ConversationMapper.INSTANCE.convertEntityListToNameConversationOutputDTOList(conversationList);
+        }
+
         @GetMapping("/patients/conversations/{patientId}")
         @ResponseStatus(HttpStatus.OK)
         public List<NameConversationOutputDTO> getConversationNames(HttpServletRequest httpServletRequest) {
