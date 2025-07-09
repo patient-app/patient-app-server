@@ -61,7 +61,7 @@ public class ConversationController {
                 conversationService.updateSharing(putSharingDTO, conversationId, loggedInPatient);
         }
 
-        @GetMapping("/patients/conversations/{patientId}")
+        @GetMapping("/patients/conversations")
         @ResponseStatus(HttpStatus.OK)
         public List<NameConversationOutputDTO> getConversationNames(HttpServletRequest httpServletRequest) {
                 Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);

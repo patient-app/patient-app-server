@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 @Transactional
@@ -65,8 +67,48 @@ public class PromptBuilderService {
     public String getSummary(List<Map<String, String>> allMessages, String oldSummary) {
         List<Map<String, String>> messages = new ArrayList<>();
 
+        String systemPrompt;
+
+        if (oldSummary == null || oldSummary.isBlank()) {
+            systemPrompt = "Summarize the following conversation in a few sentences. "
+                    + "Do not use bullet points or lists. Just write a short summary of the conversation. "
+                    + "The summary should be no longer than 200 characters.\n"
+                    + "Messages: ";
+        } else {
+            systemPrompt = "Update the following existing summary by including the additional messages below. "
+                    + "Keep it short (no more than 200 additional characters), do not use bullet points or lists.\n\n"
+                    + "Existing summary:\n" + oldSummary + "\n\n"
+                    + "Additional messages:\n";
+        }
+
+        // System prompt
+        messages.add(Map.of(
+                "role", "system",
+                "content", systemPrompt
+        ));
+
+        // Add prior chat history
+        if (allMessages != null) {
+            messages.addAll(allMessages);
+        }
 
         return chatGPTService.getResponse(messages);
+    }
+
+    public String extractContentFromResponse(String rawAnswer) {
+        // extract the answer part from the response
+        String regex = "</think>\\s*([\\s\\S]*)";
+        Pattern pattern = Pattern.compile(regex, Pattern.DOTALL);
+        Matcher matcher = pattern.matcher(rawAnswer);
+
+        String answer;
+
+        if (matcher.find()) {
+            answer = matcher.group(1).trim();
+        } else {
+            throw new IllegalStateException("No <think> closing tag found in response:\n" + rawAnswer);
+        }
+        return answer;
     }
 
 }
