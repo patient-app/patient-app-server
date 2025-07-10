@@ -76,8 +76,6 @@ public class DocumentService {
         } else {
         }
 
-        patientDocumentRepository.save(patientDocument);
-
         return document;
 
     }

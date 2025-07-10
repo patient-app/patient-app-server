@@ -34,7 +34,7 @@ public class Message implements Serializable {
 
         @ManyToOne(fetch = FetchType.LAZY)
         @JoinColumn(name = "conversation_id", nullable = false)
-        private GeneralConversation conversation;
+        private Conversation conversation;
 
         @Column(name = "in_system_prompt_summary", nullable = false)
         boolean inSystemPromptSummary = false;
