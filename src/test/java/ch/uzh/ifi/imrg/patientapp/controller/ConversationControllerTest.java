@@ -11,10 +11,7 @@ import ch.uzh.ifi.imrg.patientapp.rest.dto.output.CreateConversationOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.MessageOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.NameConversationOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.MessageMapper;
-import ch.uzh.ifi.imrg.patientapp.service.AuthorizationService;
-import ch.uzh.ifi.imrg.patientapp.service.ConversationService;
-import ch.uzh.ifi.imrg.patientapp.service.MessageService;
-import ch.uzh.ifi.imrg.patientapp.service.PatientService;
+import ch.uzh.ifi.imrg.patientapp.service.*;
 import ch.uzh.ifi.imrg.patientapp.utils.CryptographyUtil;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -44,10 +41,7 @@ public class ConversationControllerTest {
     private MessageService messageService;
 
     @Mock
-    private AuthorizationService authorizationService;
-
-    @Mock
-    private MessageMapper messageMapper;
+    private ChatbotService chatbotService;
 
     @InjectMocks
     private ConversationController conversationController;
@@ -55,8 +49,6 @@ public class ConversationControllerTest {
     @Mock
     private HttpServletRequest request;
 
-    @Mock
-    private ConversationRepository conversationRepository;
 
     @Test
     void createConversation_shouldReturnOutputDTO() {
@@ -122,7 +114,7 @@ public class ConversationControllerTest {
     }
 
     @Test
-    void nameConversationDTO_shouldReturnMappedConversationList() {
+    void getConversationDTO_shouldReturnMappedConversationList() {
         // Arrange
         Patient mockPatient = new Patient();
 
@@ -136,7 +128,7 @@ public class ConversationControllerTest {
         when(conversationService.getAllConversationsFromPatient(mockPatient)).thenReturn(conversationList);
 
         // Act
-        List<NameConversationOutputDTO> result = conversationController.nameConversationDTO(request);
+        List<NameConversationOutputDTO> result = conversationController.getConversationNames(request);
 
         // Assert
         assertEquals(1, result.size());

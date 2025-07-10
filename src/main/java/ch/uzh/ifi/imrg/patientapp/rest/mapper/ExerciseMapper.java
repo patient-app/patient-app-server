@@ -1,6 +1,7 @@
 package ch.uzh.ifi.imrg.patientapp.rest.mapper;
 
 import ch.uzh.ifi.imrg.patientapp.entity.Exercise.*;
+import ch.uzh.ifi.imrg.patientapp.entity.ExerciseConversation;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseInformationInputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseInputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseMoodInputDTO;
@@ -12,6 +13,9 @@ import java.util.List;
 
 @Mapper(componentModel = "spring", uses = ExerciseElementMapper.class)
 public interface ExerciseMapper {
+
+    ExerciseChatbotOutputDTO exerciseConversationToExerciseChatbotOutputDTO(ExerciseConversation exerciseConversation);
+
 
     List<ExercisesOverviewOutputDTO> exercisesToExerciseOverviewOutputDTOs(List<Exercise> exercises);
     Exercise exerciseInputDTOToExercise(ExerciseInputDTO exerciseInputDTO);

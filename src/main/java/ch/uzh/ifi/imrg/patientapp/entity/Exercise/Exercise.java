@@ -1,6 +1,7 @@
 package ch.uzh.ifi.imrg.patientapp.entity.Exercise;
 
 
+import ch.uzh.ifi.imrg.patientapp.entity.ExerciseConversation;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -34,30 +35,9 @@ public class Exercise implements Serializable {
     @OneToMany(mappedBy = "exercise", cascade = CascadeType.ALL, orphanRemoval = true)
     private List <ExerciseInformation> exerciseInformation;
 
-    @Override
-    public String toString() {
-        StringBuilder elementsStr = new StringBuilder();
-        if (exerciseElements != null) {
-            for (ExerciseElement element : exerciseElements) {
-                elementsStr.append("\n  - [")
-                        .append(element.getClass().getSimpleName())
-                        .append("] id=")
-                        .append(element.getId())
-                        .append(", type=")
-                        .append(element.getType())
-                        .append(", data=")
-                        .append(element.getData());
-            }
-        }
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "exercise_conversation_id", referencedColumnName = "id")
+    private ExerciseConversation exerciseConversation;
 
-        return "Exercise {" +
-                "\n  id='" + id + '\'' +
-                ",\n  name='" + name + '\'' +
-                ",\n  description='" + description + '\'' +
-                ",\n  pictureUrl='" + pictureId + '\'' +
-                ",\n  patientId='" + (patient != null ? patient.getId() : "null") + '\'' +
-                ",\n  exerciseElements=" + elementsStr +
-                "\n}";
-    }
 
 }

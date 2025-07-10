@@ -1,5 +1,6 @@
 package ch.uzh.ifi.imrg.patientapp.controller;
 
+import ch.uzh.ifi.imrg.patientapp.entity.Conversation;
 import ch.uzh.ifi.imrg.patientapp.entity.GeneralConversation;
 import ch.uzh.ifi.imrg.patientapp.entity.Message;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
@@ -11,6 +12,7 @@ import ch.uzh.ifi.imrg.patientapp.rest.dto.output.MessageOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.NameConversationOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.ConversationMapper;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.MessageMapper;
+import ch.uzh.ifi.imrg.patientapp.service.ChatbotService;
 import ch.uzh.ifi.imrg.patientapp.service.ConversationService;
 import ch.uzh.ifi.imrg.patientapp.service.MessageService;
 import ch.uzh.ifi.imrg.patientapp.service.PatientService;
@@ -29,14 +31,16 @@ public class ConversationController {
         private final PatientService patientService;
         private final ConversationService conversationService;
         private final MessageService messageService;
+        private final ChatbotService chatbotService;
 
         ConversationController(PatientService patientService,
                         ConversationService conversationService,
-                        MessageService messageService) {
+                        MessageService messageService, ChatbotService chatbotService) {
                 this.patientService = patientService;
                 this.conversationService = conversationService;
                 this.messageService = messageService;
 
+                this.chatbotService = chatbotService;
         }
 
         @PostMapping("/patients/conversations")
@@ -46,7 +50,8 @@ public class ConversationController {
                 GeneralConversation createdConversation = conversationService.createConversation(loggedInPatient);
                 // add the conversation to the patient
                 patientService.addConversationToPatient(loggedInPatient, createdConversation);
-                return new CreateConversationOutputDTO(createdConversation.getId());
+                return new CreateConversationOutputDTO(createdConversation.getId(),
+                                chatbotService.getWelcomeMessage(loggedInPatient.getId()));
         }
 
         @PutMapping("/patients/conversations/{conversationId}")
@@ -57,9 +62,9 @@ public class ConversationController {
                 conversationService.updateSharing(putSharingDTO, conversationId, loggedInPatient);
         }
 
-        @GetMapping("/patients/conversations/{patientId}")
+        @GetMapping("/patients/conversations")
         @ResponseStatus(HttpStatus.OK)
-        public List<NameConversationOutputDTO> nameConversationDTO(HttpServletRequest httpServletRequest) {
+        public List<NameConversationOutputDTO> getConversationNames(HttpServletRequest httpServletRequest) {
                 Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
                 List<GeneralConversation> conversationList = conversationService
                                 .getAllConversationsFromPatient(loggedInPatient);
@@ -70,11 +75,10 @@ public class ConversationController {
         @ResponseStatus(HttpStatus.OK)
         public MessageOutputDTO sendMessage(HttpServletRequest httpServletRequest,
                         @RequestBody CreateMessageDTO createMessageDTO,
-                        @PathVariable String conversationId) throws AccessDeniedException {
+                        @PathVariable String conversationId) {
                 Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
                 Message answeredMessage = messageService.generateAnswer(loggedInPatient, conversationId,
                                 createMessageDTO.getMessage());
-                System.out.println("Message sent: " + answeredMessage.getResponse());
                 return MessageMapper.INSTANCE.convertEntityToMessageOutputDTO(answeredMessage);
         }
 
@@ -83,11 +87,13 @@ public class ConversationController {
         public CompleteConversationOutputDTO getAllMessages(HttpServletRequest httpServletRequest,
                         @PathVariable String conversationId) {
                 Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
-                GeneralConversation completeConversation = conversationService.getAllMessagesFromConversation(
+                Conversation completeConversation = conversationService.getAllMessagesFromConversation(
                                 conversationId,
                                 loggedInPatient);
+                GeneralConversation generalConversation = (GeneralConversation) completeConversation;
+
                 CompleteConversationOutputDTO completeConversationOutputDTO = ConversationMapper.INSTANCE
-                                .convertEntityToCompleteConversationOutputDTO(completeConversation);
+                                .convertEntityToCompleteConversationOutputDTO(generalConversation);
                 completeConversationOutputDTO.setMessages(new ArrayList<>());
 
                 for (Message message : completeConversation.getMessages()) {

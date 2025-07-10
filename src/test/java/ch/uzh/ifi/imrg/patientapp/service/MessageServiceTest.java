@@ -1,9 +1,6 @@
 package ch.uzh.ifi.imrg.patientapp.service;
 
-import ch.uzh.ifi.imrg.patientapp.entity.ChatbotTemplate;
-import ch.uzh.ifi.imrg.patientapp.entity.GeneralConversation;
-import ch.uzh.ifi.imrg.patientapp.entity.Message;
-import ch.uzh.ifi.imrg.patientapp.entity.Patient;
+import ch.uzh.ifi.imrg.patientapp.entity.*;
 import ch.uzh.ifi.imrg.patientapp.repository.ChatbotTemplateRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.ConversationRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.MessageRepository;
@@ -16,6 +13,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.lang.reflect.Method;
 import java.time.Instant;
@@ -40,9 +39,6 @@ public class MessageServiceTest {
 
         @Mock
         private AuthorizationService authorizationService;
-
-        @Mock
-        private ChatbotTemplateRepository chatbotTemplateRepository;
 
         @InjectMocks
         private MessageService messageService;
@@ -74,14 +70,21 @@ public class MessageServiceTest {
                 when(conversationRepository.findById(externalId))
                                 .thenReturn(Optional.of(conversation));
 
-                when(chatbotTemplateRepository.findByPatientId(patient.getId()))
-                                .thenReturn(List.of(chatbotTemplate));
-
                 when(promptBuilderService.getResponse(
-                                eq(false),
                                 any(List.class),
                                 eq(inputMessage),
-                                eq(chatbotTemplate))).thenReturn(mockResponse);
+                                nullable(String.class))).thenReturn(mockResponse);
+
+                doNothing().when(authorizationService).checkConversationAccess(
+                                eq(conversation),
+                                eq(patient),
+                                anyString());
+
+                when(promptBuilderService.getHarmRating(anyString()))
+                                .thenReturn("harm-raw");
+
+                when(promptBuilderService.extractContentFromResponse("harm-raw"))
+                                .thenReturn("false");
 
                 // Return the actual message passed into save(), not a dummy one
                 when(messageRepository.save(any()))
@@ -160,14 +163,15 @@ public class MessageServiceTest {
                 when(conversationRepository.findById(externalId))
                                 .thenReturn(Optional.of(conversation));
 
-                when(chatbotTemplateRepository.findByPatientId(patient.getId()))
-                                .thenReturn(List.of(chatbotTemplate));
-
                 when(promptBuilderService.getResponse(
-                                eq(false),
                                 any(List.class),
                                 eq(inputMessage),
-                                eq(chatbotTemplate))).thenReturn(mockResponse);
+                                nullable(String.class))).thenReturn(mockResponse);
+                when(promptBuilderService.getHarmRating(anyString()))
+                                .thenReturn("harm-raw");
+
+                when(promptBuilderService.extractContentFromResponse("harm-raw"))
+                                .thenReturn("false");
 
                 // The real object that is passed to save and returned
                 Message newMessage = new Message();
@@ -215,7 +219,7 @@ public class MessageServiceTest {
 
                         // Access private static method
                         Method method = MessageService.class.getDeclaredMethod("parseMessagesFromConversation",
-                                        GeneralConversation.class,
+                                        Conversation.class,
                                         String.class);
                         method.setAccessible(true);
 
@@ -230,6 +234,113 @@ public class MessageServiceTest {
                         assertEquals("assistant", result.get(1).get("role"));
                         assertEquals("Hi there!", result.get(1).get("content"));
                 }
+        }
+
+        @Test
+        @MockitoSettings(strictness = Strictness.LENIENT)
+        void generateAnswer_shouldSummarizeOldMessagesAndMarkMessagesAsSummarized() {
+                // Arrange
+                String externalId = "conv-001";
+                String inputMessage = "User question?";
+                String mockKey = "mock-decrypted-key";
+                String encryptedMessage = "encrypted-message";
+                String mockSummary = "<summary>Summary content</summary>";
+                String extractedSummary = "Summary content";
+                String mockResponse = "<think>Reasoning</think> Answer here.";
+                String encryptedResponse = "encrypted-response";
+
+                Patient patient = new Patient();
+                patient.setPrivateKey("encrypted-pk");
+                patient.setId("123");
+
+                GeneralConversation conversation = new GeneralConversation();
+                conversation.setId(externalId);
+                conversation.setMessages(new ArrayList<>());
+                conversation.setPatient(patient);
+
+                // Create >100 prior messages
+                List<Message> priorMessagesEntities = new ArrayList<>();
+                for (int i = 0; i < 110; i++) {
+                        Message m = new Message();
+                        m.setRequest("req-" + i);
+                        m.setResponse("res-" + i);
+                        priorMessagesEntities.add(m);
+                }
+                conversation.setMessages(priorMessagesEntities);
+
+                // Simulated decrypted messages
+                List<Map<String, String>> decryptedMessages = new ArrayList<>();
+                for (int i = 0; i < 110; i++) {
+                        decryptedMessages.add(Map.of("role", "user", "content", "message " + i));
+                }
+
+                when(conversationRepository.findById(externalId)).thenReturn(Optional.of(conversation));
+                when(promptBuilderService.getResponse(
+                                any(List.class),
+                                eq(inputMessage),
+                                nullable(String.class))).thenReturn(mockResponse);
+                when(promptBuilderService.getSummary(anyList(), nullable(String.class))).thenReturn(mockSummary);
+                when(promptBuilderService.extractContentFromResponse(mockSummary)).thenReturn(extractedSummary);
+                when(promptBuilderService.extractContentFromResponse(mockResponse)).thenReturn("Answer here.");
+                when(promptBuilderService.getHarmRating(anyString()))
+                                .thenReturn("harm-raw");
+
+                when(promptBuilderService.extractContentFromResponse("harm-raw"))
+                                .thenReturn("false");
+
+                doNothing().when(authorizationService).checkConversationAccess(any(), any(), anyString());
+
+                // Return the actual message
+                when(messageRepository.save(any(Message.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+                // Provide conversation messages to be marked summarized
+                List<Message> messagesToMark = new ArrayList<>();
+                for (int i = 0; i < 30; i++) {
+                        Message m = mock(Message.class);
+                        messagesToMark.add(m);
+                }
+                when(messageRepository.findByConversationIdAndInSystemPromptSummaryFalseOrderByCreatedAt(externalId))
+                                .thenReturn(messagesToMark);
+
+                try (MockedStatic<CryptographyUtil> mocked = mockStatic(CryptographyUtil.class);
+                                MockedStatic<MessageService> parseMock = mockStatic(MessageService.class)) {
+
+                        mocked.when(() -> CryptographyUtil.decrypt("encrypted-pk")).thenReturn(mockKey);
+                        mocked.when(() -> CryptographyUtil.encrypt(inputMessage, mockKey)).thenReturn(encryptedMessage);
+                        mocked.when(() -> CryptographyUtil.encrypt("Answer here.", mockKey))
+                                        .thenReturn(encryptedResponse);
+
+                        parseMock.when(() -> MessageService.parseMessagesFromConversation(any(Conversation.class),
+                                        any(String.class)))
+                                        .thenReturn(decryptedMessages);
+
+                        // Act
+                        Message result = messageService.generateAnswer(patient, externalId, inputMessage);
+
+                        // Assert
+                        assertNotNull(result);
+                        assertEquals(inputMessage, result.getRequest());
+                        assertEquals("Answer here.", result.getResponse());
+                        assertEquals(externalId, result.getExternalConversationId());
+
+                        // Verify the summary was created and set
+                        verify(promptBuilderService).getSummary(anyList(), nullable(String.class));
+                        assertEquals(extractedSummary, conversation.getChatSummary());
+
+                        // Verify that messages were marked summarized
+                        for (int i = 0; i < 20; i++) {
+                                verify(messagesToMark.get(i)).setInSystemPromptSummary(true);
+                        }
+                        // Only the first 20 should be marked, the last 10 should be untouched
+                        for (int i = 20; i < 30; i++) {
+                                verify(messagesToMark.get(i), never()).setInSystemPromptSummary(true);
+                        }
+
+                        verify(messageRepository, atLeastOnce()).flush();
+                        verify(messageRepository).save(any(Message.class));
+                        verify(conversationRepository, times(2)).findById(externalId);
+                }
+
         }
 
 }

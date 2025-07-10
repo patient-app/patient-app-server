@@ -1,9 +1,6 @@
 package ch.uzh.ifi.imrg.patientapp.service;
 
-import ch.uzh.ifi.imrg.patientapp.entity.ChatbotTemplate;
-import ch.uzh.ifi.imrg.patientapp.entity.GeneralConversation;
-import ch.uzh.ifi.imrg.patientapp.entity.Message;
-import ch.uzh.ifi.imrg.patientapp.entity.Patient;
+import ch.uzh.ifi.imrg.patientapp.entity.*;
 import ch.uzh.ifi.imrg.patientapp.repository.ChatbotTemplateRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.ConversationRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.MessageRepository;
@@ -13,10 +10,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.*;
 
 @Service
@@ -25,22 +19,19 @@ public class MessageService {
 
     private final MessageRepository messageRepository;
     private final ConversationRepository conversationRepository;
-    private final ChatbotTemplateRepository chatbotTemplateRepository;
 
     private final PromptBuilderService promptBuilderService;
     private final AuthorizationService authorizationService;
 
     public MessageService(MessageRepository messageRepository, ConversationRepository conversationRepository,
-            ChatbotTemplateRepository chatbotTemplateRepository,
             PromptBuilderService promptBuilderService, AuthorizationService authorizationService) {
         this.messageRepository = messageRepository;
         this.conversationRepository = conversationRepository;
-        this.chatbotTemplateRepository = chatbotTemplateRepository;
         this.promptBuilderService = promptBuilderService;
         this.authorizationService = authorizationService;
     }
 
-    private static List<Map<String, String>> parseMessagesFromConversation(GeneralConversation conversation,
+    static List<Map<String, String>> parseMessagesFromConversation(Conversation conversation,
             String key) {
         List<Map<String, String>> priorMessages = new ArrayList<>();
 
@@ -63,9 +54,10 @@ public class MessageService {
     }
 
     public Message generateAnswer(Patient patient, String conversationId, String message) {
+        int summaryThreshold = 100; // Must be double of number of messages to summarize
+        Optional<Conversation> optionalConversation = conversationRepository.findById(conversationId);
 
-        Optional<GeneralConversation> optionalConversation = conversationRepository.findById(conversationId);
-        GeneralConversation conversation = optionalConversation
+        Conversation conversation = optionalConversation
                 .orElseThrow(() -> new IllegalArgumentException("Conversation not found"));
         authorizationService.checkConversationAccess(conversation, patient,
                 "You are trying to send a message to another persons chat.");
@@ -75,22 +67,30 @@ public class MessageService {
         newMessage.setRequest(CryptographyUtil.encrypt(message, key));
 
         List<Map<String, String>> priorMessages = parseMessagesFromConversation(conversation, key);
-        List<ChatbotTemplate> chatbotTemplates = chatbotTemplateRepository.findByPatientId(patient.getId());
-        String rawAnswer = promptBuilderService.getResponse(patient.isAdmin(), priorMessages, message,
-                chatbotTemplates.get(0));
+        if (priorMessages.size() > summaryThreshold) {
+            List<Map<String, String>> oldMessages = priorMessages.subList(0, priorMessages.size() - 20);
+            System.out.println("oldMessages:" + oldMessages);
+            String rawSummary = promptBuilderService.getSummary(oldMessages, conversation.getChatSummary());
+            conversation.setChatSummary(promptBuilderService.extractContentFromResponse(rawSummary));
+            priorMessages = priorMessages.subList(priorMessages.size() - 20, priorMessages.size());
 
-        // extract the answer part from the response
-        String regex = "</think>\\s*([\\s\\S]*)";
-        Pattern pattern = Pattern.compile(regex, Pattern.DOTALL);
-        Matcher matcher = pattern.matcher(rawAnswer);
+            List<Message> conversationMessages = messageRepository
+                    .findByConversationIdAndInSystemPromptSummaryFalseOrderByCreatedAt(conversationId);
+            // Mark all except the last 10 as summarized
+            int messagesToSummarize = conversationMessages.size() - 10;
+            if (messagesToSummarize > 0) {
+                for (Message m : conversationMessages.subList(0, messagesToSummarize)) {
+                    m.setInSystemPromptSummary(true);
+                }
+                messageRepository.flush();
 
-        String answer;
+            }
 
-        if (matcher.find()) {
-            answer = matcher.group(1).trim();
-        } else {
-            throw new IllegalStateException("No <think> closing tag found in response:\n" + rawAnswer);
         }
+
+        String rawAnswer = promptBuilderService.getResponse(priorMessages, message, conversation.getSystemPrompt());
+
+        String answer = promptBuilderService.extractContentFromResponse(rawAnswer);
 
         newMessage.setResponse(CryptographyUtil.encrypt(answer, key));
         newMessage.setConversation(conversation);
@@ -101,7 +101,7 @@ public class MessageService {
         messageRepository.save(newMessage);
         messageRepository.flush();
 
-        GeneralConversation refreshedConversation = conversationRepository.findById(conversationId)
+        Conversation refreshedConversation = conversationRepository.findById(conversationId)
                 .orElseThrow(() -> new IllegalArgumentException("Conversation not found"));
 
         // Make a frontend version
