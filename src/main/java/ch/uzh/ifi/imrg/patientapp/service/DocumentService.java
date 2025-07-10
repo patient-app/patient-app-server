@@ -20,6 +20,7 @@ import ch.uzh.ifi.imrg.patientapp.repository.DocumentRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.PatientDocumentRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.PatientRepository;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.document.DocumentDownloadDTO;
+import ch.uzh.ifi.imrg.patientapp.utils.DocumentUtil;
 
 @Service
 @Transactional
@@ -66,11 +67,14 @@ public class DocumentService {
         });
 
         PatientDocument patientDocument = new PatientDocument(patient, document);
+        patientDocumentRepository.save(patientDocument);
 
-        // TODO: write helper function to create sysprompt
-        String systemPrompt = "this will be the system prompt";
+        DocumentUtil.ExtractionResult result = DocumentUtil.extractTextResult(patientDocument);
 
-        patientDocument.getConversation().setSystemPrompt(systemPrompt);
+        if (result.isHumanReadable()) {
+            patientDocument.getConversation().setSystemPrompt(result.getText());
+        } else {
+        }
 
         patientDocumentRepository.save(patientDocument);
 
