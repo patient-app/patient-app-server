@@ -36,7 +36,7 @@ public class MessageService {
         List<Map<String, String>> priorMessages = new ArrayList<>();
 
         for (Message msg : conversation.getMessages()) {
-            if (msg.getRequest() != null && !msg.getRequest().trim().isEmpty()) {
+            if (msg.getRequest() != null && !msg.getRequest().trim().isEmpty() && !msg.isInSystemPromptSummary()) {
                 String decryptedRequest = CryptographyUtil.decrypt(msg.getRequest(), key);
                 priorMessages.add(Map.of(
                         "role", "user",
@@ -65,6 +65,12 @@ public class MessageService {
         // Make message persistent
         Message newMessage = new Message();
         newMessage.setRequest(CryptographyUtil.encrypt(message, key));
+
+        String rawHarm = promptBuilderService.getHarmRating(message);
+        String harm = promptBuilderService.extractContentFromResponse(rawHarm);
+        if (harm.equals("true")) {
+            System.out.println("Message contains harmful content.");
+        }
 
         List<Map<String, String>> priorMessages = parseMessagesFromConversation(conversation, key);
         if (priorMessages.size() > summaryThreshold) {
