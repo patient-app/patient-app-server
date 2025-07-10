@@ -3,7 +3,7 @@ package ch.uzh.ifi.imrg.patientapp.controller;
 import org.springframework.web.bind.annotation.RestController;
 
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.output.DocumentConversationOutputDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.output.document.DocumentChatbotOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.document.DocumentDownloadDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.document.DocumentOverviewDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.DocumentMapper;
@@ -53,11 +53,11 @@ public class DocumentController {
     }
 
     @GetMapping("/patients/documents/{documentId}/chatbot")
-    public DocumentConversationOutputDTO getAllMessages(@PathVariable String documentId,
+    public DocumentChatbotOutputDTO getAllMessages(@PathVariable String documentId,
             HttpServletRequest httpServletRequest) {
         Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
 
-        return new DocumentConversationOutputDTO();
+        return documentService.getDocumentChatbot(loggedInPatient, documentId);
     }
 
 }

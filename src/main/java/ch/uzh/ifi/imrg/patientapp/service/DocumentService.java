@@ -14,13 +14,17 @@ import org.springframework.web.server.ResponseStatusException;
 
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.entity.Document.Document;
+import ch.uzh.ifi.imrg.patientapp.entity.Document.DocumentConversation;
 import ch.uzh.ifi.imrg.patientapp.entity.Document.PatientDocument;
 import ch.uzh.ifi.imrg.patientapp.entity.Document.PatientDocumentId;
 import ch.uzh.ifi.imrg.patientapp.repository.DocumentRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.PatientDocumentRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.PatientRepository;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.output.document.DocumentChatbotOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.document.DocumentDownloadDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.mapper.DocumentMapper;
 import ch.uzh.ifi.imrg.patientapp.utils.DocumentUtil;
+import jakarta.persistence.EntityNotFoundException;
 
 @Service
 @Transactional
@@ -30,9 +34,10 @@ public class DocumentService {
     private final PatientRepository patientRepository;
     private final PatientDocumentRepository patientDocumentRepository;
     private final MessageDigest digest;
+    private final DocumentMapper documentMapper;
 
     public DocumentService(DocumentRepository documentRepository, PatientRepository patientRepository,
-            PatientDocumentRepository patientDocumentRepository) {
+            PatientDocumentRepository patientDocumentRepository, DocumentMapper documentMapper) {
         this.documentRepository = documentRepository;
         this.patientRepository = patientRepository;
         this.patientDocumentRepository = patientDocumentRepository;
@@ -41,6 +46,7 @@ public class DocumentService {
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException("SHA-256 algorithm not available", e);
         }
+        this.documentMapper = documentMapper;
     }
 
     public Document uploadAndShare(String patientId, MultipartFile file) {
@@ -123,5 +129,20 @@ public class DocumentService {
         for (Document doc : docs) {
             removeDocumentForPatient(patientId, doc.getId());
         }
+    }
+
+    public DocumentChatbotOutputDTO getDocumentChatbot(Patient patient, String documentId) {
+        PatientDocumentId pk = new PatientDocumentId(patient.getId(), documentId);
+        PatientDocument patientDocument = patientDocumentRepository.findById(pk)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "No PatientDocument for patient=" + patient.getId() + " and document=" + documentId));
+
+        DocumentConversation conversation = patientDocument.getConversation();
+
+        if (conversation == null) {
+            throw new IllegalArgumentException("No conversation found for exercise with ID: " + documentId);
+        }
+
+        return documentMapper.documentConversationToExcerciseChatbotOutputDTO(conversation);
     }
 }
