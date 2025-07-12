@@ -4,6 +4,7 @@ import ch.uzh.ifi.imrg.patientapp.entity.*;
 import ch.uzh.ifi.imrg.patientapp.repository.ChatbotTemplateRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.ConversationRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.ExerciseConversationRepository;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreateConversationDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutSharingDTO;
 import ch.uzh.ifi.imrg.patientapp.service.aiService.PromptBuilderService;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,6 +50,9 @@ public class ConversationServiceTest {
         Patient patient = new Patient();
         patient.setId("p1");
 
+        CreateConversationDTO createConversationDTO = new CreateConversationDTO();
+        createConversationDTO.setConversationName("conversationName");
+
         GeneralConversation savedConversation = new GeneralConversation();
         savedConversation.setPatient(patient);
 
@@ -66,7 +70,7 @@ public class ConversationServiceTest {
         when(conversationRepository.save(any(GeneralConversation.class)))
                 .thenReturn(savedConversation);
 
-        GeneralConversation result = conversationService.createConversation(patient);
+        GeneralConversation result = conversationService.createConversation(patient, createConversationDTO);
 
         assertEquals(patient, result.getPatient());
         verify(conversationRepository).save(any(GeneralConversation.class));

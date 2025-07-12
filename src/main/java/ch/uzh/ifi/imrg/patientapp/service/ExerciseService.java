@@ -100,7 +100,7 @@ public class ExerciseService {
         ExerciseConversation exerciseConversation = new ExerciseConversation();
         exerciseConversation.setPatient(patient);
         exerciseConversation.setSystemPrompt(promptBuilderService.getSystemPrompt(chatbotTemplate,exerciseInputDTO.getExerciseExplanation()));
-        exerciseConversation.setName(exerciseInputDTO.getName()+ " - chatbot");
+        exerciseConversation.setConversationName(exerciseInputDTO.getName()+ " - chatbot");
         exerciseConversationRepository.save(exerciseConversation);
 
         exercise.setExerciseConversation(exerciseConversation);
