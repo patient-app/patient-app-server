@@ -6,5 +6,5 @@ import lombok.Setter;
 @Getter
 @Setter
 public class CreateConversationDTO {
-        private String email;
+        private String conversationName;
 }

@@ -3,14 +3,13 @@ package ch.uzh.ifi.imrg.patientapp.controller;
 import ch.uzh.ifi.imrg.patientapp.entity.GeneralConversation;
 import ch.uzh.ifi.imrg.patientapp.entity.Message;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
-import ch.uzh.ifi.imrg.patientapp.repository.ConversationRepository;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreateConversationDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreateMessageDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutSharingDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.CompleteConversationOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.CreateConversationOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.MessageOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.NameConversationOutputDTO;
-import ch.uzh.ifi.imrg.patientapp.rest.mapper.MessageMapper;
 import ch.uzh.ifi.imrg.patientapp.service.*;
 import ch.uzh.ifi.imrg.patientapp.utils.CryptographyUtil;
 
@@ -55,11 +54,13 @@ public class ConversationControllerTest {
         Patient patient = new Patient();
         GeneralConversation conversation = new GeneralConversation();
         conversation.setId("12345");
+        CreateConversationDTO createConversationDTO = new CreateConversationDTO();
+        createConversationDTO.setConversationName("conversationName");
 
         when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
-        when(conversationService.createConversation(patient)).thenReturn(conversation);
+        when(conversationService.createConversation(patient, createConversationDTO)).thenReturn(conversation);
 
-        CreateConversationOutputDTO result = conversationController.createConversation(request);
+        CreateConversationOutputDTO result = conversationController.createConversation(request, createConversationDTO);
 
         assertEquals("12345", result.getId());
         verify(patientService).addConversationToPatient(patient, conversation);
@@ -120,7 +121,7 @@ public class ConversationControllerTest {
 
         GeneralConversation conversation = new GeneralConversation();
         conversation.setId("cid123");
-        conversation.setName("Test Conversation");
+        conversation.setConversationName("Test Conversation");
 
         List<GeneralConversation> conversationList = Collections.singletonList(conversation);
 
