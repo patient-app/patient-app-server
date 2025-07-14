@@ -47,5 +47,13 @@ public class CoachChatbotController {
         chatbotService.updateChatbot(patientId, updateChatbotDTO);
     }
 
+    @GetMapping("/coach/patients/{patientId}/chatbot-summary")
+    @ResponseStatus(HttpStatus.OK)
+    @SecurityRequirement(name = "X-Coach-Key")
+    public void getConversationSummary(@PathVariable String patientId) {
+        chatbotService.getConversationSummary(patientId);
+    }
+
+
 
 }
