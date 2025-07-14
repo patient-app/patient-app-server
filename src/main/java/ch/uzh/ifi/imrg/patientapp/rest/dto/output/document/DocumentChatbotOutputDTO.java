@@ -7,6 +7,5 @@ import lombok.Setter;
 @Setter
 public class DocumentChatbotOutputDTO {
     private String name;
-    private String chatbotIcon;
     private String id;
 }

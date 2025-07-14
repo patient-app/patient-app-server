@@ -11,5 +11,6 @@ import ch.uzh.ifi.imrg.patientapp.rest.dto.output.MessageOutputDTO;
 @Setter
 public class DocumentConversationOutputDTO {
     private String id;
+    private String name;
     private List<MessageOutputDTO> messages;
 }
