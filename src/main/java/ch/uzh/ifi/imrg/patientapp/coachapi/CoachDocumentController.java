@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
@@ -38,7 +39,7 @@ public class CoachDocumentController {
     @ResponseStatus(HttpStatus.CREATED)
     @SecurityRequirement(name = "X-Coach-Key")
     public DocumentOverviewDTO uploadAndShare(@PathVariable String patientId,
-            @RequestPart("file") @Parameter(schema = @Schema(type = "string", format = "binary")) MultipartFile file) {
+            @RequestParam("file") MultipartFile file) {
 
         Document doc = documentService.uploadAndShare(patientId, file);
 
