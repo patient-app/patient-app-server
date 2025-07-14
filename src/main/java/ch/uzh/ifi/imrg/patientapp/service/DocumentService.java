@@ -24,6 +24,7 @@ import ch.uzh.ifi.imrg.patientapp.rest.dto.output.document.DocumentChatbotOutput
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.document.DocumentDownloadDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.DocumentMapper;
 import ch.uzh.ifi.imrg.patientapp.utils.DocumentUtil;
+import ch.uzh.ifi.imrg.patientapp.service.aiService.PromptBuilderService;
 import jakarta.persistence.EntityNotFoundException;
 
 @Service
@@ -35,9 +36,11 @@ public class DocumentService {
     private final PatientDocumentRepository patientDocumentRepository;
     private final MessageDigest digest;
     private final DocumentMapper documentMapper;
+    private final PromptBuilderService promptBuilderService;
 
     public DocumentService(DocumentRepository documentRepository, PatientRepository patientRepository,
-            PatientDocumentRepository patientDocumentRepository, DocumentMapper documentMapper) {
+            PatientDocumentRepository patientDocumentRepository, DocumentMapper documentMapper,
+            PromptBuilderService promptBuilderService) {
         this.documentRepository = documentRepository;
         this.patientRepository = patientRepository;
         this.patientDocumentRepository = patientDocumentRepository;
@@ -47,6 +50,7 @@ public class DocumentService {
             throw new IllegalStateException("SHA-256 algorithm not available", e);
         }
         this.documentMapper = documentMapper;
+        this.promptBuilderService = promptBuilderService;
     }
 
     public Document uploadAndShare(String patientId, MultipartFile file) {
@@ -78,7 +82,8 @@ public class DocumentService {
         DocumentUtil.ExtractionResult result = DocumentUtil.extractTextResult(patientDocument);
 
         if (result.isHumanReadable()) {
-            patientDocument.getConversation().setSystemPrompt(result.getText());
+            patientDocument.getConversation().setSystemPrompt(
+                    promptBuilderService.getDocumentSystemPrompt(patient.getChatbotTemplate(), result.getText()));
         } else {
         }
 

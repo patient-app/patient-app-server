@@ -1,16 +1,12 @@
 package ch.uzh.ifi.imrg.patientapp.service.aiService;
 
 import ch.uzh.ifi.imrg.patientapp.entity.ChatbotTemplate;
-import ch.uzh.ifi.imrg.patientapp.repository.ChatbotTemplateRepository;
 import jakarta.transaction.Transactional;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -24,31 +20,37 @@ public class PromptBuilderService {
     }
 
     public String getSystemPrompt(ChatbotTemplate chatbotTemplate) {
-            return String.format(
-                    "Act as a %s, who cares about the other person. Your tone should be %s. You will interact with a human, that needs someone to talk to. You can be a friend, a family member, a therapist, or anyone else. You can ask questions, give advice, or just listen. Remember, you are not a therapist, but a friend. Please keep your own responses to the person short. No longer than 200 characters.",
-                    chatbotTemplate.getChatbotRole(),
-                    chatbotTemplate.getChatbotTone()
-            );
+        return String.format(
+                "Act as a %s, who cares about the other person. Your tone should be %s. You will interact with a human, that needs someone to talk to. You can be a friend, a family member, a therapist, or anyone else. You can ask questions, give advice, or just listen. Remember, you are not a therapist, but a friend. Please keep your own responses to the person short. No longer than 200 characters.",
+                chatbotTemplate.getChatbotRole(),
+                chatbotTemplate.getChatbotTone());
 
     }
+
     public String getSystemPrompt(ChatbotTemplate chatbotTemplate, String context) {
         return String.format(
                 "Act as a %s, who cares about the other person. Your tone should be %s. You will interact with a human, that needs someone to talk to. You should help the person to understand this exercise: %s When answering questions about the exercise only use the description from before. It is really important to stick to this description. Please keep your own responses to the person short. No longer than 400 characters.",
                 chatbotTemplate.getChatbotRole(),
                 chatbotTemplate.getChatbotTone(),
-                context
-        );
+                context);
 
     }
 
-    public String getResponse(List<Map<String, String>> priorMessages,String message, String systemPrompt) {
+    public String getDocumentSystemPrompt(ChatbotTemplate chatbotTemplate, String documentContext) {
+        return String.format(
+                "Act as a %s, who cares about the other person. Your tone should be %s. You will interact with a human, that needs someone to talk to. You should help the person to understand this document: %s When answering questions about the document only use the content from the document. It is really important to stick to this document. Please keep your own responses to the person short. No longer than 400 characters.",
+                chatbotTemplate.getChatbotRole(),
+                chatbotTemplate.getChatbotTone(),
+                documentContext);
+    }
+
+    public String getResponse(List<Map<String, String>> priorMessages, String message, String systemPrompt) {
         List<Map<String, String>> messages = new ArrayList<>();
 
         // System prompt
         messages.add(Map.of(
                 "role", "system",
-                "content", systemPrompt
-        ));
+                "content", systemPrompt));
 
         // Add prior chat history
         if (priorMessages != null) {
@@ -58,8 +60,7 @@ public class PromptBuilderService {
         // Current user message
         messages.add(Map.of(
                 "role", "user",
-                "content", message
-        ));
+                "content", message));
 
         return chatGPTService.getResponse(messages);
     }
@@ -84,8 +85,7 @@ public class PromptBuilderService {
         // System prompt
         messages.add(Map.of(
                 "role", "system",
-                "content", systemPrompt
-        ));
+                "content", systemPrompt));
 
         // Add prior chat history
         if (allMessages != null) {
@@ -101,14 +101,13 @@ public class PromptBuilderService {
         // System prompt
         messages.add(Map.of(
                 "role", "system",
-                "content", "You are a classifier that detects suicide risk and self harm in text messages. Respond ONLY with 'true' or 'false'. If either appear Respond with 'true'."
-        ));
+                "content",
+                "You are a classifier that detects suicide risk and self harm in text messages. Respond ONLY with 'true' or 'false'. If either appear Respond with 'true'."));
 
         // Current user message
         messages.add(Map.of(
                 "role", "user",
-                "content", message
-        ));
+                "content", message));
 
         return chatGPTService.getResponse(messages);
     }
