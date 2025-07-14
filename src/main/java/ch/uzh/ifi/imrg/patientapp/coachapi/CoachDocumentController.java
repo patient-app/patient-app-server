@@ -8,14 +8,11 @@ import ch.uzh.ifi.imrg.patientapp.rest.dto.output.document.DocumentDownloadDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.document.DocumentOverviewDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.DocumentMapper;
 import ch.uzh.ifi.imrg.patientapp.service.DocumentService;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
@@ -40,9 +37,13 @@ public class CoachDocumentController {
     @ResponseStatus(HttpStatus.CREATED)
     @SecurityRequirement(name = "X-Coach-Key")
     public DocumentOverviewDTO uploadAndShare(@PathVariable String patientId,
-            @RequestPart("file") MultipartFile file) {
+            @RequestPart(value = "patientFile", required = false) MultipartFile patientFile) {
 
-        Document doc = documentService.uploadAndShare(patientId, file);
+        if (patientFile == null || patientFile.isEmpty()) {
+            throw new IllegalArgumentException("File is missing or empty.");
+        }
+
+        Document doc = documentService.uploadAndShare(patientId, patientFile);
 
         return documentMapper.toOverview(doc);
     }
