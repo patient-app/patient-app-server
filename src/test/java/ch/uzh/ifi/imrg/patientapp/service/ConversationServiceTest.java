@@ -4,16 +4,14 @@ import ch.uzh.ifi.imrg.patientapp.entity.*;
 import ch.uzh.ifi.imrg.patientapp.repository.ChatbotTemplateRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.ConversationRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.ExerciseConversationRepository;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreateConversationDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutConversationNameDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutSharingDTO;
 import ch.uzh.ifi.imrg.patientapp.service.aiService.PromptBuilderService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.core.parameters.P;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,8 +48,6 @@ public class ConversationServiceTest {
         Patient patient = new Patient();
         patient.setId("p1");
 
-        CreateConversationDTO createConversationDTO = new CreateConversationDTO();
-        createConversationDTO.setConversationName("conversationName");
 
         GeneralConversation savedConversation = new GeneralConversation();
         savedConversation.setPatient(patient);
@@ -70,7 +66,7 @@ public class ConversationServiceTest {
         when(conversationRepository.save(any(GeneralConversation.class)))
                 .thenReturn(savedConversation);
 
-        GeneralConversation result = conversationService.createConversation(patient, createConversationDTO);
+        GeneralConversation result = conversationService.createConversation(patient);
 
         assertEquals(patient, result.getPatient());
         verify(conversationRepository).save(any(GeneralConversation.class));

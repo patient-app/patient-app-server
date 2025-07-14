@@ -4,7 +4,7 @@ import ch.uzh.ifi.imrg.patientapp.entity.*;
 import ch.uzh.ifi.imrg.patientapp.repository.ChatbotTemplateRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.ConversationRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.ExerciseConversationRepository;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreateConversationDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutConversationNameDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutSharingDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.ConversationMapper;
 import ch.uzh.ifi.imrg.patientapp.service.aiService.PromptBuilderService;
@@ -33,8 +33,8 @@ public class ConversationService {
         this.chatbotTemplateRepository = chatbotTemplateRepository;
     }
 
-    public GeneralConversation createConversation(Patient patient, CreateConversationDTO createConversationDTO) {
-        GeneralConversation conversation = ConversationMapper.INSTANCE.createConversationDTOToConversation(createConversationDTO);
+    public GeneralConversation createConversation(Patient patient) {
+        GeneralConversation conversation = new GeneralConversation();
         ChatbotTemplate chatbotTemplate = chatbotTemplateRepository.findByPatientId(patient.getId()).getFirst();
         conversation.setSystemPrompt(promptBuilderService.getSystemPrompt(chatbotTemplate));
         conversation.setWelcomeMessage(chatbotTemplate.getWelcomeMessage());

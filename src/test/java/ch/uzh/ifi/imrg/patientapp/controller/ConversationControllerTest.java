@@ -3,7 +3,7 @@ package ch.uzh.ifi.imrg.patientapp.controller;
 import ch.uzh.ifi.imrg.patientapp.entity.GeneralConversation;
 import ch.uzh.ifi.imrg.patientapp.entity.Message;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreateConversationDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutConversationNameDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreateMessageDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutSharingDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.CompleteConversationOutputDTO;
@@ -54,13 +54,12 @@ public class ConversationControllerTest {
         Patient patient = new Patient();
         GeneralConversation conversation = new GeneralConversation();
         conversation.setId("12345");
-        CreateConversationDTO createConversationDTO = new CreateConversationDTO();
-        createConversationDTO.setConversationName("conversationName");
+
 
         when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
-        when(conversationService.createConversation(patient, createConversationDTO)).thenReturn(conversation);
+        when(conversationService.createConversation(patient)).thenReturn(conversation);
 
-        CreateConversationOutputDTO result = conversationController.createConversation(request, createConversationDTO);
+        CreateConversationOutputDTO result = conversationController.createConversation(request);
 
         assertEquals("12345", result.getId());
         verify(patientService).addConversationToPatient(patient, conversation);
