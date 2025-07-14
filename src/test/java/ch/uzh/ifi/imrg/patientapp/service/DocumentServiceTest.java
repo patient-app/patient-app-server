@@ -27,6 +27,7 @@ import ch.uzh.ifi.imrg.patientapp.repository.DocumentRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.PatientDocumentRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.PatientRepository;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.document.DocumentDownloadDTO;
+import ch.uzh.ifi.imrg.patientapp.service.aiService.PromptBuilderService;
 import ch.uzh.ifi.imrg.patientapp.utils.DocumentUtil;
 
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -40,6 +41,9 @@ public class DocumentServiceTest {
         private PatientRepository patientRepository;
         @Mock
         private PatientDocumentRepository patientDocumentRepository;
+
+        @Mock
+        private PromptBuilderService promptBuilderService;
 
         @InjectMocks
         private DocumentService service;
