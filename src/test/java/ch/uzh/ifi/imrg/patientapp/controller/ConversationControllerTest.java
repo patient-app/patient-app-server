@@ -182,4 +182,24 @@ public class ConversationControllerTest {
         verify(conversationService).deleteConversation(conversationId, mockPatient);
     }
 
+    @Test
+    void testPostConversationName_CallsServicesCorrectly() {
+        // Arrange
+        String conversationId = "conv789";
+        PutConversationNameDTO dto = new PutConversationNameDTO();
+        dto.setConversationName("New Name");
+
+        Patient mockPatient = new Patient();
+        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
+
+        // Act
+        conversationController.postConversationName(dto, conversationId, request);
+
+        // Assert
+        verify(patientService).getCurrentlyLoggedInPatient(request);
+        verify(conversationService).setConversationName(dto, conversationId, mockPatient);
+    }
+
+
+
 }

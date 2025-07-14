@@ -16,7 +16,9 @@ import java.util.List;
 public interface ConversationMapper {
         ConversationMapper INSTANCE = Mappers.getMapper(ConversationMapper.class);
 
-        GeneralConversation createConversationDTOToConversation(PutConversationNameDTO putConversationNameDTO);
+        GeneralConversation updateConversationFromPutConversationNameDTO(
+                        PutConversationNameDTO putConversationNameDTO,
+                        @MappingTarget GeneralConversation conversation);
         @Mapping(source = "shareWithAi", target = "shareWithAi")
         @Mapping(source = "shareWithCoach", target = "shareWithCoach")
         @Mapping(source= "conversationName", target = "name")

@@ -61,6 +61,14 @@ public class ConversationController {
                 conversationService.updateSharing(putSharingDTO, conversationId, loggedInPatient);
         }
 
+        @PutMapping("/patients/conversations/{conversationId}/conversation-name")
+        @ResponseStatus(HttpStatus.OK)
+        public void postConversationName(@RequestBody PutConversationNameDTO putConversationNameDTO,@PathVariable String conversationId,
+                                  HttpServletRequest httpServletRequest) {
+                Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
+                conversationService.setConversationName(putConversationNameDTO, conversationId, loggedInPatient);
+        }
+
         @GetMapping("/patients/conversations")
         @ResponseStatus(HttpStatus.OK)
         public List<NameConversationOutputDTO> getConversationNames(HttpServletRequest httpServletRequest) {

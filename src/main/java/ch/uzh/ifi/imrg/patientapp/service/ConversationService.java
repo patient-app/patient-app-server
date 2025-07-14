@@ -69,6 +69,20 @@ public class ConversationService {
         conversationRepository.save(conversation);
     }
 
+    public void setConversationName(PutConversationNameDTO putConversationNameDTO, String conversationId, Patient loggedInPatient) {
+        Optional<Conversation> optionalConversation = conversationRepository.findById(conversationId);
+        GeneralConversation conversation;
+        if (optionalConversation.isPresent()) {
+            conversation = (GeneralConversation) optionalConversation.get();
+        } else {
+            throw new NoSuchElementException("No conversation found with external ID: " + conversationId);
+        }
+        authorizationService.checkConversationAccess(conversation, loggedInPatient,
+                "You can't set the name of a chat of a different user.");
+        ConversationMapper.INSTANCE.updateConversationFromPutConversationNameDTO(putConversationNameDTO, conversation);
+        conversationRepository.save(conversation);
+    }
+
     public Conversation getAllMessagesFromConversation(String conversationId, Patient patient) {
         Conversation conversation = this.conversationRepository.findById(conversationId)
                 .orElseThrow(() -> new NoSuchElementException("No conversation found with this ID: " + conversationId));
