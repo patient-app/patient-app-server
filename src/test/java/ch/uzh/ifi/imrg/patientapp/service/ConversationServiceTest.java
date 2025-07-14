@@ -207,20 +207,20 @@ public class ConversationServiceTest {
                 ExerciseConversation exerciseConversation = new ExerciseConversation();
                 exerciseConversation.setMessages(new ArrayList<>(List.of(new Message(), new Message())));
 
-                when(exerciseConversationRepository.findById(conversationId))
+                when(conversationRepository.findById(conversationId))
                                 .thenReturn(Optional.of(exerciseConversation));
-                when(exerciseConversationRepository.findById(conversationId))
+                when(conversationRepository.findById(conversationId))
                                 .thenReturn(Optional.of(exerciseConversation));
 
                 // Act
-                conversationService.deleteAllMessagesFromExerciseConversation(conversationId, patient);
+                conversationService.deleteAllMessagesFromConversation(conversationId, patient);
 
                 // Assert
-                verify(exerciseConversationRepository).findById(conversationId);
+                verify(conversationRepository).findById(conversationId);
                 verify(authorizationService).checkConversationAccess(eq(exerciseConversation), eq(patient),
                                 contains("You can't delete chats of a different user."));
                 assertTrue(exerciseConversation.getMessages().isEmpty(), "Messages should be cleared");
-                verify(exerciseConversationRepository).save(exerciseConversation);
+                verify(conversationRepository).save(exerciseConversation);
         }
 
         @Test
@@ -229,17 +229,17 @@ public class ConversationServiceTest {
                 String conversationId = "nonexistent";
                 Patient patient = new Patient();
 
-                when(exerciseConversationRepository.findById(conversationId)).thenReturn(Optional.empty());
+                when(conversationRepository.findById(conversationId)).thenReturn(Optional.empty());
 
                 // Act & Assert
                 NoSuchElementException exception = assertThrows(NoSuchElementException.class,
-                                () -> conversationService.deleteAllMessagesFromExerciseConversation(conversationId,
+                                () -> conversationService.deleteAllMessagesFromConversation(conversationId,
                                                 patient));
 
                 assertEquals("No conversation found with external ID: " + conversationId, exception.getMessage());
-                verify(exerciseConversationRepository).findById(conversationId);
+                verify(conversationRepository).findById(conversationId);
                 verifyNoInteractions(authorizationService);
-                verify(exerciseConversationRepository, never()).save(any());
+                verify(conversationRepository, never()).save(any());
         }
 
 }
