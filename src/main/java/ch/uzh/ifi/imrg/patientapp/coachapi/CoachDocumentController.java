@@ -25,6 +25,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 
@@ -39,7 +40,7 @@ public class CoachDocumentController {
     @ResponseStatus(HttpStatus.CREATED)
     @SecurityRequirement(name = "X-Coach-Key")
     public DocumentOverviewDTO uploadAndShare(@PathVariable String patientId,
-            @RequestParam("file") MultipartFile file) {
+            @RequestPart("file") MultipartFile file) {
 
         Document doc = documentService.uploadAndShare(patientId, file);
 
