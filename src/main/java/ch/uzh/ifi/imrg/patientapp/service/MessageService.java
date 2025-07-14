@@ -75,7 +75,6 @@ public class MessageService {
         List<Map<String, String>> priorMessages = parseMessagesFromConversation(conversation, key);
         if (priorMessages.size() > summaryThreshold) {
             List<Map<String, String>> oldMessages = priorMessages.subList(0, priorMessages.size() - 20);
-            System.out.println("oldMessages:" + oldMessages);
             String rawSummary = promptBuilderService.getSummary(oldMessages, conversation.getChatSummary());
             conversation.setChatSummary(promptBuilderService.extractContentFromResponse(rawSummary));
             priorMessages = priorMessages.subList(priorMessages.size() - 20, priorMessages.size());

@@ -4,6 +4,7 @@ import ch.uzh.ifi.imrg.patientapp.entity.Conversation;
 import ch.uzh.ifi.imrg.patientapp.entity.GeneralConversation;
 import ch.uzh.ifi.imrg.patientapp.entity.Message;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreateConversationDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreateMessageDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutSharingDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.CompleteConversationOutputDTO;
@@ -45,9 +46,10 @@ public class ConversationController {
 
         @PostMapping("/patients/conversations")
         @ResponseStatus(HttpStatus.CREATED)
-        public CreateConversationOutputDTO createConversation(HttpServletRequest httpServletRequest) {
+        public CreateConversationOutputDTO createConversation(HttpServletRequest httpServletRequest,
+                                                              @RequestBody CreateConversationDTO createConversationDTO) {
                 Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
-                GeneralConversation createdConversation = conversationService.createConversation(loggedInPatient);
+                GeneralConversation createdConversation = conversationService.createConversation(loggedInPatient, createConversationDTO);
                 // add the conversation to the patient
                 patientService.addConversationToPatient(loggedInPatient, createdConversation);
                 return new CreateConversationOutputDTO(createdConversation.getId(),

@@ -33,7 +33,7 @@ public abstract class Conversation implements Serializable {
     protected Patient patient;
 
     @Column(nullable = true)
-    private String name;
+    private String conversationName;
 
     @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Message> messages = new ArrayList<>();
@@ -47,5 +47,7 @@ public abstract class Conversation implements Serializable {
     private String chatSummary;
 
     private String chatbotIcon;
+    private String welcomeMessage;
+
 
 }
