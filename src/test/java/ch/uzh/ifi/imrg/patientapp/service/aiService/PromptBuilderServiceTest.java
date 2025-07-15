@@ -220,7 +220,113 @@ public class PromptBuilderServiceTest {
         }));
     }
 
+    @Test
+    void getSummaryOfAllConversations_shouldCombineMultipleSummaries() {
+        // Arrange
+        List<String> summaries = List.of(
+                "First conversation summary.",
+                "Second conversation summary.",
+                "Third conversation summary."
+        );
 
+        String mockResponse = "<think>thinking</think>This is the overall summary.";
 
+        when(chatGPTService.getResponse(anyList()))
+                .thenReturn(mockResponse);
+
+        // Act
+        String result = promptBuilderService.getSummaryOfAllConversations(summaries);
+
+        // Assert
+        assertEquals("This is the overall summary.", result);
+
+        verify(chatGPTService).getResponse(argThat(messages -> {
+            // Should have exactly 2 messages
+            if (messages.size() != 2) return false;
+            Map<String, String> sys = messages.get(0);
+            Map<String, String> user = messages.get(1);
+
+            // System prompt correct
+            if (!sys.get("content").contains("summarizes multiple conversation summaries")) return false;
+            if (!sys.get("role").equals("system")) return false;
+
+            // User prompt contains all summaries numbered
+            String content = user.get("content");
+            return content.contains("Summary 1: First conversation summary.")
+                    && content.contains("Summary 2: Second conversation summary.")
+                    && content.contains("Summary 3: Third conversation summary.");
+        }));
+    }
+
+    @Test
+    void getSummaryOfAllConversations_shouldHandleSingleSummary() {
+        // Arrange
+        List<String> summaries = List.of("Only one conversation summary.");
+
+        String mockResponse = "<think>thinking</think>Single summary result.";
+
+        when(chatGPTService.getResponse(anyList()))
+                .thenReturn(mockResponse);
+
+        // Act
+        String result = promptBuilderService.getSummaryOfAllConversations(summaries);
+
+        // Assert
+        assertEquals("Single summary result.", result);
+
+        verify(chatGPTService).getResponse(argThat(messages -> {
+            if (messages.size() != 2) return false;
+            Map<String, String> user = messages.get(1);
+            String content = user.get("content");
+            return content.contains("Summary 1: Only one conversation summary.");
+        }));
+    }
+
+    @Test
+    void getSummaryOfAllConversations_shouldHandleEmptySummaries() {
+        // Arrange
+        List<String> summaries = List.of();
+
+        String mockResponse = "<think>thinking</think>No summaries provided.";
+
+        when(chatGPTService.getResponse(anyList()))
+                .thenReturn(mockResponse);
+
+        // Act
+        String result = promptBuilderService.getSummaryOfAllConversations(summaries);
+
+        // Assert
+        assertEquals("No summaries provided.", result);
+
+        verify(chatGPTService).getResponse(argThat(messages -> {
+            if (messages.size() != 2) return false;
+            Map<String, String> user = messages.get(1);
+            String content = user.get("content");
+            // Should still include the label even though the StringBuilder is empty
+            return content.contains("Here are the conversation summaries:");
+        }));
+    }
+
+    @Test
+    void getSummary_shouldThrowWhenNoThinkClosingTag() {
+        // Arrange
+        List<Map<String, String>> priorMessages = List.of(
+                Map.of("role", "user", "content", "Hello, are you there?")
+        );
+        // Response WITHOUT </think>
+        String invalidResponse = "This is some malformed response without closing tag.";
+
+        when(chatGPTService.getResponse(anyList()))
+                .thenReturn(invalidResponse);
+
+        // Act & Assert
+        IllegalStateException ex = assertThrows(
+                IllegalStateException.class,
+                () -> promptBuilderService.getSummary(priorMessages, null)
+        );
+
+        assertTrue(ex.getMessage().contains("No <think> closing tag found in response"));
+        assertTrue(ex.getMessage().contains("This is some malformed response"));
+    }
 
 }

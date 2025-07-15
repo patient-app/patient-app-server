@@ -2,13 +2,16 @@ package ch.uzh.ifi.imrg.patientapp.service;
 
 
 import ch.uzh.ifi.imrg.patientapp.entity.ChatbotTemplate;
+import ch.uzh.ifi.imrg.patientapp.entity.GeneralConversation;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.repository.ChatbotTemplateRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.ConversationRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.PatientRepository;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreateChatbotDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.GetConversationSummaryInputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.UpdateChatbotDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.ChatbotConfigurationOutputDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.output.ConversationSummaryOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.service.aiService.PromptBuilderService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,6 +33,17 @@ public class ChatbotServiceTest {
 
     @Mock
     private ChatbotTemplateRepository chatbotTemplateRepository;
+    @Mock
+    private ConversationRepository conversationRepository;
+
+    @Mock
+    private MessageService messageService;
+
+    @Mock
+    private AuthorizationService authorizationService;
+
+    @Mock
+    private PromptBuilderService promptBuilderService;
 
     @InjectMocks
     private ChatbotService chatbotService;
@@ -291,6 +305,78 @@ public class ChatbotServiceTest {
         verifyNoMoreInteractions(patientRepository, chatbotTemplateRepository);
     }
 
+    @Test
+    void getConversationSummary_ShouldThrow_WhenPatientNotFound() {
+        // Arrange
+        String patientId = "patient123";
+        GetConversationSummaryInputDTO inputDTO = new GetConversationSummaryInputDTO();
+        when(patientRepository.getPatientById(patientId)).thenReturn(null);
+
+        // Act & Assert
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> chatbotService.getConversationSummary(patientId, inputDTO)
+        );
+        assertTrue(ex.getMessage().contains("No patient found with ID: " + patientId));
+
+        verify(patientRepository).getPatientById(patientId);
+        verifyNoMoreInteractions(patientRepository);
+        verifyNoInteractions(conversationRepository, authorizationService, messageService, promptBuilderService);
+    }
+
+    @Test
+    void getConversationSummary_ShouldThrow_WhenNoConversationsFound() {
+        // Arrange
+        String patientId = "patient123";
+        GetConversationSummaryInputDTO inputDTO = new GetConversationSummaryInputDTO();
+        Patient patient = new Patient();
+        when(patientRepository.getPatientById(patientId)).thenReturn(patient);
+        when(conversationRepository.getConversationsSharedWithCoachByPatientId(patientId)).thenReturn(List.of());
+
+        // Act & Assert
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> chatbotService.getConversationSummary(patientId, inputDTO)
+        );
+        assertTrue(ex.getMessage().contains("No conversations found"));
+
+        verify(patientRepository).getPatientById(patientId);
+        verify(conversationRepository).getConversationsSharedWithCoachByPatientId(patientId);
+        verifyNoMoreInteractions(patientRepository, conversationRepository);
+        verifyNoInteractions(authorizationService, messageService, promptBuilderService);
+    }
+
+    @Test
+    void getConversationSummary_ShouldReturnSummary_WhenConversationsExist() {
+        // Arrange
+        String patientId = "patient123";
+        GetConversationSummaryInputDTO inputDTO = new GetConversationSummaryInputDTO();
+        Patient patient = new Patient();
+        GeneralConversation conversation1 = new GeneralConversation();
+        GeneralConversation conversation2 = new GeneralConversation();
+        List<GeneralConversation> conversations = List.of(conversation1, conversation2);
+
+        when(patientRepository.getPatientById(patientId)).thenReturn(patient);
+        when(conversationRepository.getConversationsSharedWithCoachByPatientId(patientId)).thenReturn(conversations);
+
+        when(messageService.getConversationSummary(conversation1, inputDTO)).thenReturn("Summary1");
+        when(messageService.getConversationSummary(conversation2, inputDTO)).thenReturn("Summary2");
+        when(promptBuilderService.getSummaryOfAllConversations(List.of("Summary1", "Summary2"))).thenReturn("Overall summary");
+
+        // Act
+        ConversationSummaryOutputDTO result = chatbotService.getConversationSummary(patientId, inputDTO);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals("Overall summary", result.getConversationSummary());
+
+        verify(patientRepository).getPatientById(patientId);
+        verify(conversationRepository).getConversationsSharedWithCoachByPatientId(patientId);
+        verify(authorizationService).checkConversationAccess(conversation1, patient, "You do not have access to conversations, which are not yours.");
+        verify(messageService).getConversationSummary(conversation1, inputDTO);
+        verify(messageService).getConversationSummary(conversation2, inputDTO);
+        verify(promptBuilderService).getSummaryOfAllConversations(List.of("Summary1", "Summary2"));
+    }
 
 
 
