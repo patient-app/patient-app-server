@@ -39,8 +39,7 @@ public class ConversationController {
                 this.patientService = patientService;
                 this.conversationService = conversationService;
                 this.messageService = messageService;
-
-            this.chatbotService = chatbotService;
+                this.chatbotService = chatbotService;
         }
 
         @PostMapping("/patients/conversations")
