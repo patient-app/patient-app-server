@@ -240,9 +240,9 @@ public class MessageServiceTest {
                 String inputMessage = "User question?";
                 String mockKey = "mock-decrypted-key";
                 String encryptedMessage = "encrypted-message";
-                String mockSummary = "<summary>Summary content</summary>";
+                String mockSummary = "Summary content";
                 String extractedSummary = "Summary content";
-                String mockResponse = "<think>Reasoning</think> Answer here.";
+                String mockResponse = "Answer here.";
                 String encryptedResponse = "encrypted-response";
 
                 Patient patient = new Patient();

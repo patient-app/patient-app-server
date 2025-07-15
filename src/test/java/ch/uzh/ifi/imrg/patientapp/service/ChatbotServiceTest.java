@@ -42,10 +42,11 @@ public class ChatbotServiceTest {
         ConversationRepository conversationRepository = Mockito.mock(ConversationRepository.class);
         MessageService messageService = Mockito.mock(MessageService.class);
         PromptBuilderService promptBuilderService = Mockito.mock(PromptBuilderService.class);
+        AuthorizationService authorizationService = Mockito.mock(AuthorizationService.class);
 
         // Act
         ChatbotService chatbotService = new ChatbotService(patientRepository, chatbotTemplateRepository,
-                conversationRepository, messageService, promptBuilderService);
+                conversationRepository, messageService, promptBuilderService, authorizationService);
 
         // Assert
         assertNotNull(chatbotService);

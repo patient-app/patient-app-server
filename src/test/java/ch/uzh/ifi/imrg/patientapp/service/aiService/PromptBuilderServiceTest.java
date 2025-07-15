@@ -25,7 +25,7 @@ public class PromptBuilderServiceTest {
     @Test
     void getResponse_shouldCallChatGPTServiceWithExpectedPrompt() {
         // Arrange
-        String mockResponse = "Hi there!";
+        String mockResponse = "<think>thinking</think>Hi there!";
 
         ChatbotTemplate template = new ChatbotTemplate();
         template.setChatbotRole("compassionate assistant");
@@ -41,14 +41,14 @@ public class PromptBuilderServiceTest {
         String actualResponse = promptBuilderService.getResponse( messages, "hi", anyString());
 
         // Assert
-        assertEquals(mockResponse, actualResponse);
+        assertEquals("Hi there!", actualResponse);
     }
 
 
     @Test
     void getResponse_shouldCallChatGPTServiceWithNoPriorMessages() {
         // Arrange
-        String mockResponse = "Hi there!";
+        String mockResponse = "<think>thinking</think>Hi there!";
 
         ChatbotTemplate template = new ChatbotTemplate();
         template.setChatbotRole("compassionate assistant");
@@ -60,7 +60,7 @@ public class PromptBuilderServiceTest {
         String actualResponse = promptBuilderService.getResponse( null, "hi", anyString());
 
         // Assert
-        assertEquals(mockResponse, actualResponse);
+        assertEquals("Hi there!", actualResponse);
     }
 
 
@@ -104,7 +104,7 @@ public class PromptBuilderServiceTest {
         List<Map<String, String>> priorMessages = List.of(
                 Map.of("role", "user", "content", "Hello, how are you?")
         );
-        String mockResponse = "Summary text.";
+        String mockResponse = "<think>thinking</think>Summary text.";
 
         when(chatGPTService.getResponse(anyList()))
                 .thenReturn(mockResponse);
@@ -113,7 +113,7 @@ public class PromptBuilderServiceTest {
         String result = promptBuilderService.getSummary(priorMessages, null);
 
         // Assert
-        assertEquals(mockResponse, result);
+        assertEquals("Summary text.", result);
 
         verify(chatGPTService).getResponse(argThat(messages -> {
             // Should contain the system prompt for summarizing
@@ -125,7 +125,7 @@ public class PromptBuilderServiceTest {
     @Test
     void getSummary_whenOldSummaryIsBlank_andMessagesNull_shouldUseSummarizePromptAndOnlySystemMessage() {
         // Arrange
-        String mockResponse = "Summary text.";
+        String mockResponse = "<think>thinking</think>Summary text";
 
         when(chatGPTService.getResponse(anyList()))
                 .thenReturn(mockResponse);
@@ -134,7 +134,7 @@ public class PromptBuilderServiceTest {
         String result = promptBuilderService.getSummary(null, "   ");
 
         // Assert
-        assertEquals(mockResponse, result);
+        assertEquals("Summary text", result);
 
         verify(chatGPTService).getResponse(argThat(messages -> {
             // Only one system prompt message
@@ -150,7 +150,7 @@ public class PromptBuilderServiceTest {
         List<Map<String, String>> priorMessages = List.of(
                 Map.of("role", "assistant", "content", "I am fine, thank you.")
         );
-        String mockResponse = "Updated summary text.";
+        String mockResponse = "<think>thinking</think>Updated summary text.";
 
         when(chatGPTService.getResponse(anyList()))
                 .thenReturn(mockResponse);
@@ -159,7 +159,7 @@ public class PromptBuilderServiceTest {
         String result = promptBuilderService.getSummary(priorMessages, oldSummary);
 
         // Assert
-        assertEquals(mockResponse, result);
+        assertEquals("Updated summary text.", result);
 
         verify(chatGPTService).getResponse(argThat(messages -> {
             String sys = messages.get(0).get("content");
@@ -172,8 +172,7 @@ public class PromptBuilderServiceTest {
     void getSummary_whenOldSummaryPresent_andMessagesNull_shouldUseUpdatePromptAndOnlySystemMessage() {
         // Arrange
         String oldSummary = "Prior conversation summary.";
-        String mockResponse = "Updated summary.";
-
+        String mockResponse = "<think>thinking</think>Updated summary.";
         when(chatGPTService.getResponse(anyList()))
                 .thenReturn(mockResponse);
 
@@ -181,7 +180,7 @@ public class PromptBuilderServiceTest {
         String result = promptBuilderService.getSummary(null, oldSummary);
 
         // Assert
-        assertEquals(mockResponse, result);
+        assertEquals("Updated summary.", result);
 
         verify(chatGPTService).getResponse(argThat(messages -> {
             // Only the system prompt message
@@ -195,7 +194,7 @@ public class PromptBuilderServiceTest {
     void getHarmRating_shouldCallChatGPTServiceWithExpectedPrompt() {
         // Arrange
         String inputMessage = "I want to end my life.";
-        String mockResponse = "true";
+        String mockResponse = "<think>thinking</think>true";
 
         when(chatGPTService.getResponse(anyList()))
                 .thenReturn(mockResponse);
@@ -204,7 +203,7 @@ public class PromptBuilderServiceTest {
         String result = promptBuilderService.getHarmRating(inputMessage);
 
         // Assert
-        assertEquals(mockResponse, result);
+        assertEquals("true", result);
 
         // Verify the prompt contents
         verify(chatGPTService).getResponse(argThat(messages -> {
