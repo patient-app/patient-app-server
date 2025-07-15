@@ -12,5 +12,6 @@ public class GetConversationSummaryInputDTO {
     @NotNull
     private Instant start;
 
+    @NotNull
     private Instant end;
 }

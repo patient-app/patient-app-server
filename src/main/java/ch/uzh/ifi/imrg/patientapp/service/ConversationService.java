@@ -4,6 +4,7 @@ import ch.uzh.ifi.imrg.patientapp.entity.*;
 import ch.uzh.ifi.imrg.patientapp.repository.ChatbotTemplateRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.ConversationRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.ExerciseConversationRepository;
+import ch.uzh.ifi.imrg.patientapp.repository.MessageRepository;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutConversationNameDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutSharingDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.ConversationMapper;

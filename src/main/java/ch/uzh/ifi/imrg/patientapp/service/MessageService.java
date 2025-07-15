@@ -87,9 +87,7 @@ public class MessageService {
         Message newMessage = new Message();
         newMessage.setRequest(CryptographyUtil.encrypt(message, key));
 
-        String rawHarm = promptBuilderService.getHarmRating(message);
-        String harm = promptBuilderService.extractContentFromResponse(rawHarm);
-
+        String harm = promptBuilderService.getHarmRating(message);
         //toDo add sending email to therapeut if harmful content is detected
 
         if(harm.equals("true")){
@@ -99,8 +97,7 @@ public class MessageService {
         List<Map<String, String>> priorMessages = parseMessagesFromConversation(conversation, key);
         if(priorMessages.size() > summaryThreshold) {
             List<Map<String, String>> oldMessages = priorMessages.subList( 0, priorMessages.size() - 20);
-            String rawSummary = promptBuilderService.getSummary(oldMessages, conversation.getChatSummary());
-            conversation.setChatSummary(promptBuilderService.extractContentFromResponse(rawSummary));
+            conversation.setChatSummary(promptBuilderService.getSummary(oldMessages, conversation.getChatSummary()));
             priorMessages = priorMessages.subList(priorMessages.size() - 20, priorMessages.size());
 
             List<Message> conversationMessages = messageRepository.findByConversationIdAndInSystemPromptSummaryFalseOrderByCreatedAt(conversationId);
@@ -116,9 +113,7 @@ public class MessageService {
 
         }
 
-        String rawAnswer = promptBuilderService.getResponse(priorMessages, message, conversation.getSystemPrompt());
-
-        String answer = promptBuilderService.extractContentFromResponse(rawAnswer);
+        String answer = promptBuilderService.getResponse(priorMessages, message, conversation.getSystemPrompt());
 
         newMessage.setResponse(CryptographyUtil.encrypt(answer, key));
         newMessage.setConversation(conversation);
@@ -149,7 +144,8 @@ public class MessageService {
         if (messagesList.isEmpty()) {
             return "No messages found in the specified time range.";
         }
-        List<Map<String, String>> messages = parseMessages(messagesList, conversation.getPatient().getPrivateKey());
+        String key = CryptographyUtil.decrypt(conversation.getPatient().getPrivateKey());
+        List<Map<String, String>> messages = parseMessages(messagesList, key);
 
         return promptBuilderService.getSummary(messages,"");
     }

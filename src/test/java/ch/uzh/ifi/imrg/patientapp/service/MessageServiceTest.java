@@ -82,10 +82,7 @@ public class MessageServiceTest {
                 );
 
                 when(promptBuilderService.getHarmRating(anyString()))
-                        .thenReturn("harm-raw");
-
-                when(promptBuilderService.extractContentFromResponse("harm-raw"))
-                        .thenReturn("false");
+                        .thenReturn("harm");
 
 
                 // Return the actual message passed into save(), not a dummy one
@@ -170,10 +167,7 @@ public class MessageServiceTest {
                                 eq(inputMessage),
                                 nullable(String.class))).thenReturn(mockResponse);
                 when(promptBuilderService.getHarmRating(anyString()))
-                        .thenReturn("harm-raw");
-
-                when(promptBuilderService.extractContentFromResponse("harm-raw"))
-                        .thenReturn("false");
+                        .thenReturn("harm");
 
                 // The real object that is passed to save and returned
                 Message newMessage = new Message();
@@ -283,13 +277,8 @@ public class MessageServiceTest {
                         nullable(String.class)
                 )).thenReturn(mockResponse);
                 when(promptBuilderService.getSummary(anyList(), nullable(String.class))).thenReturn(mockSummary);
-                when(promptBuilderService.extractContentFromResponse(mockSummary)).thenReturn(extractedSummary);
-                when(promptBuilderService.extractContentFromResponse(mockResponse)).thenReturn("Answer here.");
                 when(promptBuilderService.getHarmRating(anyString()))
-                        .thenReturn("harm-raw");
-
-                when(promptBuilderService.extractContentFromResponse("harm-raw"))
-                        .thenReturn("false");
+                        .thenReturn("harm");
 
                 doNothing().when(authorizationService).checkConversationAccess(any(), any(), anyString());
 

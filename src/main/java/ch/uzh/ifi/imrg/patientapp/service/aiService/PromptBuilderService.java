@@ -61,7 +61,7 @@ public class PromptBuilderService {
                 "content", message
         ));
 
-        return chatGPTService.getResponse(messages);
+        return extractContentFromResponse(chatGPTService.getResponse(messages));
     }
 
     public String getSummary(List<Map<String, String>> allMessages, String oldSummary) {
@@ -92,7 +92,7 @@ public class PromptBuilderService {
             messages.addAll(allMessages);
         }
 
-        return chatGPTService.getResponse(messages);
+        return extractContentFromResponse(chatGPTService.getResponse(messages));
     }
 
     public String getSummaryOfAllConversations(List<String> conversationSummaries) {
@@ -116,7 +116,7 @@ public class PromptBuilderService {
                 "content", "Here are the conversation summaries:\n\n" + sb
         ));
 
-        return chatGPTService.getResponse(messages);
+        return extractContentFromResponse(chatGPTService.getResponse(messages));
     }
 
 
@@ -135,10 +135,10 @@ public class PromptBuilderService {
                 "content", message
         ));
 
-        return chatGPTService.getResponse(messages);
+        return extractContentFromResponse(chatGPTService.getResponse(messages));
     }
 
-    public String extractContentFromResponse(String rawAnswer) {
+    private String extractContentFromResponse(String rawAnswer) {
         // extract the answer part from the response
         String regex = "</think>\\s*([\\s\\S]*)";
         Pattern pattern = Pattern.compile(regex, Pattern.DOTALL);

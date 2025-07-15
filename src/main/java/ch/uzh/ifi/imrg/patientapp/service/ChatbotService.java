@@ -28,13 +28,15 @@ public class ChatbotService {
     private final ConversationRepository conversationRepository;
     private final MessageService messageService;
     private final PromptBuilderService promptBuilderService;
+    private final AuthorizationService authorizationService;
 
-    public ChatbotService(PatientRepository patientRepository, ChatbotTemplateRepository chatbotTemplateRepository, ConversationRepository conversationRepository, MessageService messageService, PromptBuilderService promptBuilderService) {
+    public ChatbotService(PatientRepository patientRepository, ChatbotTemplateRepository chatbotTemplateRepository, ConversationRepository conversationRepository, MessageService messageService, PromptBuilderService promptBuilderService, AuthorizationService authorizationService) {
         this.patientRepository = patientRepository;
         this.chatbotTemplateRepository = chatbotTemplateRepository;
         this.conversationRepository = conversationRepository;
         this.messageService = messageService;
         this.promptBuilderService = promptBuilderService;
+        this.authorizationService = authorizationService;
     }
 
 
@@ -98,9 +100,8 @@ public class ChatbotService {
         if (conversations.isEmpty()) {
             throw new IllegalArgumentException("No conversations found for this patient");
         }
-        if (!conversations.getFirst().getPatient().equals(patient)){
-            throw new IllegalArgumentException("You do not have access to conversations, which are not yours.");
-        }
+        authorizationService.checkConversationAccess(conversations.getFirst(), patient, "You do not have access to conversations, which are not yours.");
+
 
         List <String> conversationSummaries = new ArrayList<>();
         for (GeneralConversation conversation : conversations) {

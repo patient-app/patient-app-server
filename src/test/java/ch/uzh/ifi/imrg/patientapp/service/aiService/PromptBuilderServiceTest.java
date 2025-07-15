@@ -221,31 +221,6 @@ public class PromptBuilderServiceTest {
         }));
     }
 
-    @Test
-    void extractContentFromResponse_whenPatternMatches_shouldReturnTrimmedContent() {
-        // Arrange
-        String rawAnswer = "</think>\n  This is the extracted answer.   ";
-
-        // Act
-        String result = promptBuilderService.extractContentFromResponse(rawAnswer);
-
-        // Assert
-        assertEquals("This is the extracted answer.", result);
-    }
-
-    @Test
-    void extractContentFromResponse_whenPatternDoesNotMatch_shouldThrowException() {
-        // Arrange
-        String rawAnswer = "No closing tag here.";
-
-        // Act + Assert
-        IllegalStateException ex = assertThrows(IllegalStateException.class, () -> {
-            promptBuilderService.extractContentFromResponse(rawAnswer);
-        });
-
-        assertTrue(ex.getMessage().contains("No <think> closing tag found"));
-        assertTrue(ex.getMessage().contains(rawAnswer));
-    }
 
 
 
