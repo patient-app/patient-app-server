@@ -95,6 +95,31 @@ public class PromptBuilderService {
         return chatGPTService.getResponse(messages);
     }
 
+    public String getSummaryOfAllConversations(List<String> conversationSummaries) {
+        List<Map<String, String>> messages = new ArrayList<>();
+
+        // System prompt: explain what you want *at the meta level*
+        messages.add(Map.of(
+                "role", "system",
+                "content", "You are an assistant that summarizes multiple conversation summaries into a single concise summary. " +
+                        "Do not use bullet points or lists. Just write a short summary no longer than 100 words."
+        ));
+
+        // Combine all summaries into a clear single string
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < conversationSummaries.size(); i++) {
+            sb.append("Summary ").append(i + 1).append(": ").append(conversationSummaries.get(i)).append("\n");
+        }
+
+        messages.add(Map.of(
+                "role", "user",
+                "content", "Here are the conversation summaries:\n\n" + sb
+        ));
+
+        return chatGPTService.getResponse(messages);
+    }
+
+
     public String getHarmRating(String message) {
         List<Map<String, String>> messages = new ArrayList<>();
 

@@ -8,13 +8,16 @@ import ch.uzh.ifi.imrg.patientapp.repository.ChatbotTemplateRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.ConversationRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.PatientRepository;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreateChatbotDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.GetConversationSummaryInputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.UpdateChatbotDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.ChatbotConfigurationOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.ConversationSummaryOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.ChatbotMapper;
+import ch.uzh.ifi.imrg.patientapp.service.aiService.PromptBuilderService;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -23,11 +26,15 @@ public class ChatbotService {
     private final PatientRepository patientRepository;
     private final ChatbotTemplateRepository chatbotTemplateRepository;
     private final ConversationRepository conversationRepository;
+    private final MessageService messageService;
+    private final PromptBuilderService promptBuilderService;
 
-    public ChatbotService(PatientRepository patientRepository, ChatbotTemplateRepository chatbotTemplateRepository, ConversationRepository conversationRepository) {
+    public ChatbotService(PatientRepository patientRepository, ChatbotTemplateRepository chatbotTemplateRepository, ConversationRepository conversationRepository, MessageService messageService, PromptBuilderService promptBuilderService) {
         this.patientRepository = patientRepository;
         this.chatbotTemplateRepository = chatbotTemplateRepository;
         this.conversationRepository = conversationRepository;
+        this.messageService = messageService;
+        this.promptBuilderService = promptBuilderService;
     }
 
 
@@ -81,16 +88,28 @@ public class ChatbotService {
         return chatbotTemplates.getFirst().getWelcomeMessage();
     }
 
-    public ConversationSummaryOutputDTO getConversationSummary(String patientId) {
+    public ConversationSummaryOutputDTO getConversationSummary(String patientId, GetConversationSummaryInputDTO getConversationSummaryInputDTO) {
         Patient patient = patientRepository.getPatientById(patientId);
         if (patient == null) {
             throw new IllegalArgumentException("No patient found with ID: " + patientId);
         }
         List<GeneralConversation> conversations = conversationRepository.getConversationsSharedWithCoachByPatientId(patientId);
 
-        //create summary of each conversation
-        //create a list of topics of the conversations
+        if (conversations.isEmpty()) {
+            throw new IllegalArgumentException("No conversations found for this patient");
+        }
+        if (!conversations.getFirst().getPatient().equals(patient)){
+            throw new IllegalArgumentException("You do not have access to conversations, which are not yours.");
+        }
+
+        List <String> conversationSummaries = new ArrayList<>();
+        for (GeneralConversation conversation : conversations) {
+            conversationSummaries.add(messageService.getConversationSummary(conversation, getConversationSummaryInputDTO));
+        }
+
+        String conversationsSummary = promptBuilderService.getSummaryOfAllConversations(conversationSummaries);
         ConversationSummaryOutputDTO conversationSummaryOutputDTO = new ConversationSummaryOutputDTO();
+        conversationSummaryOutputDTO.setConversationSummary(conversationsSummary);
         return conversationSummaryOutputDTO;
 
     }

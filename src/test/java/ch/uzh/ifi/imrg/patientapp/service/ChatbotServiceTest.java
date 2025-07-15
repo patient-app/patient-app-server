@@ -4,10 +4,12 @@ package ch.uzh.ifi.imrg.patientapp.service;
 import ch.uzh.ifi.imrg.patientapp.entity.ChatbotTemplate;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.repository.ChatbotTemplateRepository;
+import ch.uzh.ifi.imrg.patientapp.repository.ConversationRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.PatientRepository;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreateChatbotDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.UpdateChatbotDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.ChatbotConfigurationOutputDTO;
+import ch.uzh.ifi.imrg.patientapp.service.aiService.PromptBuilderService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -37,14 +39,19 @@ public class ChatbotServiceTest {
         // Arrange
         PatientRepository patientRepository = Mockito.mock(PatientRepository.class);
         ChatbotTemplateRepository chatbotTemplateRepository = Mockito.mock(ChatbotTemplateRepository.class);
+        ConversationRepository conversationRepository = Mockito.mock(ConversationRepository.class);
+        MessageService messageService = Mockito.mock(MessageService.class);
+        PromptBuilderService promptBuilderService = Mockito.mock(PromptBuilderService.class);
 
         // Act
-        ChatbotService chatbotService = new ChatbotService(patientRepository, chatbotTemplateRepository);
+        ChatbotService chatbotService = new ChatbotService(patientRepository, chatbotTemplateRepository,
+                conversationRepository, messageService, promptBuilderService);
 
         // Assert
         assertNotNull(chatbotService);
 
     }
+
 
     @Test
     void testCreateChatbot_SavesChatbotWhenPatientExists() {
