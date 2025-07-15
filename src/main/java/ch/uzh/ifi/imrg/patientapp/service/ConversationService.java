@@ -4,9 +4,7 @@ import ch.uzh.ifi.imrg.patientapp.entity.*;
 import ch.uzh.ifi.imrg.patientapp.repository.ChatbotTemplateRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.ConversationRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.ExerciseConversationRepository;
-import ch.uzh.ifi.imrg.patientapp.repository.MessageRepository;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreateConversationDTO;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.input.GetConversationSummaryInputDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutConversationNameDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutSharingDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.ConversationMapper;
 import ch.uzh.ifi.imrg.patientapp.service.aiService.PromptBuilderService;
@@ -37,8 +35,8 @@ public class ConversationService {
         this.messageRepository = messageRepository;
     }
 
-    public GeneralConversation createConversation(Patient patient, CreateConversationDTO createConversationDTO) {
-        GeneralConversation conversation = ConversationMapper.INSTANCE.createConversationDTOToConversation(createConversationDTO);
+    public GeneralConversation createConversation(Patient patient) {
+        GeneralConversation conversation = new GeneralConversation();
         ChatbotTemplate chatbotTemplate = chatbotTemplateRepository.findByPatientId(patient.getId()).getFirst();
         conversation.setSystemPrompt(promptBuilderService.getSystemPrompt(chatbotTemplate));
         conversation.setWelcomeMessage(chatbotTemplate.getWelcomeMessage());
@@ -70,6 +68,20 @@ public class ConversationService {
         authorizationService.checkConversationAccess(conversation, loggedInPatient,
                 "You can't set access rights for chats of a different user.");
         ConversationMapper.INSTANCE.updateConversationFromPutSharingDTO(putSharingDTO, conversation);
+        conversationRepository.save(conversation);
+    }
+
+    public void setConversationName(PutConversationNameDTO putConversationNameDTO, String conversationId, Patient loggedInPatient) {
+        Optional<Conversation> optionalConversation = conversationRepository.findById(conversationId);
+        GeneralConversation conversation;
+        if (optionalConversation.isPresent()) {
+            conversation = (GeneralConversation) optionalConversation.get();
+        } else {
+            throw new NoSuchElementException("No conversation found with external ID: " + conversationId);
+        }
+        authorizationService.checkConversationAccess(conversation, loggedInPatient,
+                "You can't set the name of a chat of a different user.");
+        ConversationMapper.INSTANCE.updateConversationFromPutConversationNameDTO(putConversationNameDTO, conversation);
         conversationRepository.save(conversation);
     }
 
