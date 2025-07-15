@@ -4,6 +4,7 @@ import ch.uzh.ifi.imrg.patientapp.entity.*;
 import ch.uzh.ifi.imrg.patientapp.repository.ChatbotTemplateRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.ConversationRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.MessageRepository;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.GetConversationSummaryInputDTO;
 import ch.uzh.ifi.imrg.patientapp.service.aiService.PromptBuilderService;
 import ch.uzh.ifi.imrg.patientapp.utils.CryptographyUtil;
 import org.junit.jupiter.api.BeforeEach;
@@ -82,10 +83,7 @@ public class MessageServiceTest {
                 );
 
                 when(promptBuilderService.getHarmRating(anyString()))
-                        .thenReturn("harm-raw");
-
-                when(promptBuilderService.extractContentFromResponse("harm-raw"))
-                        .thenReturn("false");
+                        .thenReturn("harm");
 
 
                 // Return the actual message passed into save(), not a dummy one
@@ -170,10 +168,7 @@ public class MessageServiceTest {
                                 eq(inputMessage),
                                 nullable(String.class))).thenReturn(mockResponse);
                 when(promptBuilderService.getHarmRating(anyString()))
-                        .thenReturn("harm-raw");
-
-                when(promptBuilderService.extractContentFromResponse("harm-raw"))
-                        .thenReturn("false");
+                        .thenReturn("harm");
 
                 // The real object that is passed to save and returned
                 Message newMessage = new Message();
@@ -246,9 +241,9 @@ public class MessageServiceTest {
                 String inputMessage = "User question?";
                 String mockKey = "mock-decrypted-key";
                 String encryptedMessage = "encrypted-message";
-                String mockSummary = "<summary>Summary content</summary>";
+                String mockSummary = "Summary content";
                 String extractedSummary = "Summary content";
-                String mockResponse = "<think>Reasoning</think> Answer here.";
+                String mockResponse = "Answer here.";
                 String encryptedResponse = "encrypted-response";
 
                 Patient patient = new Patient();
@@ -283,13 +278,8 @@ public class MessageServiceTest {
                         nullable(String.class)
                 )).thenReturn(mockResponse);
                 when(promptBuilderService.getSummary(anyList(), nullable(String.class))).thenReturn(mockSummary);
-                when(promptBuilderService.extractContentFromResponse(mockSummary)).thenReturn(extractedSummary);
-                when(promptBuilderService.extractContentFromResponse(mockResponse)).thenReturn("Answer here.");
                 when(promptBuilderService.getHarmRating(anyString()))
-                        .thenReturn("harm-raw");
-
-                when(promptBuilderService.extractContentFromResponse("harm-raw"))
-                        .thenReturn("false");
+                        .thenReturn("harm");
 
                 doNothing().when(authorizationService).checkConversationAccess(any(), any(), anyString());
 
@@ -344,7 +334,337 @@ public class MessageServiceTest {
 
         }
 
+        @Test
+        void getConversationSummary_shouldReturnNoMessagesWhenEmpty() {
+                // Arrange
+                GeneralConversation conversation = new GeneralConversation();
+                conversation.setId("conv-001");
+                GetConversationSummaryInputDTO dto = new GetConversationSummaryInputDTO();
+                dto.setStart(Instant.now().minusSeconds(60));
+                dto.setEnd(Instant.now());
+
+                when(messageRepository.findByConversationIdAndCreatedAtBetweenOrderByCreatedAt(
+                        eq("conv-001"),
+                        any(),
+                        any())
+                ).thenReturn(List.of());
+
+                // Act
+                String result = messageService.getConversationSummary(conversation, dto);
+
+                // Assert
+                assertEquals("No messages found in the specified time range.", result);
+                verify(messageRepository).findByConversationIdAndCreatedAtBetweenOrderByCreatedAt(
+                        eq("conv-001"),
+                        any(),
+                        any()
+                );
+                verifyNoInteractions(promptBuilderService);
+        }
 
 
+        @Test
+        void getConversationSummary_shouldDecryptParseAndSummarize() {
+                // Arrange
+                GeneralConversation conversation = new GeneralConversation();
+                conversation.setId("conv-001");
+                Patient patient = new Patient();
+                patient.setPrivateKey("encrypted-key");
+                conversation.setPatient(patient);
+
+                GetConversationSummaryInputDTO dto = new GetConversationSummaryInputDTO();
+                dto.setStart(Instant.now().minusSeconds(60));
+                dto.setEnd(Instant.now());
+
+                Message msg = new Message();
+                msg.setRequest("enc-req");
+                msg.setResponse("enc-resp");
+
+                List<Message> messagesList = List.of(msg);
+
+                when(messageRepository.findByConversationIdAndCreatedAtBetweenOrderByCreatedAt(
+                        any(), any(), any()
+                )).thenReturn(messagesList);
+
+                List<Map<String, String>> parsedMessages = List.of(
+                        Map.of("role", "user", "content", "Hello"),
+                        Map.of("role", "assistant", "content", "Hi")
+                );
+
+                try (MockedStatic<CryptographyUtil> cryptographyUtilMocked = mockStatic(CryptographyUtil.class);
+                     MockedStatic<MessageService> parseMessagesMocked = mockStatic(MessageService.class)) {
+
+                        cryptographyUtilMocked.when(() -> CryptographyUtil.decrypt("encrypted-key")).thenReturn("decrypted-key");
+
+                        parseMessagesMocked.when(() ->
+                                MessageService.parseMessages(eq(messagesList), eq("decrypted-key"))
+                        ).thenReturn(parsedMessages);
+
+                        when(promptBuilderService.getSummary(eq(parsedMessages), eq(""))).thenReturn("Summary result");
+
+                        // Act
+                        String result = messageService.getConversationSummary(conversation, dto);
+
+                        // Assert
+                        assertEquals("Summary result", result);
+                        verify(messageRepository).findByConversationIdAndCreatedAtBetweenOrderByCreatedAt(
+                                any(), any(), any()
+                        );
+                        verify(promptBuilderService).getSummary(eq(parsedMessages), eq(""));
+                }
+        }
+
+        @Test
+        void getConversationSummary_shouldThrowWhenDecryptFails() {
+                // Arrange
+                GeneralConversation conversation = new GeneralConversation();
+                conversation.setId("conv-001");
+                Patient patient = new Patient();
+                patient.setPrivateKey("bad-key");
+                conversation.setPatient(patient);
+
+                GetConversationSummaryInputDTO dto = new GetConversationSummaryInputDTO();
+                dto.setStart(Instant.now().minusSeconds(60));
+                dto.setEnd(Instant.now());
+
+                Message msg = new Message();
+                msg.setRequest("enc-req");
+                msg.setResponse("enc-resp");
+
+                when(messageRepository.findByConversationIdAndCreatedAtBetweenOrderByCreatedAt(
+                        any(), any(), any()
+                )).thenReturn(List.of(msg));
+
+                try (MockedStatic<CryptographyUtil> cryptographyUtilMocked = mockStatic(CryptographyUtil.class)) {
+                        cryptographyUtilMocked.when(() -> CryptographyUtil.decrypt("bad-key"))
+                                .thenThrow(new RuntimeException("Decryption failed"));
+
+                        // Act & Assert
+                        RuntimeException ex = assertThrows(
+                                RuntimeException.class,
+                                () -> messageService.getConversationSummary(conversation, dto)
+                        );
+                        assertTrue(ex.getMessage().contains("Decryption failed"));
+                }
+        }
+
+        @Test
+        void getConversationSummary_shouldThrowWhenPromptBuilderFails() {
+                // Arrange
+                GeneralConversation conversation = new GeneralConversation();
+                conversation.setId("conv-001");
+                Patient patient = new Patient();
+                patient.setPrivateKey("some-key");
+                conversation.setPatient(patient);
+
+                GetConversationSummaryInputDTO dto = new GetConversationSummaryInputDTO();
+                dto.setStart(Instant.now().minusSeconds(60));
+                dto.setEnd(Instant.now());
+
+                Message msg = new Message();
+                msg.setRequest("enc-req");
+                msg.setResponse("enc-resp");
+
+                List<Message> messagesList = List.of(msg);
+
+                when(messageRepository.findByConversationIdAndCreatedAtBetweenOrderByCreatedAt(
+                        any(), any(), any()
+                )).thenReturn(messagesList);
+
+                List<Map<String, String>> parsedMessages = List.of(
+                        Map.of("role", "user", "content", "Hi")
+                );
+
+                try (MockedStatic<CryptographyUtil> cryptographyUtilMocked = mockStatic(CryptographyUtil.class);
+                     MockedStatic<MessageService> parseMessagesMocked = mockStatic(MessageService.class)) {
+
+                        cryptographyUtilMocked.when(() -> CryptographyUtil.decrypt("some-key"))
+                                .thenReturn("decrypted-key");
+
+                        parseMessagesMocked.when(() ->
+                                MessageService.parseMessages(eq(messagesList), eq("decrypted-key"))
+                        ).thenReturn(parsedMessages);
+
+                        when(promptBuilderService.getSummary(eq(parsedMessages), eq("")))
+                                .thenThrow(new RuntimeException("Summarization error"));
+
+                        // Act & Assert
+                        RuntimeException ex = assertThrows(
+                                RuntimeException.class,
+                                () -> messageService.getConversationSummary(conversation, dto)
+                        );
+                        assertTrue(ex.getMessage().contains("Summarization error"));
+                }
+        }
+
+        @Test
+        void parseMessages_shouldReturnEmptyListWhenNoMessages() {
+                List<Map<String, String>> result = MessageService.parseMessages(List.of(), "key");
+                assertNotNull(result);
+                assertTrue(result.isEmpty());
+        }
+
+        @Test
+        void parseMessages_shouldSkipMessagesWithEmptyFields() {
+                Message m1 = new Message();
+                m1.setRequest(null);
+                m1.setResponse("   ");
+
+                Message m2 = new Message();
+                m2.setRequest(" ");
+                m2.setResponse(null);
+
+                List<Message> input = List.of(m1, m2);
+
+                List<Map<String, String>> result = MessageService.parseMessages(input, "key");
+
+                assertNotNull(result);
+                assertTrue(result.isEmpty());
+        }
+
+        @Test
+        void parseMessages_shouldDecryptRequestOnly() {
+                Message msg = new Message();
+                msg.setRequest("encrypted-req");
+                msg.setResponse(null);
+
+                try (MockedStatic<CryptographyUtil> mocked = mockStatic(CryptographyUtil.class)) {
+                        mocked.when(() -> CryptographyUtil.decrypt("encrypted-req", "key")).thenReturn("decrypted-request");
+
+                        List<Map<String, String>> result = MessageService.parseMessages(List.of(msg), "key");
+
+                        assertEquals(1, result.size());
+                        assertEquals("user", result.get(0).get("role"));
+                        assertEquals("decrypted-request", result.get(0).get("content"));
+                }
+        }
+
+        @Test
+        void parseMessages_shouldDecryptResponseOnly() {
+                Message msg = new Message();
+                msg.setRequest(null);
+                msg.setResponse("encrypted-resp");
+
+                try (MockedStatic<CryptographyUtil> mocked = mockStatic(CryptographyUtil.class)) {
+                        mocked.when(() -> CryptographyUtil.decrypt("encrypted-resp", "key")).thenReturn("decrypted-response");
+
+                        List<Map<String, String>> result = MessageService.parseMessages(List.of(msg), "key");
+
+                        assertEquals(1, result.size());
+                        assertEquals("assistant", result.get(0).get("role"));
+                        assertEquals("decrypted-response", result.get(0).get("content"));
+                }
+        }
+
+        @Test
+        void parseMessages_shouldDecryptBothRequestAndResponse() {
+                Message msg = new Message();
+                msg.setRequest("enc-req");
+                msg.setResponse("enc-resp");
+
+                try (MockedStatic<CryptographyUtil> mocked = mockStatic(CryptographyUtil.class)) {
+                        mocked.when(() -> CryptographyUtil.decrypt("enc-req", "key")).thenReturn("REQ");
+                        mocked.when(() -> CryptographyUtil.decrypt("enc-resp", "key")).thenReturn("RESP");
+
+                        List<Map<String, String>> result = MessageService.parseMessages(List.of(msg), "key");
+
+                        assertEquals(2, result.size());
+
+                        assertEquals("user", result.get(0).get("role"));
+                        assertEquals("REQ", result.get(0).get("content"));
+
+                        assertEquals("assistant", result.get(1).get("role"));
+                        assertEquals("RESP", result.get(1).get("content"));
+                }
+        }
+
+        @Test
+        void parseMessages_shouldHandleMultipleMessages() {
+                Message m1 = new Message();
+                m1.setRequest("req1");
+                m1.setResponse(null);
+
+                Message m2 = new Message();
+                m2.setRequest(null);
+                m2.setResponse("resp2");
+
+                try (MockedStatic<CryptographyUtil> mocked = mockStatic(CryptographyUtil.class)) {
+                        mocked.when(() -> CryptographyUtil.decrypt("req1", "k")).thenReturn("R1");
+                        mocked.when(() -> CryptographyUtil.decrypt("resp2", "k")).thenReturn("A2");
+
+                        List<Map<String, String>> result = MessageService.parseMessages(List.of(m1, m2), "k");
+
+                        assertEquals(2, result.size());
+
+                        assertEquals("user", result.get(0).get("role"));
+                        assertEquals("R1", result.get(0).get("content"));
+
+                        assertEquals("assistant", result.get(1).get("role"));
+                        assertEquals("A2", result.get(1).get("content"));
+                }
+        }
+
+
+        @Test
+        void generateAnswer_shouldLogWhenHarmfulContentDetected() {
+                // Arrange
+                String conversationId = "conv-123";
+                String inputMessage = "I want to hurt myself.";
+                String decryptedKey = "decrypted-key";
+                String encryptedMessage = "encrypted-message";
+                String encryptedResponse = "encrypted-response";
+                String mockAnswer = "Please talk to someone you trust.";
+
+                Patient patient = new Patient();
+                patient.setPrivateKey("encrypted-pk");
+
+                GeneralConversation conversation = new GeneralConversation();
+                conversation.setId(conversationId);
+                conversation.setMessages(new ArrayList<>());
+                conversation.setPatient(patient);
+                conversation.setSystemPrompt("system-prompt");
+
+                when(conversationRepository.findById(conversationId))
+                        .thenReturn(Optional.of(conversation));
+                doNothing().when(authorizationService).checkConversationAccess(any(), any(), anyString());
+
+                try (MockedStatic<CryptographyUtil> cryptographyUtilMock = mockStatic(CryptographyUtil.class);
+                     MockedStatic<MessageService> parseMessagesMock = mockStatic(MessageService.class)) {
+
+                        // Mock decrypting patient key
+                        cryptographyUtilMock.when(() -> CryptographyUtil.decrypt("encrypted-pk")).thenReturn(decryptedKey);
+
+                        // Mock encrypting request and response
+                        cryptographyUtilMock.when(() -> CryptographyUtil.encrypt(inputMessage, decryptedKey)).thenReturn(encryptedMessage);
+                        cryptographyUtilMock.when(() -> CryptographyUtil.encrypt(mockAnswer, decryptedKey)).thenReturn(encryptedResponse);
+
+                        // Mock parsing prior messages to return an empty list
+                        parseMessagesMock.when(() -> MessageService.parseMessagesFromConversation(any(), eq(decryptedKey)))
+                                .thenReturn(List.of());
+
+                        // Make harm rating "true" to hit the branch
+                        when(promptBuilderService.getHarmRating(inputMessage)).thenReturn("true");
+
+                        // Mock getting response
+                        when(promptBuilderService.getResponse(anyList(), eq(inputMessage), eq("system-prompt")))
+                                .thenReturn(mockAnswer);
+
+                        // Act
+                        Message result = messageService.generateAnswer(patient, conversationId, inputMessage);
+
+                        // Assert
+                        assertNotNull(result);
+                        assertEquals(inputMessage, result.getRequest());
+                        assertEquals(mockAnswer, result.getResponse());
+                        assertEquals(conversationId, result.getExternalConversationId());
+
+                        // Basic verifications
+                        verify(promptBuilderService).getHarmRating(inputMessage);
+                        verify(promptBuilderService).getResponse(anyList(), eq(inputMessage), eq("system-prompt"));
+                        verify(messageRepository).save(any(Message.class));
+                        verify(messageRepository).flush();
+                        verify(conversationRepository, atLeastOnce()).findById(conversationId);
+                }
+        }
 
 }

@@ -4,6 +4,7 @@ import ch.uzh.ifi.imrg.patientapp.entity.*;
 import ch.uzh.ifi.imrg.patientapp.repository.ChatbotTemplateRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.ConversationRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.ExerciseConversationRepository;
+import ch.uzh.ifi.imrg.patientapp.repository.MessageRepository;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutConversationNameDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutSharingDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.ConversationMapper;
@@ -23,14 +24,16 @@ public class ConversationService {
     private final ExerciseConversationRepository exerciseConversationRepository;
     private final PromptBuilderService promptBuilderService;
     private final ChatbotTemplateRepository chatbotTemplateRepository;
+    private final MessageRepository messageRepository;
 
     public ConversationService(ConversationRepository conversationRepository,
-                               AuthorizationService authorizationService, ExerciseConversationRepository exerciseConversationRepository, PromptBuilderService promptBuilderService, ChatbotTemplateRepository chatbotTemplateRepository) {
+                               AuthorizationService authorizationService, ExerciseConversationRepository exerciseConversationRepository, PromptBuilderService promptBuilderService, ChatbotTemplateRepository chatbotTemplateRepository, MessageRepository messageRepository) {
         this.conversationRepository = conversationRepository;
         this.authorizationService = authorizationService;
         this.exerciseConversationRepository = exerciseConversationRepository;
         this.promptBuilderService = promptBuilderService;
         this.chatbotTemplateRepository = chatbotTemplateRepository;
+        this.messageRepository = messageRepository;
     }
 
     public GeneralConversation createConversation(Patient patient) {
@@ -111,5 +114,7 @@ public class ConversationService {
             throw new NoSuchElementException("No conversation found with external ID: " + conversationId);
         }
     }
+
+
 
 }

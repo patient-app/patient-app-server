@@ -17,4 +17,9 @@ public interface ConversationRepository extends JpaRepository<Conversation, Stri
     
     @Query("SELECT c FROM GeneralConversation c WHERE c.patient.id = :patientId")
     List<GeneralConversation> getConversationByPatientId(String patientId);
+
+    @Query("SELECT c FROM GeneralConversation c WHERE c.patient.id = :patientId AND c.shareWithCoach = true")
+    List<GeneralConversation> getConversationsSharedWithCoachByPatientId(String patientId);
+
+
 }
