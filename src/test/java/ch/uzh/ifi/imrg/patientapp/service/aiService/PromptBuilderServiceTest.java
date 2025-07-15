@@ -25,7 +25,7 @@ public class PromptBuilderServiceTest {
     @Test
     void getResponse_shouldCallChatGPTServiceWithExpectedPrompt() {
         // Arrange
-        String mockResponse = "Hi there!";
+        String mockResponse = "<think>thinking</think>Hi there!";
 
         ChatbotTemplate template = new ChatbotTemplate();
         template.setChatbotRole("compassionate assistant");
@@ -41,14 +41,14 @@ public class PromptBuilderServiceTest {
         String actualResponse = promptBuilderService.getResponse( messages, "hi", anyString());
 
         // Assert
-        assertEquals(mockResponse, actualResponse);
+        assertEquals("Hi there!", actualResponse);
     }
 
 
     @Test
     void getResponse_shouldCallChatGPTServiceWithNoPriorMessages() {
         // Arrange
-        String mockResponse = "Hi there!";
+        String mockResponse = "<think>thinking</think>Hi there!";
 
         ChatbotTemplate template = new ChatbotTemplate();
         template.setChatbotRole("compassionate assistant");
@@ -60,7 +60,7 @@ public class PromptBuilderServiceTest {
         String actualResponse = promptBuilderService.getResponse( null, "hi", anyString());
 
         // Assert
-        assertEquals(mockResponse, actualResponse);
+        assertEquals("Hi there!", actualResponse);
     }
 
 
@@ -104,7 +104,7 @@ public class PromptBuilderServiceTest {
         List<Map<String, String>> priorMessages = List.of(
                 Map.of("role", "user", "content", "Hello, how are you?")
         );
-        String mockResponse = "Summary text.";
+        String mockResponse = "<think>thinking</think>Summary text.";
 
         when(chatGPTService.getResponse(anyList()))
                 .thenReturn(mockResponse);
@@ -113,7 +113,7 @@ public class PromptBuilderServiceTest {
         String result = promptBuilderService.getSummary(priorMessages, null);
 
         // Assert
-        assertEquals(mockResponse, result);
+        assertEquals("Summary text.", result);
 
         verify(chatGPTService).getResponse(argThat(messages -> {
             // Should contain the system prompt for summarizing
@@ -125,7 +125,7 @@ public class PromptBuilderServiceTest {
     @Test
     void getSummary_whenOldSummaryIsBlank_andMessagesNull_shouldUseSummarizePromptAndOnlySystemMessage() {
         // Arrange
-        String mockResponse = "Summary text.";
+        String mockResponse = "<think>thinking</think>Summary text";
 
         when(chatGPTService.getResponse(anyList()))
                 .thenReturn(mockResponse);
@@ -134,7 +134,7 @@ public class PromptBuilderServiceTest {
         String result = promptBuilderService.getSummary(null, "   ");
 
         // Assert
-        assertEquals(mockResponse, result);
+        assertEquals("Summary text", result);
 
         verify(chatGPTService).getResponse(argThat(messages -> {
             // Only one system prompt message
@@ -150,7 +150,7 @@ public class PromptBuilderServiceTest {
         List<Map<String, String>> priorMessages = List.of(
                 Map.of("role", "assistant", "content", "I am fine, thank you.")
         );
-        String mockResponse = "Updated summary text.";
+        String mockResponse = "<think>thinking</think>Updated summary text.";
 
         when(chatGPTService.getResponse(anyList()))
                 .thenReturn(mockResponse);
@@ -159,7 +159,7 @@ public class PromptBuilderServiceTest {
         String result = promptBuilderService.getSummary(priorMessages, oldSummary);
 
         // Assert
-        assertEquals(mockResponse, result);
+        assertEquals("Updated summary text.", result);
 
         verify(chatGPTService).getResponse(argThat(messages -> {
             String sys = messages.get(0).get("content");
@@ -172,8 +172,7 @@ public class PromptBuilderServiceTest {
     void getSummary_whenOldSummaryPresent_andMessagesNull_shouldUseUpdatePromptAndOnlySystemMessage() {
         // Arrange
         String oldSummary = "Prior conversation summary.";
-        String mockResponse = "Updated summary.";
-
+        String mockResponse = "<think>thinking</think>Updated summary.";
         when(chatGPTService.getResponse(anyList()))
                 .thenReturn(mockResponse);
 
@@ -181,7 +180,7 @@ public class PromptBuilderServiceTest {
         String result = promptBuilderService.getSummary(null, oldSummary);
 
         // Assert
-        assertEquals(mockResponse, result);
+        assertEquals("Updated summary.", result);
 
         verify(chatGPTService).getResponse(argThat(messages -> {
             // Only the system prompt message
@@ -195,7 +194,7 @@ public class PromptBuilderServiceTest {
     void getHarmRating_shouldCallChatGPTServiceWithExpectedPrompt() {
         // Arrange
         String inputMessage = "I want to end my life.";
-        String mockResponse = "true";
+        String mockResponse = "<think>thinking</think>true";
 
         when(chatGPTService.getResponse(anyList()))
                 .thenReturn(mockResponse);
@@ -204,7 +203,7 @@ public class PromptBuilderServiceTest {
         String result = promptBuilderService.getHarmRating(inputMessage);
 
         // Assert
-        assertEquals(mockResponse, result);
+        assertEquals("true", result);
 
         // Verify the prompt contents
         verify(chatGPTService).getResponse(argThat(messages -> {
@@ -222,31 +221,112 @@ public class PromptBuilderServiceTest {
     }
 
     @Test
-    void extractContentFromResponse_whenPatternMatches_shouldReturnTrimmedContent() {
+    void getSummaryOfAllConversations_shouldCombineMultipleSummaries() {
         // Arrange
-        String rawAnswer = "</think>\n  This is the extracted answer.   ";
+        List<String> summaries = List.of(
+                "First conversation summary.",
+                "Second conversation summary.",
+                "Third conversation summary."
+        );
+
+        String mockResponse = "<think>thinking</think>This is the overall summary.";
+
+        when(chatGPTService.getResponse(anyList()))
+                .thenReturn(mockResponse);
 
         // Act
-        String result = promptBuilderService.extractContentFromResponse(rawAnswer);
+        String result = promptBuilderService.getSummaryOfAllConversations(summaries);
 
         // Assert
-        assertEquals("This is the extracted answer.", result);
+        assertEquals("This is the overall summary.", result);
+
+        verify(chatGPTService).getResponse(argThat(messages -> {
+            // Should have exactly 2 messages
+            if (messages.size() != 2) return false;
+            Map<String, String> sys = messages.get(0);
+            Map<String, String> user = messages.get(1);
+
+            // System prompt correct
+            if (!sys.get("content").contains("summarizes multiple conversation summaries")) return false;
+            if (!sys.get("role").equals("system")) return false;
+
+            // User prompt contains all summaries numbered
+            String content = user.get("content");
+            return content.contains("Summary 1: First conversation summary.")
+                    && content.contains("Summary 2: Second conversation summary.")
+                    && content.contains("Summary 3: Third conversation summary.");
+        }));
     }
 
     @Test
-    void extractContentFromResponse_whenPatternDoesNotMatch_shouldThrowException() {
+    void getSummaryOfAllConversations_shouldHandleSingleSummary() {
         // Arrange
-        String rawAnswer = "No closing tag here.";
+        List<String> summaries = List.of("Only one conversation summary.");
 
-        // Act + Assert
-        IllegalStateException ex = assertThrows(IllegalStateException.class, () -> {
-            promptBuilderService.extractContentFromResponse(rawAnswer);
-        });
+        String mockResponse = "<think>thinking</think>Single summary result.";
 
-        assertTrue(ex.getMessage().contains("No <think> closing tag found"));
-        assertTrue(ex.getMessage().contains(rawAnswer));
+        when(chatGPTService.getResponse(anyList()))
+                .thenReturn(mockResponse);
+
+        // Act
+        String result = promptBuilderService.getSummaryOfAllConversations(summaries);
+
+        // Assert
+        assertEquals("Single summary result.", result);
+
+        verify(chatGPTService).getResponse(argThat(messages -> {
+            if (messages.size() != 2) return false;
+            Map<String, String> user = messages.get(1);
+            String content = user.get("content");
+            return content.contains("Summary 1: Only one conversation summary.");
+        }));
     }
 
+    @Test
+    void getSummaryOfAllConversations_shouldHandleEmptySummaries() {
+        // Arrange
+        List<String> summaries = List.of();
 
+        String mockResponse = "<think>thinking</think>No summaries provided.";
+
+        when(chatGPTService.getResponse(anyList()))
+                .thenReturn(mockResponse);
+
+        // Act
+        String result = promptBuilderService.getSummaryOfAllConversations(summaries);
+
+        // Assert
+        assertEquals("No summaries provided.", result);
+
+        verify(chatGPTService).getResponse(argThat(messages -> {
+            if (messages.size() != 2) return false;
+            Map<String, String> user = messages.get(1);
+            String content = user.get("content");
+            // Should still include the label even though the StringBuilder is empty
+            return content.contains("Here are the conversation summaries:");
+        }));
+    }
+
+    @Test
+    void getSummary_shouldThrowWhenNoThinkClosingTag() {
+        // Arrange
+        List<Map<String, String>> priorMessages = List.of(
+                Map.of("role", "user", "content", "Hello, are you there?")
+        );
+        // Response WITHOUT </think>
+        String invalidResponse = "This is some malformed response without closing tag.";
+
+        when(chatGPTService.getResponse(anyList()))
+                .thenReturn(invalidResponse);
+
+        // Act & Assert
+        IllegalStateException ex = assertThrows(
+                IllegalStateException.class,
+                () -> promptBuilderService.getSummary(priorMessages, null)
+        );
+
+        assertTrue(ex.getMessage().contains("No <think> closing tag found in response"));
+        assertTrue(ex.getMessage().contains("This is some malformed response"));
+    }
 
 }

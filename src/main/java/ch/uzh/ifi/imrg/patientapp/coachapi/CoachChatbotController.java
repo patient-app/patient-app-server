@@ -3,9 +3,12 @@ package ch.uzh.ifi.imrg.patientapp.coachapi;
 
 
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreateChatbotDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.GetConversationSummaryInputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.UpdateChatbotDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.ChatbotConfigurationOutputDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.output.ConversationSummaryOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.service.ChatbotService;
+import ch.uzh.ifi.imrg.patientapp.service.ConversationService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -46,6 +49,14 @@ public class CoachChatbotController {
     public void updateChatbot(@PathVariable String patientId, @RequestBody UpdateChatbotDTO updateChatbotDTO) {
         chatbotService.updateChatbot(patientId, updateChatbotDTO);
     }
+
+    @GetMapping("/coach/patients/{patientId}/chatbot-summary")
+    @ResponseStatus(HttpStatus.OK)
+    @SecurityRequirement(name = "X-Coach-Key")
+    public ConversationSummaryOutputDTO getConversationSummary(@RequestBody GetConversationSummaryInputDTO getConversationSummaryInputDTO , @PathVariable String patientId) {
+        return chatbotService.getConversationSummary(patientId, getConversationSummaryInputDTO);
+    }
+
 
 
 }
