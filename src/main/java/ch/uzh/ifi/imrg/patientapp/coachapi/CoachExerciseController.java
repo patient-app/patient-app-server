@@ -1,14 +1,13 @@
 package ch.uzh.ifi.imrg.patientapp.coachapi;
 
+import ch.uzh.ifi.imrg.patientapp.entity.Exercise.ExerciseComponent;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseComponentInputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseInputDTO;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExerciseComponentsOverviewOutputDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExerciseComponentOverviewOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExerciseInformationOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExercisesOverviewOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.service.ExerciseService;
-import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -50,8 +49,8 @@ public class CoachExerciseController {
     @GetMapping("/coach/patients/{patientId}/exercises/{exerciseId}")
     @ResponseStatus(HttpStatus.OK)
     @SecurityRequirement(name = "X-Coach-Key")
-    public List<ExerciseComponentsOverviewOutputDTO> getAllExerciseComponents(@PathVariable String patientId,
-                                                                              @PathVariable String exerciseId) {
+    public List<ExerciseComponentOverviewOutputDTO> getAllExerciseComponents(@PathVariable String patientId,
+                                                                             @PathVariable String exerciseId) {
         return exerciseService.getAllExercisesComponentsOfAnExerciseForCoach(patientId,exerciseId);
     }
     @PutMapping("/coach/patients/{patientId}/exercises/{exerciseId}")
@@ -69,8 +68,8 @@ public class CoachExerciseController {
     public void updateExerciseComponent(@PathVariable String patientId,
                                @PathVariable String exerciseId,
                                @PathVariable String exerciseComponentId,
-                               @RequestBody ExerciseInputDTO exerciseInputDTO){
-        exerciseService.updateExerciseComponent(patientId, exerciseId, exerciseInputDTO, exerciseComponentId);
+                               @RequestBody ExerciseComponentInputDTO exerciseComponentInputDTO){
+        exerciseService.updateExerciseComponent(patientId, exerciseId, exerciseComponentId,exerciseComponentInputDTO);
     }
     @DeleteMapping("/coach/patients/{patientId}/exercises/{exerciseId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)

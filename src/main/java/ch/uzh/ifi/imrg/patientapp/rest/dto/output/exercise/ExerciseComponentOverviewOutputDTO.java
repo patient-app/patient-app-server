@@ -1,5 +1,5 @@
 package ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise;
 
-public class ExerciseComponentsOverviewOutputDTO {
+public class ExerciseComponentOverviewOutputDTO {
     String id;
 }

@@ -10,7 +10,7 @@ import org.mapstruct.MappingTarget;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring", uses = ExerciseElementMapper.class)
+@Mapper(componentModel = "spring", uses = ExerciseComponentMapper.class)
 public interface ExerciseMapper {
 
     ExerciseChatbotOutputDTO exerciseConversationToExerciseChatbotOutputDTO(ExerciseConversation exerciseConversation);

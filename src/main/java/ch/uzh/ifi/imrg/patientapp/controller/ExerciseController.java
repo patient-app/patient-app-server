@@ -47,14 +47,6 @@ public class ExerciseController {
         return exerciseService.getExerciseChatbot(exerciseId);
     }
 
-    @GetMapping("/patients/exercises/{exerciseId}/{mediaId}")
-    public ExerciseMediaOutputDTO getPicture(HttpServletRequest httpServletRequest,
-            @PathVariable String exerciseId,
-            @PathVariable String mediaId) {
-        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
-        return exerciseService.getExerciseMedia(loggedInPatient, exerciseId, mediaId);
-
-    }
     @PostMapping("/patients/exercises/{exerciseId}")
     @ResponseStatus(HttpStatus.OK)
     public void postExerciseFeedback(HttpServletRequest httpServletRequest,
