@@ -6,8 +6,11 @@ import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -20,20 +23,38 @@ public class Exercise implements Serializable {
     @Column(unique = true)
     private String id = UUID.randomUUID().toString();
 
-    private String name;
-    private String pictureId;
+    @Column(name = "created_at", updatable = false)
+    @CreationTimestamp
+    private Instant createdAt;
+
+    @Column(name = "updated_at")
+    @UpdateTimestamp
+    private Instant updatedAt;
+
+    @Column(name = "exercise_start")
+    private Instant exerciseStart;
+
+    @Column(name = "exercise_end")
+    private Instant exerciseEnd;
+
+    @Column()
+    private Boolean isPaused;
+    private int doEveryNDays;
+
+    private String title;
     private String description;
-    private boolean hasFeedback;
+    //used in teh system prompt
+    private String exerciseExplanation;
 
     @OneToMany(mappedBy = "exercise", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ExerciseElement> exerciseElements;
+    private List<ExerciseComponent> exerciseComponents;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "patient_id", referencedColumnName = "id", nullable = false)
     private Patient patient;
 
     @OneToMany(mappedBy = "exercise", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List <ExerciseInformation> exerciseInformation;
+    private List <ExerciseCompletionInformation> exerciseCompletionInformation;
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "exercise_conversation_id", referencedColumnName = "id")

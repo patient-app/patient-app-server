@@ -221,7 +221,7 @@ class ExerciseServiceTest {
         List<ExerciseElement> elements = List.of(e1, e2);
 
         Exercise exercise = new Exercise();
-        exercise.setExerciseElements(elements);
+        exercise.setExerciseComponents(elements);
 
         when(exerciseMapper.exerciseInputDTOToExercise(inputDTO)).thenReturn(exercise);
         when(patientRepository.getPatientById(patientId)).thenReturn(patient);
@@ -255,7 +255,7 @@ class ExerciseServiceTest {
         patient.setId(patientId);
 
         Exercise exercise = new Exercise();
-        exercise.setExerciseElements(null); // key difference here
+        exercise.setExerciseComponents(null); // key difference here
 
         when(exerciseMapper.exerciseInputDTOToExercise(inputDTO)).thenReturn(exercise);
         when(patientRepository.getPatientById(patientId)).thenReturn(patient);
@@ -471,7 +471,7 @@ class ExerciseServiceTest {
         exercise.setPatient(patient);
 
         ExerciseInformationInputDTO inputDTO = new ExerciseInformationInputDTO();
-        ExerciseInformation mappedInfo = new ExerciseInformation();
+        ExerciseCompletionInformation mappedInfo = new ExerciseCompletionInformation();
 
         when(exerciseRepository.getExerciseById(exerciseId)).thenReturn(exercise);
         when(exerciseMapper.exerciseInformationInputDTOToExerciseInformation(inputDTO)).thenReturn(mappedInfo);
@@ -549,7 +549,7 @@ class ExerciseServiceTest {
         exercise.setId(exerciseId);
         exercise.setPatient(patient);
 
-        List<ExerciseInformation> exerciseInfoList = List.of(new ExerciseInformation(), new ExerciseInformation());
+        List<ExerciseCompletionInformation> exerciseInfoList = List.of(new ExerciseCompletionInformation(), new ExerciseCompletionInformation());
         List<ExerciseInformationOutputDTO> expectedDTOs = List.of(new ExerciseInformationOutputDTO(), new ExerciseInformationOutputDTO());
 
         when(exerciseRepository.getExerciseById(exerciseId)).thenReturn(exercise);

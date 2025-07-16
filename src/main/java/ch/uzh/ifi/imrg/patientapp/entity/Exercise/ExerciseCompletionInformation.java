@@ -10,7 +10,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity
-public class ExerciseInformation {
+public class ExerciseCompletionInformation {
 
     @Id
     @Column(unique = true)

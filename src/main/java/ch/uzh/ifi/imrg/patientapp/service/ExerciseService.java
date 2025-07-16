@@ -3,9 +3,7 @@ package ch.uzh.ifi.imrg.patientapp.service;
 
 import ch.uzh.ifi.imrg.patientapp.entity.ChatbotTemplate;
 import ch.uzh.ifi.imrg.patientapp.entity.Exercise.Exercise;
-import ch.uzh.ifi.imrg.patientapp.entity.Exercise.ExerciseElement;
-import ch.uzh.ifi.imrg.patientapp.entity.Exercise.ExerciseInformation;
-import ch.uzh.ifi.imrg.patientapp.entity.Exercise.StoredExerciseFile;
+import ch.uzh.ifi.imrg.patientapp.entity.Exercise.ExerciseCompletionInformation;
 import ch.uzh.ifi.imrg.patientapp.entity.ExerciseConversation;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.repository.*;
@@ -87,8 +85,8 @@ public class ExerciseService {
         exercise.setPatient(patient);
 
         //manually set the exercise in the exercise elements
-        if (exercise.getExerciseElements() != null) {
-            for (ExerciseElement element : exercise.getExerciseElements()) {
+        if (exercise.getExerciseComponents() != null) {
+            for (ExerciseElement element : exercise.getExerciseComponents()) {
                 element.setExercise(exercise);
             }
         }
@@ -152,9 +150,9 @@ public class ExerciseService {
         if (!exercise.getPatient().getId().equals(patient.getId())) {
             throw new IllegalArgumentException("Patient does not have access to this exercise");
         }
-        ExerciseInformation exerciseInformation = exerciseMapper.exerciseInformationInputDTOToExerciseInformation(exerciseInformationInputDTO);
-        exerciseInformation.setExercise(exercise);
-        exerciseInformationRepository.save(exerciseInformation);
+        ExerciseCompletionInformation exerciseCompletionInformation = exerciseMapper.exerciseInformationInputDTOToExerciseInformation(exerciseInformationInputDTO);
+        exerciseCompletionInformation.setExercise(exercise);
+        exerciseInformationRepository.save(exerciseCompletionInformation);
     }
 
 
@@ -166,7 +164,7 @@ public class ExerciseService {
         if (!exercise.getPatient().getId().equals(patientId)) {
             throw new IllegalArgumentException("Patient does not have access to this exercise");
         }
-        List<ExerciseInformation> exerciseInformations = exerciseInformationRepository.getExerciseInformationByExerciseId(exercise.getId());
+        List<ExerciseCompletionInformation> exerciseInformations = exerciseInformationRepository.getExerciseInformationByExerciseId(exercise.getId());
         return exerciseMapper.exerciseInformationsToExerciseInformationOutputDTOs(exerciseInformations);
     }
 

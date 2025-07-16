@@ -4,7 +4,6 @@ import ch.uzh.ifi.imrg.patientapp.entity.Exercise.*;
 import ch.uzh.ifi.imrg.patientapp.entity.ExerciseConversation;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseInformationInputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseInputDTO;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseMoodInputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
@@ -21,17 +20,17 @@ public interface ExerciseMapper {
     Exercise exerciseInputDTOToExercise(ExerciseInputDTO exerciseInputDTO);
     ExerciseOutputDTO exerciseToExerciseOutputDTO(Exercise exercise);
     ExerciseMediaOutputDTO storedExerciseFileToExerciseMediaOutputDTO(StoredExerciseFile storedExerciseFile);
-    List <ExerciseInformationOutputDTO> exerciseInformationsToExerciseInformationOutputDTOs(List<ExerciseInformation> exerciseInformations);
+    List <ExerciseInformationOutputDTO> exerciseInformationsToExerciseInformationOutputDTOs(List<ExerciseCompletionInformation> exerciseInformations);
 
     void updateExerciseFromInputDTO(ExerciseInputDTO exerciseInputDTO, @MappingTarget Exercise target);
 
     // MapStruct will map the simple fields
-    ExerciseInformation mapBaseFields(ExerciseInformationInputDTO dto);
+    ExerciseCompletionInformation mapBaseFields(ExerciseInformationInputDTO dto);
 
     // Add this as the main mapping entry point:
-    default ExerciseInformation exerciseInformationInputDTOToExerciseInformation(ExerciseInformationInputDTO dto) {
+    default ExerciseCompletionInformation exerciseInformationInputDTOToExerciseInformation(ExerciseInformationInputDTO dto) {
         // Map the simple fields
-        ExerciseInformation info = mapBaseFields(dto);
+        ExerciseCompletionInformation info = mapBaseFields(dto);
 
         // Build the before container
         if (dto.getMoodsBefore() != null && !dto.getMoodsBefore().isEmpty()) {
@@ -65,7 +64,7 @@ public interface ExerciseMapper {
 
         return info;
     }
-    default ExerciseInformationOutputDTO exerciseInformationToExerciseInformationOutputDTO(ExerciseInformation entity) {
+    default ExerciseInformationOutputDTO exerciseInformationToExerciseInformationOutputDTO(ExerciseCompletionInformation entity) {
         ExerciseInformationOutputDTO dto = new ExerciseInformationOutputDTO();
 
         dto.setStartTime(entity.getStartTime());
