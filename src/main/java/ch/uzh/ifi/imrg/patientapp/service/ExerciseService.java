@@ -70,11 +70,12 @@ public class ExerciseService {
         return exerciseMapper.exercisesToExerciseOverviewOutputDTOs(exercises);
     }
 
-    public ExerciseOutputDTO getExercise(String exerciseId) {
+    public ExerciseOutputDTO getExercise(String exerciseId, Patient patient) {
         Exercise exercise = exerciseRepository.getExerciseById(exerciseId);
         if (exercise == null) {
             throw new IllegalArgumentException("No exercise found with ID: " + exerciseId);
         }
+        authorizationService.checkExerciseAccess(exercise, patient, "Patient does not have access to this exercise");
         return exerciseMapper.exerciseToExerciseOutputDTO(exercise);
     }
 
@@ -132,11 +133,12 @@ public class ExerciseService {
         exerciseRepository.save(exercise);
     }
 
-    public ExerciseChatbotOutputDTO getExerciseChatbot(String exerciseId) {
+    public ExerciseChatbotOutputDTO getExerciseChatbot(String exerciseId, Patient patient) {
         Exercise exercise = exerciseRepository.getExerciseById(exerciseId);
         if (exercise == null) {
             throw new IllegalArgumentException("No exercise found with ID: " + exerciseId);
         }
+        authorizationService.checkExerciseAccess(exercise, patient, "Patient does not have access to this exercise");
         ExerciseConversation conversation = exercise.getExerciseConversation();
         if (conversation == null) {
             throw new IllegalArgumentException("No conversation found for exercise with ID: " + exerciseId);

@@ -36,7 +36,7 @@ public class ExerciseController {
     public ExerciseOutputDTO getExercise(HttpServletRequest httpServletRequest,
                                          @PathVariable String exerciseId){
         Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
-        return exerciseService.getExercise(exerciseId);
+        return exerciseService.getExercise(exerciseId, loggedInPatient);
     }
 
     @GetMapping("/patients/exercises/{exerciseId}/chatbot")
@@ -44,7 +44,7 @@ public class ExerciseController {
     public ExerciseChatbotOutputDTO getExerciseChatbot(HttpServletRequest httpServletRequest,
                                          @PathVariable String exerciseId){
         Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
-        return exerciseService.getExerciseChatbot(exerciseId);
+        return exerciseService.getExerciseChatbot(exerciseId, loggedInPatient);
     }
 
     @PostMapping("/patients/exercises/{exerciseId}")
