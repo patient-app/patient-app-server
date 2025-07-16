@@ -5,6 +5,8 @@ import lombok.Setter;
 
 import java.util.List;
 
+import ch.uzh.ifi.imrg.patientapp.constant.ChatBotAvatar;
+
 @Getter
 @Setter
 public class CompleteConversationOutputDTO {
@@ -14,4 +16,5 @@ public class CompleteConversationOutputDTO {
     private Boolean shareWithCoach;
     private Boolean shareWithAi;
     private List<MessageOutputDTO> messages;
+    private ChatBotAvatar chatBotAvatar;
 }
