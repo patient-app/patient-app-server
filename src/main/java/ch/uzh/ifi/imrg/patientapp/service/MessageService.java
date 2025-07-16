@@ -140,4 +140,18 @@ public class MessageService {
         frontendMessage.setCreatedAt(newMessage.getCreatedAt());
         return frontendMessage;
     }
+
+    public String getConversationSummary(GeneralConversation conversation,
+            GetConversationSummaryInputDTO getConversationSummaryInputDTO) {
+        List<Message> messagesList = messageRepository.findByConversationIdAndCreatedAtBetweenOrderByCreatedAt(
+                conversation.getId(), getConversationSummaryInputDTO.getStart(),
+                getConversationSummaryInputDTO.getEnd());
+        if (messagesList.isEmpty()) {
+            return "No messages found in the specified time range.";
+        }
+        String key = CryptographyUtil.decrypt(conversation.getPatient().getPrivateKey());
+        List<Map<String, String>> messages = parseMessages(messagesList, key);
+
+        return promptBuilderService.getSummary(messages, "");
+    }
 }
