@@ -4,12 +4,15 @@ package ch.uzh.ifi.imrg.patientapp.service;
 import ch.uzh.ifi.imrg.patientapp.entity.ChatbotTemplate;
 import ch.uzh.ifi.imrg.patientapp.entity.Exercise.Exercise;
 import ch.uzh.ifi.imrg.patientapp.entity.Exercise.ExerciseCompletionInformation;
+import ch.uzh.ifi.imrg.patientapp.entity.Exercise.ExerciseComponent;
 import ch.uzh.ifi.imrg.patientapp.entity.ExerciseConversation;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.repository.*;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseComponentInputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseInformationInputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseInputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.*;
+import ch.uzh.ifi.imrg.patientapp.rest.mapper.ExerciseElementMapper;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.ExerciseMapper;
 import ch.uzh.ifi.imrg.patientapp.service.aiService.PromptBuilderService;
 import jakarta.transaction.Transactional;
@@ -23,22 +26,24 @@ import java.util.Optional;
 public class ExerciseService {
     private final ExerciseRepository exerciseRepository;
     private final PatientRepository patientRepository;
-    private final ExerciseMapper exerciseMapper;
     private final StoredExerciseFileRepository storedExerciseFileRepository;
     private final ExerciseInformationRepository exerciseInformationRepository;
     private final ExerciseConversationRepository exerciseConversationRepository;
     private final PromptBuilderService promptBuilderService;
+    private final AuthorizationService authorizationService;
     private final ChatbotTemplateRepository chatbotTemplateRepository;
+    private final ExerciseMapper exerciseMapper;
 
-    public ExerciseService(ExerciseRepository exerciseRepository, PatientRepository patientRepository, ExerciseMapper exerciseMapper, StoredExerciseFileRepository storedExerciseFileRepository, ExerciseInformationRepository exerciseInformationRepository, ExerciseConversationRepository exerciseConversationRepository, PromptBuilderService promptBuilderService, ChatbotTemplateRepository chatbotTemplateRepository) {
+    public ExerciseService(ExerciseRepository exerciseRepository, PatientRepository patientRepository, StoredExerciseFileRepository storedExerciseFileRepository, ExerciseInformationRepository exerciseInformationRepository, ExerciseConversationRepository exerciseConversationRepository, PromptBuilderService promptBuilderService, AuthorizationService authorizationService, ChatbotTemplateRepository chatbotTemplateRepository, ExerciseMapper exerciseMapper) {
         this.exerciseRepository = exerciseRepository;
         this.patientRepository = patientRepository;
-        this.exerciseMapper = exerciseMapper;
         this.storedExerciseFileRepository = storedExerciseFileRepository;
         this.exerciseInformationRepository = exerciseInformationRepository;
         this.exerciseConversationRepository = exerciseConversationRepository;
         this.promptBuilderService = promptBuilderService;
+        this.authorizationService = authorizationService;
         this.chatbotTemplateRepository = chatbotTemplateRepository;
+        this.exerciseMapper = exerciseMapper;
     }
 
     public List<ExercisesOverviewOutputDTO>getAllExercisesForCoach(String patientId){
@@ -48,6 +53,14 @@ public class ExerciseService {
         }
         List<Exercise> exercises = exerciseRepository.getExercisesByPatientId(patient.getId());
         return exerciseMapper.exercisesToExerciseOverviewOutputDTOs(exercises);
+    }
+    public List<ExerciseComponentsOverviewOutputDTO> getAllExercisesComponentsOfAnExerciseForCoach(String patientId, String exerciseId) {
+        Exercise exercise = exerciseRepository.getExerciseById(exerciseId);
+        if (exercise == null) {
+            throw new IllegalArgumentException("No exercise found with ID: " + exerciseId);
+        }
+        authorizationService.checkExerciseAccess(exercise, patientRepository.getPatientById(patientId), "Patient does not have access to this exercise");
+        return ExerciseElementMapper.INSTANCE.exerciseComponentsToExerciseComponentsOverviewOutputDTOs(exercise.getExerciseComponents());
     }
 
     public List<ExercisesOverviewOutputDTO> getExercisesOverview(Patient patient){
@@ -86,8 +99,8 @@ public class ExerciseService {
 
         //manually set the exercise in the exercise elements
         if (exercise.getExerciseComponents() != null) {
-            for (ExerciseElement element : exercise.getExerciseComponents()) {
-                element.setExercise(exercise);
+            for (ExerciseComponent exerciseComponent : exercise.getExerciseComponents()) {
+                exerciseComponent.setExercise(exercise);
             }
         }
 
@@ -98,12 +111,23 @@ public class ExerciseService {
         ExerciseConversation exerciseConversation = new ExerciseConversation();
         exerciseConversation.setPatient(patient);
         exerciseConversation.setSystemPrompt(promptBuilderService.getSystemPrompt(chatbotTemplate,exerciseInputDTO.getExerciseExplanation()));
-        exerciseConversation.setConversationName(exerciseInputDTO.getName()+ " - chatbot");
+        exerciseConversation.setConversationName(exerciseInputDTO.getExerciseTitle()+ " - chatbot");
         exerciseConversationRepository.save(exerciseConversation);
 
         exercise.setExerciseConversation(exerciseConversation);
         exerciseRepository.save(exercise);
 
+    }
+    public void createExerciseComponent(String patientId, String exerciseId, ExerciseComponentInputDTO exerciseComponentInputDTO) {
+        Exercise exercise = exerciseRepository.getExerciseById(exerciseId);
+        if (exercise == null) {
+            throw new IllegalArgumentException("No exercise found with ID: " + exerciseId);
+        }
+        authorizationService.checkExerciseAccess(exercise, patientRepository.getPatientById(patientId), "Patient does not have access to this exercise");
+        ExerciseComponent exerciseComponent = ExerciseElementMapper.INSTANCE.exerciseComponentInputDTOToExerciseComponent();
+        exerciseComponent.setExercise(exercise);
+        exercise.getExerciseComponents().add(exerciseComponent);
+        exerciseRepository.save(exercise);
     }
 
     public ExerciseChatbotOutputDTO getExerciseChatbot(String exerciseId) {

@@ -2,6 +2,7 @@ package ch.uzh.ifi.imrg.patientapp.coachapi;
 
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseComponentInputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseInputDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExerciseComponentsOverviewOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExerciseInformationOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExercisesOverviewOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.service.ExerciseService;
@@ -49,8 +50,8 @@ public class CoachExerciseController {
     @GetMapping("/coach/patients/{patientId}/exercises/{exerciseId}")
     @ResponseStatus(HttpStatus.OK)
     @SecurityRequirement(name = "X-Coach-Key")
-    public List<ExercisesOverviewOutputDTO> getAllExerciseComponents(@PathVariable String patientId,
-                                                                     @PathVariable String exerciseId) {
+    public List<ExerciseComponentsOverviewOutputDTO> getAllExerciseComponents(@PathVariable String patientId,
+                                                                              @PathVariable String exerciseId) {
         return exerciseService.getAllExercisesComponentsOfAnExerciseForCoach(patientId,exerciseId);
     }
     @PutMapping("/coach/patients/{patientId}/exercises/{exerciseId}")
