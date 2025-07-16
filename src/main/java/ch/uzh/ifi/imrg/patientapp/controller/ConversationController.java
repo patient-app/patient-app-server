@@ -51,7 +51,8 @@ public class ConversationController {
                 // add the conversation to the patient
                 patientService.addConversationToPatient(loggedInPatient, createdConversation);
                 return new CreateConversationOutputDTO(createdConversation.getId(),
-                                chatbotService.getWelcomeMessage(loggedInPatient.getId()));
+                                chatbotService.getWelcomeMessage(loggedInPatient.getId()),
+                                loggedInPatient.getChatBotAvatar());
         }
 
         @PutMapping("/patients/conversations/{conversationId}")
@@ -113,6 +114,9 @@ public class ConversationController {
                         completeConversationOutputDTO.getMessages()
                                         .add(MessageMapper.INSTANCE.convertEntityToMessageOutputDTO(message));
                 }
+
+                completeConversationOutputDTO.setChatBotAvatar(loggedInPatient.getChatBotAvatar());
+
                 return completeConversationOutputDTO;
 
         }
