@@ -8,7 +8,6 @@ import lombok.Setter;
 @Setter
 public class CreateChatbotDTO {
 
-    private boolean isActive;
     private String chatbotRole;
     private String chatbotTone;
     private String welcomeMessage;

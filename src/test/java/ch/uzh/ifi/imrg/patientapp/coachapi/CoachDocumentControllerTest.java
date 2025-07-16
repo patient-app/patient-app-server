@@ -69,7 +69,7 @@ class CoachDocumentControllerTest {
     void uploadAndShare_shouldReturnCreatedOverview() throws Exception {
         String patientId = "p1";
         MockMultipartFile file = new MockMultipartFile(
-                "file", "test.txt", MediaType.TEXT_PLAIN_VALUE, "hello".getBytes());
+                "patientFile", "test.txt", MediaType.TEXT_PLAIN_VALUE, "hello".getBytes());
 
         // stub service and mapper
         Document doc = new Document();

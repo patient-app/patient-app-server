@@ -2,8 +2,8 @@ package ch.uzh.ifi.imrg.patientapp.rest.mapper;
 
 import ch.uzh.ifi.imrg.patientapp.entity.ExerciseConversation;
 import ch.uzh.ifi.imrg.patientapp.entity.GeneralConversation;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutConversationNameDTO;
 import ch.uzh.ifi.imrg.patientapp.entity.Document.DocumentConversation;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreateConversationDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutSharingDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.CompleteConversationOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.NameConversationOutputDTO;
@@ -18,7 +18,9 @@ import java.util.List;
 public interface ConversationMapper {
         ConversationMapper INSTANCE = Mappers.getMapper(ConversationMapper.class);
 
-        GeneralConversation createConversationDTOToConversation(CreateConversationDTO createConversationDTO);
+        GeneralConversation updateConversationFromPutConversationNameDTO(
+                        PutConversationNameDTO putConversationNameDTO,
+                        @MappingTarget GeneralConversation conversation);
 
         @Mapping(source = "shareWithAi", target = "shareWithAi")
         @Mapping(source = "shareWithCoach", target = "shareWithCoach")

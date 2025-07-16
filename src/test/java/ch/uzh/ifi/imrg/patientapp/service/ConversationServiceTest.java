@@ -4,16 +4,15 @@ import ch.uzh.ifi.imrg.patientapp.entity.*;
 import ch.uzh.ifi.imrg.patientapp.repository.ChatbotTemplateRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.ConversationRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.ExerciseConversationRepository;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreateConversationDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutConversationNameDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutSharingDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.mapper.ConversationMapper;
 import ch.uzh.ifi.imrg.patientapp.service.aiService.PromptBuilderService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.core.parameters.P;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,9 +47,6 @@ public class ConversationServiceTest {
                 Patient patient = new Patient();
                 patient.setId("p1");
 
-                CreateConversationDTO createConversationDTO = new CreateConversationDTO();
-                createConversationDTO.setConversationName("conversationName");
-
                 GeneralConversation savedConversation = new GeneralConversation();
                 savedConversation.setPatient(patient);
 
@@ -68,7 +64,7 @@ public class ConversationServiceTest {
                 when(conversationRepository.save(any(GeneralConversation.class)))
                                 .thenReturn(savedConversation);
 
-                GeneralConversation result = conversationService.createConversation(patient, createConversationDTO);
+                GeneralConversation result = conversationService.createConversation(patient);
 
                 assertEquals(patient, result.getPatient());
                 verify(conversationRepository).save(any(GeneralConversation.class));
@@ -240,6 +236,47 @@ public class ConversationServiceTest {
                 verify(conversationRepository).findById(conversationId);
                 verifyNoInteractions(authorizationService);
                 verify(conversationRepository, never()).save(any());
+        }
+
+        @Test
+        void testSetConversationName_ValidConversation_UpdatesAndSaves() {
+                // Arrange
+                String conversationId = "conv123";
+                Patient patient = new Patient();
+                PutConversationNameDTO dto = new PutConversationNameDTO();
+                dto.setConversationName("New Name");
+
+                GeneralConversation conversation = new GeneralConversation();
+
+                when(conversationRepository.findById(conversationId))
+                                .thenReturn(Optional.of(conversation));
+
+                // Act
+                conversationService.setConversationName(dto, conversationId, patient);
+
+                // Assert
+                verify(conversationRepository).findById(conversationId);
+                verify(authorizationService).checkConversationAccess(conversation, patient,
+                                "You can't set the name of a chat of a different user.");
+                verify(conversationRepository).save(conversation);
+        }
+
+        @Test
+        void testSetConversationName_ConversationNotFound_ThrowsException() {
+                // Arrange
+                String conversationId = "not-found";
+                Patient patient = new Patient();
+                PutConversationNameDTO dto = new PutConversationNameDTO();
+
+                when(conversationRepository.findById(conversationId)).thenReturn(Optional.empty());
+
+                // Act & Assert
+                NoSuchElementException exception = assertThrows(NoSuchElementException.class,
+                                () -> conversationService.setConversationName(dto, conversationId, patient));
+
+                assertEquals("No conversation found with external ID: " + conversationId, exception.getMessage());
+                verify(conversationRepository).findById(conversationId);
+                verifyNoInteractions(authorizationService);
         }
 
 }

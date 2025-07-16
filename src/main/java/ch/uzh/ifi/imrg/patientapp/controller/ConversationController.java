@@ -4,7 +4,7 @@ import ch.uzh.ifi.imrg.patientapp.entity.Conversation;
 import ch.uzh.ifi.imrg.patientapp.entity.GeneralConversation;
 import ch.uzh.ifi.imrg.patientapp.entity.Message;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreateConversationDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutConversationNameDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreateMessageDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutSharingDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.CompleteConversationOutputDTO;
@@ -23,7 +23,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import java.nio.file.AccessDeniedException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,10 +45,9 @@ public class ConversationController {
 
         @PostMapping("/patients/conversations")
         @ResponseStatus(HttpStatus.CREATED)
-        public CreateConversationOutputDTO createConversation(HttpServletRequest httpServletRequest,
-                                                              @RequestBody CreateConversationDTO createConversationDTO) {
+        public CreateConversationOutputDTO createConversation(HttpServletRequest httpServletRequest) {
                 Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
-                GeneralConversation createdConversation = conversationService.createConversation(loggedInPatient, createConversationDTO);
+                GeneralConversation createdConversation = conversationService.createConversation(loggedInPatient);
                 // add the conversation to the patient
                 patientService.addConversationToPatient(loggedInPatient, createdConversation);
                 return new CreateConversationOutputDTO(createdConversation.getId(),
@@ -62,6 +60,15 @@ public class ConversationController {
                         HttpServletRequest httpServletRequest) {
                 Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
                 conversationService.updateSharing(putSharingDTO, conversationId, loggedInPatient);
+        }
+
+        @PutMapping("/patients/conversations/{conversationId}/conversation-name")
+        @ResponseStatus(HttpStatus.OK)
+        public void postConversationName(@RequestBody PutConversationNameDTO putConversationNameDTO,
+                        @PathVariable String conversationId,
+                        HttpServletRequest httpServletRequest) {
+                Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
+                conversationService.setConversationName(putConversationNameDTO, conversationId, loggedInPatient);
         }
 
         @GetMapping("/patients/conversations")

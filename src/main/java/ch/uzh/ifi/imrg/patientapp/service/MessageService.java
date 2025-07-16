@@ -4,6 +4,7 @@ import ch.uzh.ifi.imrg.patientapp.entity.*;
 import ch.uzh.ifi.imrg.patientapp.repository.ChatbotTemplateRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.ConversationRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.MessageRepository;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.GetConversationSummaryInputDTO;
 import ch.uzh.ifi.imrg.patientapp.service.aiService.PromptBuilderService;
 import ch.uzh.ifi.imrg.patientapp.utils.CryptographyUtil;
 import jakarta.transaction.Transactional;
@@ -53,6 +54,27 @@ public class MessageService {
         return priorMessages;
     }
 
+    static List<Map<String, String>> parseMessages(List<Message> messages, String key) {
+        List<Map<String, String>> decryptedMessages = new ArrayList<>();
+
+        for (Message msg : messages) {
+            if (msg.getRequest() != null && !msg.getRequest().trim().isEmpty()) {
+                String decryptedRequest = CryptographyUtil.decrypt(msg.getRequest(), key);
+                decryptedMessages.add(Map.of(
+                        "role", "user",
+                        "content", decryptedRequest.trim()));
+            }
+            if (msg.getResponse() != null && !msg.getResponse().trim().isEmpty()) {
+                String decryptedResponse = CryptographyUtil.decrypt(msg.getResponse(), key);
+                decryptedMessages.add(Map.of(
+                        "role", "assistant",
+                        "content", decryptedResponse.trim()));
+            }
+        }
+
+        return decryptedMessages;
+    }
+
     public Message generateAnswer(Patient patient, String conversationId, String message) {
         int summaryThreshold = 100; // Must be double of number of messages to summarize
         Optional<Conversation> optionalConversation = conversationRepository.findById(conversationId);
@@ -66,8 +88,9 @@ public class MessageService {
         Message newMessage = new Message();
         newMessage.setRequest(CryptographyUtil.encrypt(message, key));
 
-        String rawHarm = promptBuilderService.getHarmRating(message);
-        String harm = promptBuilderService.extractContentFromResponse(rawHarm);
+        String harm = promptBuilderService.getHarmRating(message);
+        // toDo add sending email to therapeut if harmful content is detected
+
         if (harm.equals("true")) {
             System.out.println("Message contains harmful content.");
         }
@@ -75,8 +98,7 @@ public class MessageService {
         List<Map<String, String>> priorMessages = parseMessagesFromConversation(conversation, key);
         if (priorMessages.size() > summaryThreshold) {
             List<Map<String, String>> oldMessages = priorMessages.subList(0, priorMessages.size() - 20);
-            String rawSummary = promptBuilderService.getSummary(oldMessages, conversation.getChatSummary());
-            conversation.setChatSummary(promptBuilderService.extractContentFromResponse(rawSummary));
+            conversation.setChatSummary(promptBuilderService.getSummary(oldMessages, conversation.getChatSummary()));
             priorMessages = priorMessages.subList(priorMessages.size() - 20, priorMessages.size());
 
             List<Message> conversationMessages = messageRepository
@@ -93,9 +115,7 @@ public class MessageService {
 
         }
 
-        String rawAnswer = promptBuilderService.getResponse(priorMessages, message, conversation.getSystemPrompt());
-
-        String answer = promptBuilderService.extractContentFromResponse(rawAnswer);
+        String answer = promptBuilderService.getResponse(priorMessages, message, conversation.getSystemPrompt());
 
         newMessage.setResponse(CryptographyUtil.encrypt(answer, key));
         newMessage.setConversation(conversation);

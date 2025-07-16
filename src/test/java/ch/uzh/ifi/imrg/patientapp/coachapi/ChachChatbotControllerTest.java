@@ -1,15 +1,18 @@
 package ch.uzh.ifi.imrg.patientapp.coachapi;
 
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreateChatbotDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.GetConversationSummaryInputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.UpdateChatbotDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.ChatbotConfigurationOutputDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.output.ConversationSummaryOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.service.ChatbotService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -20,6 +23,10 @@ import static org.mockito.Mockito.*;
 public class ChachChatbotControllerTest {
     @Mock
     private ChatbotService chatbotService;
+
+    @Autowired
+    private MockMvc mockMvc;
+
 
     @InjectMocks
     private CoachChatbotController coachChatbotController;
@@ -69,4 +76,38 @@ public class ChachChatbotControllerTest {
         verify(chatbotService).updateChatbot(patientId, updateChatbotDTO);
         verifyNoMoreInteractions(chatbotService);
     }
+
+    @Test
+    void testGetConversationSummary_CallsServiceAndReturnsDTO() {
+        // Arrange
+        String patientId = "patient123";
+        GetConversationSummaryInputDTO inputDTO = new GetConversationSummaryInputDTO();
+        ConversationSummaryOutputDTO expected = new ConversationSummaryOutputDTO();
+        expected.setConversationSummary("This is a test summary.");
+
+        when(chatbotService.getConversationSummary(patientId, inputDTO))
+                .thenReturn(expected);
+
+        // Act
+        ConversationSummaryOutputDTO result = coachChatbotController.getConversationSummary(inputDTO, patientId);
+
+        // Assert
+        assertEquals(expected, result);
+        verify(chatbotService).getConversationSummary(patientId, inputDTO);
+        verifyNoMoreInteractions(chatbotService);
+    }
+
+    @Test
+    void testHandleIllegalState_returnsMessage() {
+        // Arrange
+        String errorMessage = "Chatbot already exists";
+        IllegalStateException ex = new IllegalStateException(errorMessage);
+
+        // Act
+        String result = coachChatbotController.handleIllegalState(ex);
+
+        // Assert
+        assertEquals(errorMessage, result);
+    }
+
 }
