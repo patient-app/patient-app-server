@@ -86,6 +86,10 @@ public class DocumentService {
                     promptBuilderService.getDocumentSystemPrompt(patient.getChatbotTemplate(), result.getText()));
             patientDocumentRepository.save(patientDocument);
         } else {
+            patientDocument.getConversation().setSystemPrompt(
+                    promptBuilderService.getDocumentSystemPrompt(patient.getChatbotTemplate(),
+                            "The document does not have readable text"));
+            patientDocumentRepository.save(patientDocument);
         }
 
         return document;

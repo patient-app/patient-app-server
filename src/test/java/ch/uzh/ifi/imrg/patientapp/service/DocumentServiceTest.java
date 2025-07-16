@@ -45,6 +45,9 @@ public class DocumentServiceTest {
         @Mock
         private PromptBuilderService promptBuilderService;
 
+        @Mock
+        private DocumentUtil documentUtil;
+
         @InjectMocks
         private DocumentService service;
 
@@ -82,7 +85,7 @@ public class DocumentServiceTest {
                 Document result = service.uploadAndShare("p1", file);
 
                 assertEquals("d1", result.getId());
-                verify(patientDocumentRepository)
+                verify(patientDocumentRepository, times(2))
                                 .save(argThat(pd -> pd.getPatient().equals(patient) &&
                                                 pd.getDocument().equals(saved)));
         }
@@ -107,7 +110,7 @@ public class DocumentServiceTest {
 
                         assertSame(existing, result);
                         verify(documentRepository, never()).save(any());
-                        verify(patientDocumentRepository).save(any(PatientDocument.class));
+                        verify(patientDocumentRepository, times(2)).save(any(PatientDocument.class));
                 }
         }
 
