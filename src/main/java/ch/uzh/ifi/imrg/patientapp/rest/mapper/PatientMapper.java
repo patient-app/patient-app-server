@@ -18,6 +18,7 @@ public interface PatientMapper {
     @Mapping(source = "description", target = "description")
     @Mapping(source = "language", target = "language")
     @Mapping(source = "onboarded", target = "onboarded")
+    @Mapping(source = "chatBotAvatar", target = "chatBotAvatar")
     PatientOutputDTO convertEntityToPatientOutputDTO(Patient patient);
 
     @Mapping(source = "id", target = "id")

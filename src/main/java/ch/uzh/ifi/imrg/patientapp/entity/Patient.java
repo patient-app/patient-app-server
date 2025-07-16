@@ -1,5 +1,6 @@
 package ch.uzh.ifi.imrg.patientapp.entity;
 
+import ch.uzh.ifi.imrg.patientapp.constant.ChatBotAvatar;
 import ch.uzh.ifi.imrg.patientapp.entity.Document.PatientDocument;
 import ch.uzh.ifi.imrg.patientapp.entity.Exercise.Exercise;
 import jakarta.persistence.*;
@@ -7,7 +8,6 @@ import java.io.Serializable;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -80,5 +80,7 @@ public class Patient implements Serializable {
     @Column(name = "coach_access_key", nullable = false)
     private String coachAccessKey;
 
+    @Column(name = "chat_bot_avatar", nullable = true)
+    private ChatBotAvatar chatBotAvatar = ChatBotAvatar.NONE;
 
 }

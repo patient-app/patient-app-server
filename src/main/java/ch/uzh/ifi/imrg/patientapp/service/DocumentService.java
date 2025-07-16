@@ -24,6 +24,7 @@ import ch.uzh.ifi.imrg.patientapp.rest.dto.output.document.DocumentChatbotOutput
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.document.DocumentDownloadDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.DocumentMapper;
 import ch.uzh.ifi.imrg.patientapp.utils.DocumentUtil;
+import ch.uzh.ifi.imrg.patientapp.utils.WelcomeMessageUtil;
 import ch.uzh.ifi.imrg.patientapp.service.aiService.PromptBuilderService;
 import jakarta.persistence.EntityNotFoundException;
 
@@ -84,13 +85,18 @@ public class DocumentService {
         if (result.isHumanReadable()) {
             patientDocument.getConversation().setSystemPrompt(
                     promptBuilderService.getDocumentSystemPrompt(patient.getChatbotTemplate(), result.getText()));
-            patientDocumentRepository.save(patientDocument);
         } else {
             patientDocument.getConversation().setSystemPrompt(
                     promptBuilderService.getDocumentSystemPrompt(patient.getChatbotTemplate(),
                             "The document does not have readable text"));
-            patientDocumentRepository.save(patientDocument);
         }
+
+        patientDocument.getConversation()
+                .setWelcomeMessage(WelcomeMessageUtil.getDocumentWelcomeMessage(patient.getLanguage()));
+
+        patientDocument.getConversation().setConversationName(document.getFilename() + " - chat");
+
+        patientDocumentRepository.save(patientDocument);
 
         return document;
 
