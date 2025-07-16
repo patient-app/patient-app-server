@@ -4,6 +4,8 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 import ch.uzh.ifi.imrg.patientapp.entity.Document.Document;
+import ch.uzh.ifi.imrg.patientapp.entity.Document.DocumentConversation;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.output.document.DocumentChatbotOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.document.DocumentDownloadDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.document.DocumentOverviewDTO;
 
@@ -13,4 +15,6 @@ public interface DocumentMapper {
 
     @Mapping(target = "data", source = "data")
     DocumentDownloadDTO toDownload(Document doc);
+
+    DocumentChatbotOutputDTO documentConversationToExcerciseChatbotOutputDTO(DocumentConversation documentConversation);
 }
