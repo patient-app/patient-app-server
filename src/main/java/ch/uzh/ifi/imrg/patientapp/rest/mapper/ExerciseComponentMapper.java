@@ -26,4 +26,5 @@ public interface ExerciseComponentMapper {
     @Mapping(target = "exercise", ignore = true) // Usually set relationships explicitly
     void updateExerciseComponentFromExerciseComponentInputDTO(ExerciseComponentInputDTO dto, @MappingTarget ExerciseComponent entity);
 
+    void updateExerciseComponentFromExerciseComponentResultInputDTO(ExerciseComponentResultInputDTO dto, @MappingTarget ExerciseComponent entity);
 }

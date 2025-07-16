@@ -2,6 +2,8 @@ package ch.uzh.ifi.imrg.patientapp.controller;
 
 
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseComponentInputDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseComponentResultInputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseInformationInputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.*;
 import ch.uzh.ifi.imrg.patientapp.service.ExerciseService;
@@ -22,14 +24,12 @@ public class ExerciseController {
         this.exerciseService = exerciseService;
     }
 
-
     @GetMapping("/patients/exercises")
     @ResponseStatus(HttpStatus.OK)
     public List<ExercisesOverviewOutputDTO> getExerciseOverview(HttpServletRequest httpServletRequest){
         Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
         return exerciseService.getExercisesOverview(loggedInPatient);
     }
-
 
     @GetMapping("/patients/exercises/{exerciseId}")
     @ResponseStatus(HttpStatus.OK)
@@ -54,6 +54,15 @@ public class ExerciseController {
             @RequestBody ExerciseInformationInputDTO exerciseInformationInputDTO) {
         Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
         exerciseService.putExerciseFeedback(loggedInPatient, exerciseId, exerciseInformationInputDTO);
+    }
+
+    @PostMapping("/patients/exercises/{exerciseId}/exercise-components/{exerciseComponentId}")
+    @ResponseStatus(HttpStatus.OK)
+    public void postExerciseComponentResult(HttpServletRequest httpServletRequest,
+                                     @PathVariable String exerciseId,
+                                     @RequestBody ExerciseComponentResultInputDTO exerciseComponentResultInputDTO) {
+        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
+        exerciseService.setExerciseComponentResult(loggedInPatient, exerciseId, exerciseComponentResultInputDTO);
     }
 
 }
