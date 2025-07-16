@@ -17,13 +17,9 @@ import java.time.Instant;
 @Table(name = "general_conversations")
 public class GeneralConversation extends Conversation {
 
-
     @Column(name = "updated_last")
     @UpdateTimestamp
     private Instant updatedAt;
-
-    @Column(name = "conversation_summary", unique = true)
-    private String conversationSummary;
 
     @Column(name = "share_with_coach")
     private Boolean shareWithCoach = true;

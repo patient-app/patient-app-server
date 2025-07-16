@@ -3,6 +3,7 @@ package ch.uzh.ifi.imrg.patientapp.controller;
 import org.springframework.web.bind.annotation.RestController;
 
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.output.document.DocumentChatbotOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.document.DocumentDownloadDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.document.DocumentOverviewDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.DocumentMapper;
@@ -49,6 +50,14 @@ public class DocumentController {
         return ResponseEntity.ok().contentType(mediaType)
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + dto.getFilename() + "\"")
                 .body(dto.getData());
+    }
+
+    @GetMapping("/patients/documents/{documentId}/chatbot")
+    public DocumentChatbotOutputDTO getAllMessages(@PathVariable String documentId,
+            HttpServletRequest httpServletRequest) {
+        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
+
+        return documentService.getDocumentChatbot(loggedInPatient, documentId);
     }
 
 }

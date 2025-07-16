@@ -34,11 +34,12 @@ public class ConversationController {
         private final ChatbotService chatbotService;
 
         ConversationController(PatientService patientService,
-                               ConversationService conversationService,
-                               MessageService messageService, ChatbotService chatbotService) {
+                        ConversationService conversationService,
+                        MessageService messageService, ChatbotService chatbotService) {
                 this.patientService = patientService;
                 this.conversationService = conversationService;
                 this.messageService = messageService;
+
                 this.chatbotService = chatbotService;
         }
 
@@ -49,7 +50,8 @@ public class ConversationController {
                 GeneralConversation createdConversation = conversationService.createConversation(loggedInPatient);
                 // add the conversation to the patient
                 patientService.addConversationToPatient(loggedInPatient, createdConversation);
-                return new CreateConversationOutputDTO(createdConversation.getId(), chatbotService.getWelcomeMessage(loggedInPatient.getId()));
+                return new CreateConversationOutputDTO(createdConversation.getId(),
+                                chatbotService.getWelcomeMessage(loggedInPatient.getId()));
         }
 
         @PutMapping("/patients/conversations/{conversationId}")
@@ -62,8 +64,9 @@ public class ConversationController {
 
         @PutMapping("/patients/conversations/{conversationId}/conversation-name")
         @ResponseStatus(HttpStatus.OK)
-        public void postConversationName(@RequestBody PutConversationNameDTO putConversationNameDTO,@PathVariable String conversationId,
-                                  HttpServletRequest httpServletRequest) {
+        public void postConversationName(@RequestBody PutConversationNameDTO putConversationNameDTO,
+                        @PathVariable String conversationId,
+                        HttpServletRequest httpServletRequest) {
                 Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
                 conversationService.setConversationName(putConversationNameDTO, conversationId, loggedInPatient);
         }
