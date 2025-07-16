@@ -84,6 +84,7 @@ public class DocumentService {
         if (result.isHumanReadable()) {
             patientDocument.getConversation().setSystemPrompt(
                     promptBuilderService.getDocumentSystemPrompt(patient.getChatbotTemplate(), result.getText()));
+            patientDocumentRepository.save(patientDocument);
         } else {
         }
 
