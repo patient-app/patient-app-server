@@ -164,8 +164,8 @@ public class ExerciseService {
         if (!exercise.getPatient().getId().equals(patientId)) {
             throw new IllegalArgumentException("Patient does not have access to this exercise");
         }
-        List<ExerciseCompletionInformation> exerciseInformations = exerciseInformationRepository.getExerciseInformationByExerciseId(exercise.getId());
-        return exerciseMapper.exerciseInformationsToExerciseInformationOutputDTOs(exerciseInformations);
+        List<ExerciseCompletionInformation> exerciseCompletionInformations = exerciseInformationRepository.getExerciseInformationByExerciseId(exercise.getId());
+        return exerciseMapper.exerciseInformationsToExerciseInformationOutputDTOs(exerciseCompletionInformations);
     }
 
 }

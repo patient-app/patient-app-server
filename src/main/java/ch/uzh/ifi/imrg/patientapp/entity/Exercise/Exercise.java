@@ -21,7 +21,7 @@ public class Exercise implements Serializable {
 
     @Id
     @Column(unique = true)
-    private String id = UUID.randomUUID().toString();
+    private String id;
 
     @Column(name = "created_at", updatable = false)
     @CreationTimestamp
@@ -41,8 +41,8 @@ public class Exercise implements Serializable {
     private Boolean isPaused;
     private int doEveryNDays;
 
-    private String title;
-    private String description;
+    private String exerciseTitle;
+    private String exerciseDescription;
     //used in teh system prompt
     private String exerciseExplanation;
 

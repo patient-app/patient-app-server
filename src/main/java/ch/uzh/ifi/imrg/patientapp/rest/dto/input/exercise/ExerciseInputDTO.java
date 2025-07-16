@@ -3,14 +3,18 @@ package ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.Instant;
 import java.util.List;
 @Getter
 @Setter
 public class ExerciseInputDTO {
-    private String name;
+    private String id;
+    private String exerciseTitle;
     private String exerciseDescription;
     private String exerciseExplanation;
-    private String description;
-    private String pictureData;
-    private List<ExerciseElementInputDTO> exerciseElements;
+    private Instant exerciseStart;
+    private Instant exerciseEnd;
+    private Boolean isPaused;
+    private int doEveryNDays;
+    private List<ExerciseComponentInputDTO> exerciseElements;
 }

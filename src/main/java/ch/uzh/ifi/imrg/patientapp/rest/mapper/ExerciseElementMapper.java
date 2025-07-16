@@ -71,7 +71,7 @@ public interface ExerciseElementMapper {
 
 
     // Dispatcher entity
-    default ExerciseElement toEntity(ExerciseElementInputDTO dto) {
+    default ExerciseElement toEntity(ExerciseComponentInputDTO dto) {
         if (dto instanceof ExerciseFileElementInputDTO fileDto) {
             return toEntity(fileDto);
         } else if (dto instanceof ExerciseImageElementInputDTO imageDto) {

@@ -16,7 +16,7 @@ import java.util.UUID;
 public class ExerciseComponent {
     @Id
     @Column(unique = true)
-    private String id = UUID.randomUUID().toString();
+    private String id;
 
     @Column(name = "created_at", updatable = false)
     @CreationTimestamp
@@ -31,7 +31,7 @@ public class ExerciseComponent {
     private ExerciseComponentType exerciseComponentType;
 
     @Column
-    private String title;
+    private String userInput;
     @Column
     private String description;
 

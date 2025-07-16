@@ -8,6 +8,5 @@ import lombok.Setter;
 @Setter
 public class ExercisesOverviewOutputDTO {
     private String id;
-    private String name;
-    private String pictureId;
+    private String exerciseTitle;
 }
