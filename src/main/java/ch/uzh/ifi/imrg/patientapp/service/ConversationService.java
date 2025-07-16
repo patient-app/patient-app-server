@@ -21,10 +21,8 @@ import java.util.Optional;
 public class ConversationService {
     private final ConversationRepository conversationRepository;
     private final AuthorizationService authorizationService;
-    private final ExerciseConversationRepository exerciseConversationRepository;
     private final PromptBuilderService promptBuilderService;
     private final ChatbotTemplateRepository chatbotTemplateRepository;
-    private final MessageRepository messageRepository;
 
     public ConversationService(ConversationRepository conversationRepository,
             AuthorizationService authorizationService, ExerciseConversationRepository exerciseConversationRepository,
@@ -32,10 +30,8 @@ public class ConversationService {
             MessageRepository messageRepository) {
         this.conversationRepository = conversationRepository;
         this.authorizationService = authorizationService;
-        this.exerciseConversationRepository = exerciseConversationRepository;
         this.promptBuilderService = promptBuilderService;
         this.chatbotTemplateRepository = chatbotTemplateRepository;
-        this.messageRepository = messageRepository;
     }
 
     public GeneralConversation createConversation(Patient patient) {

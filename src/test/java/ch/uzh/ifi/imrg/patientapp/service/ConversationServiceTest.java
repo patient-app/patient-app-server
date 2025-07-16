@@ -6,7 +6,6 @@ import ch.uzh.ifi.imrg.patientapp.repository.ConversationRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.ExerciseConversationRepository;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutConversationNameDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutSharingDTO;
-import ch.uzh.ifi.imrg.patientapp.rest.mapper.ConversationMapper;
 import ch.uzh.ifi.imrg.patientapp.service.aiService.PromptBuilderService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
