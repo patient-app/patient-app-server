@@ -37,7 +37,7 @@ public interface ExerciseMapper {
 
     ExerciseCompletionInformation exerciseComponentResultInputDTOToExerciseCompletionInformation(ExerciseComponentResultInputDTO exerciseComponentResultInputDTO);
 
-
+    List<ExecutionOverviewOutputDTO> exerciseCompletionInformationsToExecutionOverviewOutputDTOs(List<ExerciseCompletionInformation> exerciseInformations);
 
     default ExerciseInformationOutputDTO exerciseInformationToExerciseInformationOutputDTO(ExerciseCompletionInformation entity) {
         ExerciseInformationOutputDTO dto = new ExerciseInformationOutputDTO();
