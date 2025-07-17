@@ -8,10 +8,7 @@ import ch.uzh.ifi.imrg.patientapp.entity.Exercise.ExerciseComponent;
 import ch.uzh.ifi.imrg.patientapp.entity.ExerciseConversation;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.repository.*;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseComponentInputDTO;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseComponentResultInputDTO;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseInformationInputDTO;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseInputDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.*;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.*;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.ExerciseComponentMapper;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.ExerciseMapper;
@@ -20,7 +17,9 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -129,18 +128,41 @@ public class ExerciseService {
         return exerciseMapper.exerciseConversationToExerciseChatbotOutputDTO(conversation);
     }
 
-    public void updateExercise(String patientId, String exerciseId, ExerciseInputDTO exerciseInputDTO) {
+    public void updateExercise(String patientId, String exerciseId, ExerciseUpdateInputDTO exerciseUpdateInputDTO) {
         Exercise exercise = exerciseRepository.getExerciseById(exerciseId);
         if (exercise == null) {
             throw new IllegalArgumentException("No exercise found with ID: " + exerciseId);
         }
-        authorizationService.checkExerciseAccess(exercise, patientRepository.getPatientById(patientId), "Patient does not have access to this exercise");
+        authorizationService.checkExerciseAccess(
+                exercise,
+                patientRepository.getPatientById(patientId),
+                "Patient does not have access to this exercise"
+        );
 
-        exerciseMapper.updateExerciseFromInputDTO(exerciseInputDTO, exercise);
+        // Update Exercise fields except exerciseComponents
+        exerciseMapper.updateExerciseFromInputDTO(exerciseUpdateInputDTO, exercise);
+
+        // Merge exerciseComponents
+        if (exerciseUpdateInputDTO.getExerciseComponents() != null) {
+            Map<String, ExerciseComponent> existingComponentsById = exercise.getExerciseComponents().stream()
+                    .collect(Collectors.toMap(ExerciseComponent::getId, c -> c));
+
+            for (ExerciseComponentInputDTO componentDTO : exerciseUpdateInputDTO.getExerciseComponents()) {
+                ExerciseComponent existing = existingComponentsById.get(componentDTO.getId());
+                if (existing != null) {
+                    // Update existing
+                    ExerciseComponentMapper.INSTANCE.updateExerciseComponentFromExerciseComponentInputDTO(componentDTO, existing);
+                    existing.setExercise(exercise);
+                }
+            }
+        }
+
         exerciseRepository.save(exercise);
     }
 
-    public void updateExerciseComponent(String patientId, String exerciseId, String exerciseComponentId, ExerciseComponentInputDTO exerciseComponentInputDTO) {
+
+
+    public void updateExerciseComponent(String patientId, String exerciseId, String exerciseComponentId, ExerciseComponentUpdateInputDTO exerciseComponentUpdateInputDTO) {
         Exercise exercise = exerciseRepository.getExerciseById(exerciseId);
         if (exercise == null) {
             throw new IllegalArgumentException("No exercise found with ID: " + exerciseId);
@@ -152,7 +174,7 @@ public class ExerciseService {
             throw new IllegalArgumentException("No exercise component found with ID: " + exerciseComponentId);
         }
 
-        ExerciseComponentMapper.INSTANCE.updateExerciseComponentFromExerciseComponentInputDTO(exerciseComponentInputDTO, exerciseComponentFromRepository);
+        ExerciseComponentMapper.INSTANCE.updateExerciseComponentFromExerciseComponentUpdateInputDTO(exerciseComponentUpdateInputDTO, exerciseComponentFromRepository);
         exerciseComponentRepository.save(exerciseComponentFromRepository);
     }
 
@@ -190,7 +212,7 @@ public class ExerciseService {
         if (!exercise.getPatient().getId().equals(patient.getId())) {
             throw new IllegalArgumentException("Patient does not have access to this exercise");
         }
-        ExerciseCompletionInformation exerciseCompletionInformation = exerciseMapper.exerciseInformationInputDTOToExerciseInformation(exerciseInformationInputDTO);
+        ExerciseCompletionInformation exerciseCompletionInformation = exerciseMapper.exerciseInformationInputDTOToExerciseCompletionInformation(exerciseInformationInputDTO);
         exerciseCompletionInformation.setExercise(exercise);
         exerciseInformationRepository.save(exerciseCompletionInformation);
     }

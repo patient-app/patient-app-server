@@ -13,6 +13,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity
+@Table(name = "exercise_components")
 public class ExerciseComponent {
     @Id
     @Column(unique = true)
@@ -33,7 +34,7 @@ public class ExerciseComponent {
     @Column
     private String userInput;
     @Column
-    private String description;
+    private String exerciseComponentDescription;
 
     private String fileName;
 

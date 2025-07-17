@@ -3,9 +3,7 @@ package ch.uzh.ifi.imrg.patientapp.rest.mapper;
 import ch.uzh.ifi.imrg.patientapp.entity.Exercise.*;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.*;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.*;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
+import org.mapstruct.*;
 import org.mapstruct.factory.Mappers;
 
 import java.util.List;
@@ -17,14 +15,23 @@ public interface ExerciseComponentMapper {
     ExerciseComponent exerciseComponentInputDTOToExerciseComponent(
             ExerciseComponentInputDTO exerciseComponentInputDTO);
 
+    ExerciseComponentOverviewOutputDTO exerciseComponentToExerciseComponentOverviewOutputDTO(ExerciseComponent entity);
     List<ExerciseComponentOverviewOutputDTO> exerciseComponentsToExerciseComponentsOverviewOutputDTOs(
             List<ExerciseComponent> exerciseComponents);
 
-    @Mapping(target = "id", ignore = true) // Never overwrite IDs
-    @Mapping(target = "createdAt", ignore = true) // Never overwrite creation timestamp
-    @Mapping(target = "updatedAt", ignore = true) // Let @UpdateTimestamp handle this
-    @Mapping(target = "exercise", ignore = true) // Usually set relationships explicitly
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "exercise", ignore = true)
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateExerciseComponentFromExerciseComponentInputDTO(ExerciseComponentInputDTO dto, @MappingTarget ExerciseComponent entity);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "exercise", ignore = true)
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void updateExerciseComponentFromExerciseComponentUpdateInputDTO(ExerciseComponentUpdateInputDTO dto, @MappingTarget ExerciseComponent entity);
 
     void updateExerciseComponentFromExerciseComponentResultInputDTO(ExerciseComponentResultInputDTO dto, @MappingTarget ExerciseComponent entity);
 }
