@@ -1,7 +1,5 @@
 package ch.uzh.ifi.imrg.patientapp.coachapi;
 
-
-
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreateChatbotDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.GetConversationSummaryInputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.UpdateChatbotDTO;
@@ -23,7 +21,6 @@ public class CoachChatbotController {
         this.chatbotService = chatbotService;
     }
 
-
     @PostMapping("/coach/patients/{patientId}/chatbot")
     @ResponseStatus(HttpStatus.CREATED)
     @SecurityRequirement(name = "X-Coach-Key")
@@ -43,6 +40,7 @@ public class CoachChatbotController {
     public List<ChatbotConfigurationOutputDTO> getChatbotConfigurations(@PathVariable String patientId) {
         return chatbotService.getChatbotConfigurations(patientId);
     }
+
     @PutMapping("/coach/patients/{patientId}/chatbot")
     @ResponseStatus(HttpStatus.OK)
     @SecurityRequirement(name = "X-Coach-Key")
@@ -53,10 +51,9 @@ public class CoachChatbotController {
     @GetMapping("/coach/patients/{patientId}/chatbot-summary")
     @ResponseStatus(HttpStatus.OK)
     @SecurityRequirement(name = "X-Coach-Key")
-    public ConversationSummaryOutputDTO getConversationSummary(@RequestBody GetConversationSummaryInputDTO getConversationSummaryInputDTO , @PathVariable String patientId) {
+    public ConversationSummaryOutputDTO getConversationSummary(
+            GetConversationSummaryInputDTO getConversationSummaryInputDTO, @PathVariable String patientId) {
         return chatbotService.getConversationSummary(patientId, getConversationSummaryInputDTO);
     }
-
-
 
 }
