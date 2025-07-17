@@ -59,10 +59,13 @@ public class ExerciseController {
     @PostMapping("/patients/exercises/{exerciseId}/exercise-components/{exerciseComponentId}")
     @ResponseStatus(HttpStatus.OK)
     public void postExerciseComponentResult(HttpServletRequest httpServletRequest,
-                                     @PathVariable String exerciseId,
-                                     @RequestBody ExerciseComponentResultInputDTO exerciseComponentResultInputDTO) {
+                                            @PathVariable String exerciseId,
+                                            @PathVariable String exerciseComponentId,
+                                            @RequestBody ExerciseComponentResultInputDTO exerciseComponentResultInputDTO) {
         Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
-        exerciseService.setExerciseComponentResult(loggedInPatient, exerciseId, exerciseComponentResultInputDTO);
+        exerciseService.setExerciseComponentResult(loggedInPatient, exerciseId, exerciseComponentResultInputDTO, exerciseComponentId);
     }
+    // updateExerciseComponentResult
+
 
 }

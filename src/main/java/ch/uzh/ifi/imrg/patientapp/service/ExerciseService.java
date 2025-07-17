@@ -2,9 +2,7 @@ package ch.uzh.ifi.imrg.patientapp.service;
 
 
 import ch.uzh.ifi.imrg.patientapp.entity.ChatbotTemplate;
-import ch.uzh.ifi.imrg.patientapp.entity.Exercise.Exercise;
-import ch.uzh.ifi.imrg.patientapp.entity.Exercise.ExerciseCompletionInformation;
-import ch.uzh.ifi.imrg.patientapp.entity.Exercise.ExerciseComponent;
+import ch.uzh.ifi.imrg.patientapp.entity.Exercise.*;
 import ch.uzh.ifi.imrg.patientapp.entity.ExerciseConversation;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.repository.*;
@@ -14,12 +12,16 @@ import ch.uzh.ifi.imrg.patientapp.rest.mapper.ExerciseComponentMapper;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.ExerciseMapper;
 import ch.uzh.ifi.imrg.patientapp.service.aiService.PromptBuilderService;
 import jakarta.transaction.Transactional;
+import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
+
+import static java.awt.SystemColor.info;
 
 @Service
 @Transactional
@@ -74,7 +76,11 @@ public class ExerciseService {
             throw new IllegalArgumentException("No exercise found with ID: " + exerciseId);
         }
         authorizationService.checkExerciseAccess(exercise, patient, "Patient does not have access to this exercise");
-        return exerciseMapper.exerciseToExerciseOutputDTO(exercise);
+        ExerciseOutputDTO exerciseOutputDTO = exerciseMapper.exerciseToExerciseOutputDTO(exercise);
+        ExerciseCompletionInformation exerciseCompletionInformation = new ExerciseCompletionInformation();
+        exerciseCompletionInformation.setExercise(exercise);
+        exerciseOutputDTO.setExerciseExecutionId(exercise.getId());
+        return exerciseOutputDTO;
     }
 
     public void createExercise(String patientId, ExerciseInputDTO exerciseInputDTO){
@@ -209,29 +215,47 @@ public class ExerciseService {
         if (exercise == null) {
             throw new IllegalArgumentException("No exercise found with ID: " + exerciseId);
         }
-        if (!exercise.getPatient().getId().equals(patient.getId())) {
-            throw new IllegalArgumentException("Patient does not have access to this exercise");
-        }
-        ExerciseCompletionInformation exerciseCompletionInformation = exerciseMapper.exerciseInformationInputDTOToExerciseCompletionInformation(exerciseInformationInputDTO);
+        authorizationService.checkExerciseAccess(exercise, patient, "Patient does not have access to this exercise");
+        ExerciseCompletionInformation exerciseCompletionInformation = exerciseInformationRepository.getExerciseCompletionInformationById(exerciseInformationInputDTO.getExerciseExecutionId());
+
+        exerciseMapper.updateExerciseCompletionInformationFromExerciseCompletionInformation(exerciseInformationInputDTO, exerciseCompletionInformation);
         exerciseCompletionInformation.setExercise(exercise);
+
+        exerciseCompletionInformation.setExerciseMoodBefore(toContainer(exerciseInformationInputDTO.getMoodsBefore()));
+        exerciseCompletionInformation.setExerciseMoodAfter(toContainer(exerciseInformationInputDTO.getMoodsAfter()));
+
         exerciseInformationRepository.save(exerciseCompletionInformation);
     }
 
-    public void setExerciseComponentResult(Patient patient, String exerciseId, ExerciseComponentResultInputDTO exerciseComponentResultInputDTO) {
+    public void setExerciseComponentResult(Patient patient, String exerciseId, ExerciseComponentResultInputDTO exerciseComponentResultInputDTO, String exerciseComponentId) {
         Exercise exercise = exerciseRepository.getExerciseById(exerciseId);
         if (exercise == null) {
             throw new IllegalArgumentException("No exercise found with ID: " + exerciseId);
         }
         authorizationService.checkExerciseAccess(exercise, patient, "Patient does not have access to this exercise");
 
-        ExerciseComponent exerciseComponent = exerciseComponentRepository.getExerciseComponentById(exerciseComponentResultInputDTO.getId());
-        if (exerciseComponent == null) {
-            throw new IllegalArgumentException("No exercise component found with ID: " + exerciseComponentResultInputDTO.getId());
+        ExerciseCompletionInformation exerciseCompletionInformation =
+                exerciseInformationRepository.findById(exerciseComponentResultInputDTO.getExerciseExecutionId()).orElse(null);
+        //ExerciseCompletionInformation testCompletionInformation = new ExerciseCompletionInformation();
+        if (exerciseCompletionInformation == null) {
+            exerciseCompletionInformation = new ExerciseCompletionInformation();
+            exerciseCompletionInformation.setExercise(exercise);
         }
+        //exerciseInformationRepository.save(testCompletionInformation);
+        exerciseInformationRepository.save(exerciseCompletionInformation);
+        Optional<ExerciseComponentAnswer> optional = exerciseCompletionInformation.getComponentAnswerById(exerciseComponentId);
 
-        // Update the result of the exercise component
-        ExerciseComponentMapper.INSTANCE.updateExerciseComponentFromExerciseComponentResultInputDTO(exerciseComponentResultInputDTO, exerciseComponent);
-        exerciseComponentRepository.save(exerciseComponent);
+        if (optional.isPresent()) {
+            ExerciseComponentAnswer answer = optional.get(); // safe here
+            answer.setUserInput(exerciseComponentResultInputDTO.getUserInput());
+        } else {
+            ExerciseComponentAnswer answer = new ExerciseComponentAnswer();
+            answer.setUserInput(exerciseComponentResultInputDTO.getUserInput());
+            answer.setExerciseComponentId(exerciseComponentId);
+            answer.setCompletionInformation(exerciseCompletionInformation);
+            exerciseCompletionInformation.getComponentAnswers().add(answer);
+        }
+        exerciseInformationRepository.save(exerciseCompletionInformation);
     }
 
 
@@ -240,12 +264,26 @@ public class ExerciseService {
         if (exercise == null) {
             throw new IllegalArgumentException("No exercise found with ID: " + exerciseId);
         }
-        if (!exercise.getPatient().getId().equals(patientId)) {
-            throw new IllegalArgumentException("Patient does not have access to this exercise");
-        }
+        authorizationService.checkExerciseAccess(exercise, patientRepository.getPatientById(patientId), "Patient does not have access to this exercise");
         List<ExerciseCompletionInformation> exerciseCompletionInformations = exerciseInformationRepository.getExerciseInformationByExerciseId(exercise.getId());
         return exerciseMapper.exerciseInformationsToExerciseInformationOutputDTOs(exerciseCompletionInformations);
     }
+
+    private ExerciseMoodContainer toContainer(List<ExerciseMoodInputDTO> input) {
+        if (input == null || input.isEmpty()) return null;
+
+        ExerciseMoodContainer container = new ExerciseMoodContainer();
+        List<ExerciseMood> moods = exerciseMapper.mapMoodInputDTOsToExerciseMoods(input);
+
+        // Set back-reference
+        for (ExerciseMood mood : moods) {
+            mood.setExerciseMoodContainer(container);
+        }
+
+        container.setExerciseMoods(moods);
+        return container;
+    }
+
 
 }
 

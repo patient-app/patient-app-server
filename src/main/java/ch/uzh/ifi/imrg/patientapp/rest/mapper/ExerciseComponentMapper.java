@@ -16,6 +16,7 @@ public interface ExerciseComponentMapper {
             ExerciseComponentInputDTO exerciseComponentInputDTO);
 
     ExerciseComponentOverviewOutputDTO exerciseComponentToExerciseComponentOverviewOutputDTO(ExerciseComponent entity);
+
     List<ExerciseComponentOverviewOutputDTO> exerciseComponentsToExerciseComponentsOverviewOutputDTOs(
             List<ExerciseComponent> exerciseComponents);
 
@@ -32,6 +33,4 @@ public interface ExerciseComponentMapper {
     @Mapping(target = "exercise", ignore = true)
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateExerciseComponentFromExerciseComponentUpdateInputDTO(ExerciseComponentUpdateInputDTO dto, @MappingTarget ExerciseComponent entity);
-
-    void updateExerciseComponentFromExerciseComponentResultInputDTO(ExerciseComponentResultInputDTO dto, @MappingTarget ExerciseComponent entity);
 }

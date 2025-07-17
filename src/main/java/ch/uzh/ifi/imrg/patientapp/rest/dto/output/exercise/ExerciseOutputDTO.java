@@ -8,8 +8,8 @@ import java.util.List;
 @Getter
 @Setter
 public class ExerciseOutputDTO {
-    private String id;
-    private String name;
-    private String description;
+    private String exerciseExecutionId;
+    private String exerciseTitle;
+    private String exerciseDescription;
     private List<ExerciseComponentOutputDTO> exerciseComponents;
 }

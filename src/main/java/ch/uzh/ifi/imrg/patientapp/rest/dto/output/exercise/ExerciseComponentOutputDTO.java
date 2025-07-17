@@ -9,7 +9,7 @@ import lombok.Setter;
 public class ExerciseComponentOutputDTO {
     private String id;
     private ExerciseComponentType exerciseComponentType;
-    private String description;
+    private String exerciseComponentDescription;
     private String userInput;
     private String fileName;
     private String fileType;

@@ -5,6 +5,9 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Getter
@@ -25,9 +28,21 @@ public class ExerciseCompletionInformation {
     private Instant endTime;
     private String feedback;
 
+
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private ExerciseMoodContainer exerciseMoodBefore;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private ExerciseMoodContainer exerciseMoodAfter;
+
+    @OneToMany(mappedBy = "completionInformation", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ExerciseComponentAnswer> componentAnswers = new ArrayList<>();
+
+    public Optional<ExerciseComponentAnswer> getComponentAnswerById(String componentId) {
+        if (componentId == null) return Optional.empty();
+        return componentAnswers.stream()
+                .filter(answer -> componentId.equals(answer.getExerciseComponentId()))
+                .findFirst();
+    }
+
 }

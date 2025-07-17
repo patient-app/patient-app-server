@@ -2,9 +2,7 @@ package ch.uzh.ifi.imrg.patientapp.rest.mapper;
 
 import ch.uzh.ifi.imrg.patientapp.entity.Exercise.*;
 import ch.uzh.ifi.imrg.patientapp.entity.ExerciseConversation;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseInformationInputDTO;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseInputDTO;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseUpdateInputDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.*;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.*;
 import org.mapstruct.*;
 
@@ -18,6 +16,8 @@ public interface ExerciseMapper {
 
     List<ExercisesOverviewOutputDTO> exercisesToExerciseOverviewOutputDTOs(List<Exercise> exercises);
     Exercise exerciseInputDTOToExercise(ExerciseInputDTO exerciseInputDTO);
+
+    @Mapping(target = "exerciseExecutionId", ignore = true)
     ExerciseOutputDTO exerciseToExerciseOutputDTO(Exercise exercise);
     List <ExerciseInformationOutputDTO> exerciseInformationsToExerciseInformationOutputDTOs(List<ExerciseCompletionInformation> exerciseInformations);
 
@@ -27,48 +27,18 @@ public interface ExerciseMapper {
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateExerciseFromInputDTO(ExerciseUpdateInputDTO exerciseUpdateInputDTO, @MappingTarget Exercise target);
 
-     ExerciseCompletionInformation exerciseInformationInputDTOToExerciseCompletionInformation(
-            ExerciseInformationInputDTO exerciseInformationInputDTO);
-    // MapStruct will map the simple fields
-    ExerciseCompletionInformation mapBaseFields(ExerciseInformationInputDTO dto);
+    @Mapping(target = "exerciseMoodBefore", ignore = true)
+    @Mapping(target = "exerciseMoodAfter", ignore = true)
+    void updateExerciseCompletionInformationFromExerciseCompletionInformation(ExerciseInformationInputDTO dto, @MappingTarget ExerciseCompletionInformation entity);
 
-    // Add this as the main mapping entry point:
-    default ExerciseCompletionInformation exerciseInformationInputDTOToExerciseInformation(ExerciseInformationInputDTO dto) {
-        // Map the simple fields
-        ExerciseCompletionInformation info = mapBaseFields(dto);
+    ExerciseMood exerciseMoodInputDTOToExerciseMood(ExerciseMoodInputDTO dto);
 
-        // Build the before container
-        if (dto.getMoodsBefore() != null && !dto.getMoodsBefore().isEmpty()) {
-            ExerciseMoodContainer beforeContainer = new ExerciseMoodContainer();
-            beforeContainer.setExerciseMoods(
-                    dto.getMoodsBefore().stream().map(m -> {
-                        ExerciseMood mood = new ExerciseMood();
-                        mood.setMoodName(m.getMoodName());
-                        mood.setMoodScore(m.getMoodScore());
-                        mood.setExerciseMoodContainer(beforeContainer);
-                        return mood;
-                    }).toList()
-            );
-            info.setExerciseMoodBefore(beforeContainer);
-        }
+    List<ExerciseMood> mapMoodInputDTOsToExerciseMoods(List<ExerciseMoodInputDTO> dtos);
 
-        // Build the after container
-        if (dto.getMoodsAfter() != null && !dto.getMoodsAfter().isEmpty()) {
-            ExerciseMoodContainer afterContainer = new ExerciseMoodContainer();
-            afterContainer.setExerciseMoods(
-                    dto.getMoodsAfter().stream().map(m -> {
-                        ExerciseMood mood = new ExerciseMood();
-                        mood.setMoodName(m.getMoodName());
-                        mood.setMoodScore(m.getMoodScore());
-                        mood.setExerciseMoodContainer(afterContainer);
-                        return mood;
-                    }).toList()
-            );
-            info.setExerciseMoodAfter(afterContainer);
-        }
+    ExerciseCompletionInformation exerciseComponentResultInputDTOToExerciseCompletionInformation(ExerciseComponentResultInputDTO exerciseComponentResultInputDTO);
 
-        return info;
-    }
+
+
     default ExerciseInformationOutputDTO exerciseInformationToExerciseInformationOutputDTO(ExerciseCompletionInformation entity) {
         ExerciseInformationOutputDTO dto = new ExerciseInformationOutputDTO();
 

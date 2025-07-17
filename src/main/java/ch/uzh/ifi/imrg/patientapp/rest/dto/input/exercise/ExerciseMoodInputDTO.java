@@ -10,11 +10,5 @@ public class ExerciseMoodInputDTO {
     private String moodName;
     private int moodScore;
 
-    @Override
-    public String toString() {
-        return "ExerciseMoodInputDTO{" +
-                "moodName='" + moodName + '\'' +
-                ", moodScore=" + moodScore +
-                '}';
-    }
+
 }

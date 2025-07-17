@@ -6,7 +6,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ExerciseComponentResultInputDTO {
-    String id;
+    String exerciseExecutionId;
     String userInput;
 
 }
