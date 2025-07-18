@@ -5,10 +5,12 @@ import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
 import ch.uzh.ifi.imrg.patientapp.entity.JournalEntry;
+import ch.uzh.ifi.imrg.patientapp.entity.JournalEntryConversation;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.JournalEntryRequestDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.CoachGetAllJournalEntriesDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.CoachJournalEntryOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.GetAllJournalEntriesDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.output.JournalChatbotOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.JournalEntryOutputDTO;
 
 @Mapper
@@ -29,5 +31,7 @@ public interface JournalEntryMapper {
     CoachGetAllJournalEntriesDTO convertEntityToCoachGetAllJournalEntriesDTO(JournalEntry entry);
 
     CoachJournalEntryOutputDTO convertEntityToCoachJournalEntryOutputDTO(JournalEntry entry);
+
+    JournalChatbotOutputDTO convertEntityToJournalChatbotOutputDTO(JournalEntryConversation conversation);
 
 }

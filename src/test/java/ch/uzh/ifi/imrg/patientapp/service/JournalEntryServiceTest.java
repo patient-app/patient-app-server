@@ -8,8 +8,10 @@ import java.lang.reflect.Method;
 import java.time.Instant;
 import java.util.*;
 
+import ch.uzh.ifi.imrg.patientapp.entity.ChatbotTemplate;
 import ch.uzh.ifi.imrg.patientapp.entity.JournalEntry;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
+import ch.uzh.ifi.imrg.patientapp.repository.ChatbotTemplateRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.JournalEntryRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.PatientRepository;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.JournalEntryRequestDTO;
@@ -17,6 +19,7 @@ import ch.uzh.ifi.imrg.patientapp.rest.dto.output.CoachGetAllJournalEntriesDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.CoachJournalEntryOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.GetAllJournalEntriesDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.JournalEntryOutputDTO;
+import ch.uzh.ifi.imrg.patientapp.service.aiService.PromptBuilderService;
 import ch.uzh.ifi.imrg.patientapp.utils.CryptographyUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,6 +37,12 @@ public class JournalEntryServiceTest {
 
     @Mock
     private PatientRepository patientRepository;
+
+    @Mock
+    private ChatbotTemplateRepository chatbotTemplateRepository;
+
+    @Mock
+    private PromptBuilderService promptBuilderService;
 
     @InjectMocks
     private JournalEntryService service;
@@ -67,6 +76,17 @@ public class JournalEntryServiceTest {
         savedEntity.setAiAccessAllowed(false);
 
         when(repo.saveAndFlush(any(JournalEntry.class))).thenReturn(savedEntity);
+
+        ChatbotTemplate template = new ChatbotTemplate();
+        template.setId("tmpl1");
+        when(chatbotTemplateRepository.findByPatientId("p1"))
+                .thenReturn(List.of(template));
+
+        when(promptBuilderService.getJournalSystemPrompt(
+                eq(template),
+                eq("Title"),
+                eq("Content")))
+                .thenReturn("<<SYSTEM PROMPT>>");
 
         try (MockedStatic<CryptographyUtil> crypto = mockStatic(CryptographyUtil.class)) {
             // decrypt privateKey

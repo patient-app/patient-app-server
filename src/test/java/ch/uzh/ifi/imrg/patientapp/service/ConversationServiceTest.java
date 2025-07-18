@@ -19,6 +19,9 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.contains;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -276,6 +279,57 @@ public class ConversationServiceTest {
                 assertEquals("No conversation found with external ID: " + conversationId, exception.getMessage());
                 verify(conversationRepository).findById(conversationId);
                 verifyNoInteractions(authorizationService);
+        }
+
+        @Test
+        void testUpdateJournalConversationSystemPrompt_Success() {
+                // Arrange
+                String conversationId = "conv-journal-001";
+                Patient patient = new Patient();
+                patient.setId("p1");
+
+                Conversation conversation = new JournalEntryConversation();
+                when(conversationRepository.findById(conversationId))
+                                .thenReturn(Optional.of(conversation));
+
+                ChatbotTemplate template = new ChatbotTemplate();
+                when(chatbotTemplateRepository.findByPatientId("p1"))
+                                .thenReturn(List.of(template));
+
+                String expectedPrompt = "builtPrompt";
+                when(promptBuilderService.getJournalSystemPrompt(template, "title1", "content1"))
+                                .thenReturn(expectedPrompt);
+
+                // Act
+                conversationService.updateJournalConversationSystemPrompt(patient, conversationId,
+                                "title1", "content1");
+
+                // Assert
+                assertEquals(expectedPrompt, conversation.getSystemPrompt());
+                verify(conversationRepository).findById(conversationId);
+                verify(chatbotTemplateRepository).findByPatientId("p1");
+                verify(promptBuilderService).getJournalSystemPrompt(template, "title1", "content1");
+                verify(conversationRepository).save(conversation);
+        }
+
+        @Test
+        void testUpdateJournalConversationSystemPrompt_NotFound() {
+                // Arrange
+                String conversationId = "nonexistent";
+                Patient patient = new Patient();
+                patient.setId("p2");
+
+                when(conversationRepository.findById(conversationId))
+                                .thenReturn(Optional.empty());
+
+                // Act & Assert
+                NoSuchElementException ex = assertThrows(NoSuchElementException.class,
+                                () -> conversationService.updateJournalConversationSystemPrompt(
+                                                patient, conversationId, "title", "content"));
+                assertTrue(ex.getMessage().contains("No conversation found with this ID: " + conversationId));
+
+                verify(conversationRepository).findById(conversationId);
+                verifyNoInteractions(chatbotTemplateRepository, promptBuilderService);
         }
 
 }
