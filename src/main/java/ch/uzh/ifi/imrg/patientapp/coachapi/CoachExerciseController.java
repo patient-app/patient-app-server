@@ -54,6 +54,7 @@ public class CoachExerciseController {
                                                                              @PathVariable String exerciseId) {
         return exerciseService.getAllExercisesComponentsOfAnExerciseForCoach(patientId,exerciseId);
     }
+
     @PutMapping("/coach/patients/{patientId}/exercises/{exerciseId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @SecurityRequirement(name = "X-Coach-Key")
@@ -72,6 +73,7 @@ public class CoachExerciseController {
                                @RequestBody ExerciseComponentUpdateInputDTO exerciseComponentUpdateInputDTO){
         exerciseService.updateExerciseComponent(patientId, exerciseId, exerciseComponentId,exerciseComponentUpdateInputDTO);
     }
+
     @DeleteMapping("/coach/patients/{patientId}/exercises/{exerciseId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @SecurityRequirement(name = "X-Coach-Key")
@@ -79,6 +81,7 @@ public class CoachExerciseController {
                                @PathVariable String exerciseId) {
         exerciseService.deleteExercise(patientId, exerciseId);
     }
+
     @DeleteMapping("/coach/patients/{patientId}/exercises/{exerciseId}/exercise-components/{exerciseComponentId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @SecurityRequirement(name = "X-Coach-Key")

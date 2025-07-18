@@ -22,12 +22,4 @@ public class ExerciseMood {
     private String moodName;
     private int moodScore;
 
-    @Override
-    public String toString() {
-        return "ExerciseMood{" +
-                "id='" + id + '\'' +
-                ", moodName='" + moodName + '\'' +
-                ", moodPictureId='" + moodScore + '\'' +
-                '}';
-    }
 }

@@ -56,6 +56,7 @@ public class ExerciseService {
         List<Exercise> exercises = exerciseRepository.getExercisesByPatientId(patient.getId());
         return exerciseMapper.exercisesToExerciseOverviewOutputDTOs(exercises);
     }
+
     public List<ExerciseComponentOverviewOutputDTO> getAllExercisesComponentsOfAnExerciseForCoach(String patientId, String exerciseId) {
         Exercise exercise = exerciseRepository.getExerciseById(exerciseId);
         if (exercise == null) {
@@ -70,6 +71,7 @@ public class ExerciseService {
         authorizationService.checkExerciseAccess(exercises.getFirst(), patient, "Patient does not have access to this exercise");
         return exerciseMapper.exercisesToExerciseOverviewOutputDTOs(exercises);
     }
+
     public List<ExecutionOverviewOutputDTO> getOneExercisesOverview(Patient patient, String exerciseId) {
         Exercise exercise = exerciseRepository.getExerciseById(exerciseId);
         if (exercise == null) {
@@ -78,8 +80,8 @@ public class ExerciseService {
         authorizationService.checkExerciseAccess(exercise, patient, "Patient does not have access to this exercise");
         List<ExerciseCompletionInformation> exerciseCompletionInformations = exerciseInformationRepository.getExerciseInformationByExerciseId(exercise.getId());
         return exerciseMapper.exerciseCompletionInformationsToExecutionOverviewOutputDTOs(exerciseCompletionInformations);
-
     }
+
     public ExerciseOutputDTO getExerciseExecution(String exerciseId, Patient patient, String exerciseExecutionId) {
         Exercise exercise = exerciseRepository.getExerciseById(exerciseId);
         if (exercise == null) {
@@ -89,8 +91,6 @@ public class ExerciseService {
 
         ExerciseOutputDTO exerciseOutputDTO = exerciseMapper.exerciseToExerciseOutputDTO(exercise);
         ExerciseCompletionInformation exerciseCompletionInformation = exerciseInformationRepository.getExerciseCompletionInformationById(exerciseExecutionId);
-        //exerciseCompletionInformation.setExercise(exercise);
-        //exerciseOutputDTO.setExerciseExecutionId(exerciseCompletionInformation.getId());
         exerciseInformationRepository.save(exerciseCompletionInformation);
         return exerciseOutputDTO;
     }
@@ -137,6 +137,7 @@ public class ExerciseService {
         outputDTO.setExerciseExecutionId(exerciseCompletionInformation.getId());
         return outputDTO;
     }
+
     public void createExerciseComponent(String patientId, String exerciseId, ExerciseComponentInputDTO exerciseComponentInputDTO) {
         Exercise exercise = exerciseRepository.getExerciseById(exerciseId);
         if (exercise == null) {
