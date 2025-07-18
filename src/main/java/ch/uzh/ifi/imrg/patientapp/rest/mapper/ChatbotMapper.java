@@ -6,8 +6,10 @@ import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreateChatbotDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.UpdateChatbotDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.ChatbotConfigurationOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExerciseChatbotOutputDTO;
+import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
+import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.factory.Mappers;
 
 import java.util.List;
@@ -19,6 +21,8 @@ public interface ChatbotMapper {
     ChatbotTemplate convertCreateChatbotDTOToChatbotTemplate(CreateChatbotDTO createChatbotDTO);
     ChatbotConfigurationOutputDTO convertChatbotTemplateToChatbotConfigurationOutputDTO(ChatbotTemplate chatbotTemplate);
     List<ChatbotConfigurationOutputDTO> chatbotTemplatesToChatbotConfigurationOutputDTOs(List<ChatbotTemplate> chatbotTemplates);
+
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateChatbotTemplateFromUpdateChatbotDTO(UpdateChatbotDTO updateChatbotDTO, @MappingTarget ChatbotTemplate chatbotTemplate);
 
 

@@ -6,7 +6,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class ExercisesOverviewOutputDTO {
-    private String id;
-    private String exerciseTitle;
+public class ExecutionOverviewOutputDTO {
+    private String executionTitle;
+    private String exerciseExecutionId;
 }

@@ -1,6 +1,5 @@
 package ch.uzh.ifi.imrg.patientapp.entity.Exercise;
 
-
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -10,16 +9,14 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity
-public class ExerciseMood {
+public class ExerciseComponentAnswer {
     @Id
     @Column(unique = true)
     private String id = UUID.randomUUID().toString();
+    private String exerciseComponentId;
+    private String userInput;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "exercise_mood_container_id", nullable = false)
-    private ExerciseMoodContainer exerciseMoodContainer;
-
-    private String moodName;
-    private int moodScore;
-
+    @JoinColumn(name = "completion_information_id", nullable = false)
+    private ExerciseCompletionInformation completionInformation;
 }

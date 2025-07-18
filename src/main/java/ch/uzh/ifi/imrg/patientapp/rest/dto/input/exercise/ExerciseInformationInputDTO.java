@@ -9,6 +9,7 @@ import java.util.List;
 @Getter
 @Setter
 public class ExerciseInformationInputDTO {
+    private String exerciseExecutionId;
     private Instant startTime;
     private Instant endTime;
     private String feedback;

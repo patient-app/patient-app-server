@@ -1,11 +1,14 @@
 package ch.uzh.ifi.imrg.patientapp.coachapi;
 
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseComponentInputDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseComponentUpdateInputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseInputDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseUpdateInputDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExerciseComponentOverviewOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExerciseInformationOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExercisesOverviewOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.service.ExerciseService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,6 +31,15 @@ public class CoachExerciseController {
         exerciseService.createExercise(patientId, exerciseInputDTO);
     }
 
+    @PostMapping("/coach/patients/{patientId}/exercises/{exerciseId}/exercise-components")
+    @ResponseStatus(HttpStatus.CREATED)
+    @SecurityRequirement(name = "X-Coach-Key")
+    public void createExerciseComponent(@PathVariable String patientId,
+                                        @PathVariable String exerciseId,
+                                        @RequestBody ExerciseComponentInputDTO exerciseComponentInputDTO){
+        exerciseService.createExerciseComponent(patientId, exerciseId, exerciseComponentInputDTO);
+    }
+
     @GetMapping("/coach/patients/{patientId}/exercises")
     @ResponseStatus(HttpStatus.OK)
     @SecurityRequirement(name = "X-Coach-Key")
@@ -35,13 +47,31 @@ public class CoachExerciseController {
         return exerciseService.getAllExercisesForCoach(patientId);
     }
 
+    @GetMapping("/coach/patients/{patientId}/exercises/{exerciseId}/exercise-components")
+    @ResponseStatus(HttpStatus.OK)
+    @SecurityRequirement(name = "X-Coach-Key")
+    public List<ExerciseComponentOverviewOutputDTO> getAllExerciseComponents(@PathVariable String patientId,
+                                                                             @PathVariable String exerciseId) {
+        return exerciseService.getAllExercisesComponentsOfAnExerciseForCoach(patientId,exerciseId);
+    }
+
     @PutMapping("/coach/patients/{patientId}/exercises/{exerciseId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @SecurityRequirement(name = "X-Coach-Key")
     public void updateExercise(@PathVariable String patientId,
                                @PathVariable String exerciseId,
-                               @RequestBody ExerciseInputDTO exerciseInputDTO){
-        exerciseService.updateExercise(patientId, exerciseId, exerciseInputDTO);
+                               @RequestBody ExerciseUpdateInputDTO exerciseUpdateInputDTO){
+        exerciseService.updateExercise(patientId, exerciseId, exerciseUpdateInputDTO);
+    }
+
+    @PutMapping("/coach/patients/{patientId}/exercises/{exerciseId}/exercise-components/{exerciseComponentId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @SecurityRequirement(name = "X-Coach-Key")
+    public void updateExerciseComponent(@PathVariable String patientId,
+                               @PathVariable String exerciseId,
+                               @PathVariable String exerciseComponentId,
+                               @RequestBody ExerciseComponentUpdateInputDTO exerciseComponentUpdateInputDTO){
+        exerciseService.updateExerciseComponent(patientId, exerciseId, exerciseComponentId,exerciseComponentUpdateInputDTO);
     }
 
     @DeleteMapping("/coach/patients/{patientId}/exercises/{exerciseId}")
@@ -50,6 +80,15 @@ public class CoachExerciseController {
     public void deleteExercise(@PathVariable String patientId,
                                @PathVariable String exerciseId) {
         exerciseService.deleteExercise(patientId, exerciseId);
+    }
+
+    @DeleteMapping("/coach/patients/{patientId}/exercises/{exerciseId}/exercise-components/{exerciseComponentId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @SecurityRequirement(name = "X-Coach-Key")
+    public void deleteExerciseComponent(@PathVariable String patientId,
+                                        @PathVariable String exerciseId,
+                                        @PathVariable String exerciseComponentId) {
+        exerciseService.deleteExerciseComponent(patientId, exerciseId, exerciseComponentId);
     }
 
     @GetMapping("/coach/patients/{patientId}/exercises/{exerciseId}")
