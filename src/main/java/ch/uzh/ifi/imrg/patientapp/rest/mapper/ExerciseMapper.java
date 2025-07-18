@@ -2,16 +2,13 @@ package ch.uzh.ifi.imrg.patientapp.rest.mapper;
 
 import ch.uzh.ifi.imrg.patientapp.entity.Exercise.*;
 import ch.uzh.ifi.imrg.patientapp.entity.ExerciseConversation;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseInformationInputDTO;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseInputDTO;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseMoodInputDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.*;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.*;
-import org.mapstruct.Mapper;
-import org.mapstruct.MappingTarget;
+import org.mapstruct.*;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring", uses = ExerciseElementMapper.class)
+@Mapper(componentModel = "spring", uses = ExerciseComponentMapper.class)
 public interface ExerciseMapper {
 
     ExerciseChatbotOutputDTO exerciseConversationToExerciseChatbotOutputDTO(ExerciseConversation exerciseConversation);
@@ -19,53 +16,33 @@ public interface ExerciseMapper {
 
     List<ExercisesOverviewOutputDTO> exercisesToExerciseOverviewOutputDTOs(List<Exercise> exercises);
     Exercise exerciseInputDTOToExercise(ExerciseInputDTO exerciseInputDTO);
+
+    @Mapping(target = "exerciseExecutionId", ignore = true)
     ExerciseOutputDTO exerciseToExerciseOutputDTO(Exercise exercise);
-    ExerciseMediaOutputDTO storedExerciseFileToExerciseMediaOutputDTO(StoredExerciseFile storedExerciseFile);
-    List <ExerciseInformationOutputDTO> exerciseInformationsToExerciseInformationOutputDTOs(List<ExerciseInformation> exerciseInformations);
+    List <ExerciseInformationOutputDTO> exerciseInformationsToExerciseInformationOutputDTOs(List<ExerciseCompletionInformation> exerciseInformations);
 
-    void updateExerciseFromInputDTO(ExerciseInputDTO exerciseInputDTO, @MappingTarget Exercise target);
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void updateExerciseFromInputDTO(ExerciseUpdateInputDTO exerciseUpdateInputDTO, @MappingTarget Exercise target);
 
-    // MapStruct will map the simple fields
-    ExerciseInformation mapBaseFields(ExerciseInformationInputDTO dto);
+    @Mapping(target = "exerciseMoodBefore", ignore = true)
+    @Mapping(target = "exerciseMoodAfter", ignore = true)
+    void updateExerciseCompletionInformationFromExerciseCompletionInformation(ExerciseInformationInputDTO dto, @MappingTarget ExerciseCompletionInformation entity);
 
-    // Add this as the main mapping entry point:
-    default ExerciseInformation exerciseInformationInputDTOToExerciseInformation(ExerciseInformationInputDTO dto) {
-        // Map the simple fields
-        ExerciseInformation info = mapBaseFields(dto);
+    ExerciseMood exerciseMoodInputDTOToExerciseMood(ExerciseMoodInputDTO dto);
 
-        // Build the before container
-        if (dto.getMoodsBefore() != null && !dto.getMoodsBefore().isEmpty()) {
-            ExerciseMoodContainer beforeContainer = new ExerciseMoodContainer();
-            beforeContainer.setExerciseMoods(
-                    dto.getMoodsBefore().stream().map(m -> {
-                        ExerciseMood mood = new ExerciseMood();
-                        mood.setMoodName(m.getMoodName());
-                        mood.setMoodScore(m.getMoodScore());
-                        mood.setExerciseMoodContainer(beforeContainer);
-                        return mood;
-                    }).toList()
-            );
-            info.setExerciseMoodBefore(beforeContainer);
-        }
+    List<ExerciseMood> mapMoodInputDTOsToExerciseMoods(List<ExerciseMoodInputDTO> dtos);
 
-        // Build the after container
-        if (dto.getMoodsAfter() != null && !dto.getMoodsAfter().isEmpty()) {
-            ExerciseMoodContainer afterContainer = new ExerciseMoodContainer();
-            afterContainer.setExerciseMoods(
-                    dto.getMoodsAfter().stream().map(m -> {
-                        ExerciseMood mood = new ExerciseMood();
-                        mood.setMoodName(m.getMoodName());
-                        mood.setMoodScore(m.getMoodScore());
-                        mood.setExerciseMoodContainer(afterContainer);
-                        return mood;
-                    }).toList()
-            );
-            info.setExerciseMoodAfter(afterContainer);
-        }
+    ExerciseCompletionInformation exerciseComponentResultInputDTOToExerciseCompletionInformation(ExerciseComponentResultInputDTO exerciseComponentResultInputDTO);
 
-        return info;
-    }
-    default ExerciseInformationOutputDTO exerciseInformationToExerciseInformationOutputDTO(ExerciseInformation entity) {
+    @Mapping(source="id", target="exerciseExecutionId")
+    ExecutionOverviewOutputDTO exerciseCompletionInformationToExecutionOverviewOutputDTO(ExerciseCompletionInformation info);
+
+    List<ExecutionOverviewOutputDTO> exerciseCompletionInformationsToExecutionOverviewOutputDTOs(List<ExerciseCompletionInformation> exerciseInformations);
+
+    default ExerciseInformationOutputDTO exerciseInformationToExerciseInformationOutputDTO(ExerciseCompletionInformation entity) {
         ExerciseInformationOutputDTO dto = new ExerciseInformationOutputDTO();
 
         dto.setStartTime(entity.getStartTime());

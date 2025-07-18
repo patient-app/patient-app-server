@@ -31,7 +31,7 @@ public class ChatbotTemplate implements Serializable {
     @Column(name = "updated_at")
     @UpdateTimestamp
     private Instant updatedAt;
-
+    private String chatbotContext;
     private String chatbotIcon;
     private String chatbotRole;
     private String chatbotTone;
