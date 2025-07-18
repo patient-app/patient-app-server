@@ -14,6 +14,7 @@ import ch.uzh.ifi.imrg.patientapp.service.PatientService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.GetAllJournalEntriesDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.output.JournalChatbotOutputDTO;
 
 @RestController
 public class JournalEntryController {
@@ -77,4 +78,14 @@ public class JournalEntryController {
         Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
         journalEntryService.deleteEntry(loggedInPatient, entryId);
     }
+
+    @GetMapping("/patients/journal-entries/{entryId}/chatbot")
+    @ResponseStatus(HttpStatus.OK)
+    public JournalChatbotOutputDTO getAllMessages(@PathVariable String entryId,
+            HttpServletRequest httpServletRequest) {
+        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
+
+        return journalEntryService.getJournalChatbot(loggedInPatient, entryId);
+    }
+
 }

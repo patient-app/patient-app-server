@@ -9,6 +9,10 @@ import ch.uzh.ifi.imrg.patientapp.rest.dto.output.document.DocumentOverviewDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.DocumentMapper;
 import ch.uzh.ifi.imrg.patientapp.service.DocumentService;
 import ch.uzh.ifi.imrg.patientapp.service.PatientService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
@@ -39,7 +43,11 @@ public class DocumentController {
                 .toList();
     }
 
-    @GetMapping("/patients/documents/{documentId}")
+    @Operation(summary = "Download a patient’s document", responses = {
+            @ApiResponse(responseCode = "200", description = "The raw file bytes", content = @Content(mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE, schema = @Schema(type = "string", format = "binary"))),
+            @ApiResponse(responseCode = "404", description = "Document not found")
+    })
+    @GetMapping(path = "/patients/documents/{documentId}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<byte[]> download(@PathVariable String documentId, HttpServletRequest httpServletRequest) {
         Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
 

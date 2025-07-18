@@ -28,6 +28,7 @@ import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.JournalEntryRequestDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.GetAllJournalEntriesDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.output.JournalChatbotOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.JournalEntryOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.service.JournalEntryService;
 import ch.uzh.ifi.imrg.patientapp.service.PatientService;
@@ -214,5 +215,28 @@ public class JournalEntryControllerTest {
                 // Act & Assert
                 mockMvc.perform(delete("/patients/journal-entries/e4"))
                                 .andExpect(status().isNoContent());
+        }
+
+        @Test
+        void getAllMessages_returnsChatbotOutput() throws Exception {
+                // Arrange
+                Patient mockPatient = new Patient();
+                when(patientService.getCurrentlyLoggedInPatient(any()))
+                                .thenReturn(mockPatient);
+
+                // Build a fake JournalChatbotOutputDTO
+                JournalChatbotOutputDTO chatDto = new JournalChatbotOutputDTO();
+                chatDto.setId("e5");
+                chatDto.setName("ChatbotSessionName");
+
+                // Mock the service call
+                when(journalEntryService.getJournalChatbot(mockPatient, "e5"))
+                                .thenReturn(chatDto);
+
+                // Act & Assert
+                mockMvc.perform(get("/patients/journal-entries/e5/chatbot"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.id").value("e5"))
+                                .andExpect(jsonPath("$.name").value("ChatbotSessionName"));
         }
 }
