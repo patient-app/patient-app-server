@@ -19,16 +19,16 @@ public class ExerciseCompletionInformation {
     @Column(unique = true)
     private String id = UUID.randomUUID().toString();
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "exercise_id", nullable = false)
-    private Exercise exercise;
-
     @Column(name = "created_at", updatable = false)
     private Instant startTime;
     private Instant endTime;
     private String executionTitle;
     private String feedback;
 
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "exercise_id", nullable = false)
+    private Exercise exercise;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private ExerciseMoodContainer exerciseMoodBefore;

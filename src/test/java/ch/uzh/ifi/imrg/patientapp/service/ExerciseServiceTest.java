@@ -39,9 +39,6 @@ class ExerciseServiceTest {
     private ExerciseMapper exerciseMapper;
 
     @Mock
-    private StoredExerciseFileRepository storedExerciseFileRepository;
-
-    @Mock
     private ExerciseInformationRepository exerciseInformationRepository;
 
     @Mock

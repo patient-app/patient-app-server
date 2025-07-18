@@ -81,30 +81,6 @@ class ExerciseControllerTest {
     }
 
     @Test
-    void testGetPictureMock_ReturnsExerciseMediaOutputDTO() {
-        // Arrange
-        HttpServletRequest request = mock(HttpServletRequest.class);
-        String exerciseId = "exercise789";
-        String mediaId = "media123";
-
-        Patient mockPatient = new Patient();
-        mockPatient.setId("p123");
-
-        ExerciseMediaOutputDTO expectedDTO = new ExerciseMediaOutputDTO();
-
-        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
-        when(exerciseService.getExerciseMedia(mockPatient, exerciseId, mediaId)).thenReturn(expectedDTO);
-
-        // Act
-        ExerciseMediaOutputDTO result = exerciseController.getPicture(request, exerciseId, mediaId);
-
-        // Assert
-        assertEquals(expectedDTO, result);
-        verify(patientService).getCurrentlyLoggedInPatient(request);
-        verify(exerciseService).getExerciseMedia(mockPatient, exerciseId, mediaId);
-        verifyNoMoreInteractions(patientService, exerciseService);
-    }
-    @Test
     void testPostExerciseFeedback_InvokesServiceCorrectly() {
         // Arrange
         HttpServletRequest request = mock(HttpServletRequest.class);

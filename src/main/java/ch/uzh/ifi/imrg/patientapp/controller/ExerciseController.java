@@ -2,6 +2,7 @@ package ch.uzh.ifi.imrg.patientapp.controller;
 
 
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseCompletionNameInputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseComponentInputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseComponentResultInputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseInformationInputDTO;
@@ -31,7 +32,7 @@ public class ExerciseController {
         Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
         return exerciseService.getExercisesOverview(loggedInPatient);
     }
-    @GetMapping("/patients/exercises{exerciseId}")
+    @GetMapping("/patients/exercises/{exerciseId}")
     @ResponseStatus(HttpStatus.OK)
     public List<ExecutionOverviewOutputDTO> getOneExerciseOverview(HttpServletRequest httpServletRequest,
                                                                   @PathVariable String exerciseId){
@@ -56,16 +57,7 @@ public class ExerciseController {
         return exerciseService.startExercise(exerciseId, loggedInPatient);
     }
 
-
-    @GetMapping("/patients/exercises/{exerciseId}/chatbot")
-    @ResponseStatus(HttpStatus.OK)
-    public ExerciseChatbotOutputDTO getExerciseChatbot(HttpServletRequest httpServletRequest,
-                                         @PathVariable String exerciseId){
-        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
-        return exerciseService.getExerciseChatbot(exerciseId, loggedInPatient);
-    }
-
-    @PostMapping("/patients/exercises/{exerciseId}")
+    @PostMapping("/patients/exercises/{exerciseId}/exercise-completed")
     @ResponseStatus(HttpStatus.OK)
     public void postExerciseFeedback(HttpServletRequest httpServletRequest,
             @PathVariable String exerciseId,
@@ -74,17 +66,50 @@ public class ExerciseController {
         exerciseService.putExerciseFeedback(loggedInPatient, exerciseId, exerciseInformationInputDTO);
     }
 
+    @PostMapping("/patients/exercises/{exerciseId}/exercise-completion-name")
+    @ResponseStatus(HttpStatus.OK)
+    public void postExerciseCompletionName(HttpServletRequest httpServletRequest,
+                                     @PathVariable String exerciseId,
+                                     @RequestBody ExerciseCompletionNameInputDTO exerciseCompletionNameInputDTO) {
+        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
+        exerciseService.setExerciseCompletionName(loggedInPatient, exerciseId, exerciseCompletionNameInputDTO);
+    }
+
+    @PutMapping("/patients/exercises/{exerciseId}/exercise-completion-name")
+    @ResponseStatus(HttpStatus.OK)
+    public void putExerciseCompletionName(HttpServletRequest httpServletRequest,
+                                     @PathVariable String exerciseId,
+                                     @RequestBody ExerciseCompletionNameInputDTO exerciseCompletionNameInputDTO) {
+        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
+        exerciseService.setExerciseCompletionName(loggedInPatient, exerciseId,  exerciseCompletionNameInputDTO);
+    }
+
+
+
     @PostMapping("/patients/exercises/{exerciseId}/exercise-components/{exerciseComponentId}")
     @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "ATTENTION!!!!", description = "if exerciseExecutionId: '' then new exercise execution will be created, ) if exerciseExecutionId: 'existingExerciseExecutionId' then the existing exercise execution will be manipulated")
     public void postExerciseComponentResult(HttpServletRequest httpServletRequest,
                                             @PathVariable String exerciseId,
                                             @PathVariable String exerciseComponentId,
-                                            @RequestBody ExerciseComponentResultInputDTO exerciseComponentResultInputDTO) {
+                                            @RequestBody ExerciseComponentResultInputDTO exerciseComponentResultInputDTO) throws Exception {
         Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
         exerciseService.setExerciseComponentResult(loggedInPatient, exerciseId, exerciseComponentResultInputDTO, exerciseComponentId);
     }
-    // updateExerciseComponentResult
 
-
+    @PutMapping("/patients/exercises/{exerciseId}/exercise-components/{exerciseComponentId}")
+    @ResponseStatus(HttpStatus.OK)
+    public void putExerciseComponentResult(HttpServletRequest httpServletRequest,
+                                            @PathVariable String exerciseId,
+                                            @PathVariable String exerciseComponentId,
+                                            @RequestBody ExerciseComponentResultInputDTO exerciseComponentResultInputDTO) throws Exception {
+        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
+        exerciseService.setExerciseComponentResult(loggedInPatient, exerciseId, exerciseComponentResultInputDTO, exerciseComponentId);
+    }
+    @GetMapping("/patients/exercises/{exerciseId}/chatbot")
+    @ResponseStatus(HttpStatus.OK)
+    public ExerciseChatbotOutputDTO getExerciseChatbot(HttpServletRequest httpServletRequest,
+                                                       @PathVariable String exerciseId){
+        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
+        return exerciseService.getExerciseChatbot(exerciseId, loggedInPatient);
+    }
 }
