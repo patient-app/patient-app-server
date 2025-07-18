@@ -57,6 +57,13 @@ dependencies {
     //pw validation
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 
+    //text extraction from documents
+    implementation 'org.jsoup:jsoup:1.15.4'
+    implementation 'org.apache.pdfbox:pdfbox:2.0.27'
+    implementation 'org.apache.poi:poi:5.2.3'
+    implementation 'org.apache.poi:poi-ooxml:5.2.3'
+    implementation 'org.apache.poi:poi-scratchpad:5.2.3' 
+
 }
 
 bootJar {

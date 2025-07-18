@@ -127,7 +127,7 @@ class ExerciseConversationControllerTest {
 
         // Assert
         verify(patientService).getCurrentlyLoggedInPatient(request);
-        verify(conversationService).deleteAllMessagesFromExerciseConversation(conversationId, patient);
+        verify(conversationService).deleteAllMessagesFromConversation(conversationId, patient);
         verifyNoMoreInteractions(patientService, messageService, conversationService);
     }
 }

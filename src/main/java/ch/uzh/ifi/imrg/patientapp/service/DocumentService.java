@@ -14,12 +14,19 @@ import org.springframework.web.server.ResponseStatusException;
 
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.entity.Document.Document;
+import ch.uzh.ifi.imrg.patientapp.entity.Document.DocumentConversation;
 import ch.uzh.ifi.imrg.patientapp.entity.Document.PatientDocument;
 import ch.uzh.ifi.imrg.patientapp.entity.Document.PatientDocumentId;
 import ch.uzh.ifi.imrg.patientapp.repository.DocumentRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.PatientDocumentRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.PatientRepository;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.output.document.DocumentChatbotOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.document.DocumentDownloadDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.mapper.DocumentMapper;
+import ch.uzh.ifi.imrg.patientapp.utils.DocumentUtil;
+import ch.uzh.ifi.imrg.patientapp.utils.WelcomeMessageUtil;
+import ch.uzh.ifi.imrg.patientapp.service.aiService.PromptBuilderService;
+import jakarta.persistence.EntityNotFoundException;
 
 @Service
 @Transactional
@@ -29,9 +36,12 @@ public class DocumentService {
     private final PatientRepository patientRepository;
     private final PatientDocumentRepository patientDocumentRepository;
     private final MessageDigest digest;
+    private final DocumentMapper documentMapper;
+    private final PromptBuilderService promptBuilderService;
 
     public DocumentService(DocumentRepository documentRepository, PatientRepository patientRepository,
-            PatientDocumentRepository patientDocumentRepository) {
+            PatientDocumentRepository patientDocumentRepository, DocumentMapper documentMapper,
+            PromptBuilderService promptBuilderService) {
         this.documentRepository = documentRepository;
         this.patientRepository = patientRepository;
         this.patientDocumentRepository = patientDocumentRepository;
@@ -40,6 +50,8 @@ public class DocumentService {
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException("SHA-256 algorithm not available", e);
         }
+        this.documentMapper = documentMapper;
+        this.promptBuilderService = promptBuilderService;
     }
 
     public Document uploadAndShare(String patientId, MultipartFile file) {
@@ -65,7 +77,26 @@ public class DocumentService {
             return documentRepository.save(d);
         });
 
-        patientDocumentRepository.save(new PatientDocument(patient, document));
+        PatientDocument patientDocument = new PatientDocument(patient, document);
+        patientDocumentRepository.save(patientDocument);
+
+        DocumentUtil.ExtractionResult result = DocumentUtil.extractTextResult(patientDocument);
+
+        if (result.isHumanReadable()) {
+            patientDocument.getConversation().setSystemPrompt(
+                    promptBuilderService.getDocumentSystemPrompt(patient.getChatbotTemplate(), result.getText()));
+        } else {
+            patientDocument.getConversation().setSystemPrompt(
+                    promptBuilderService.getDocumentSystemPrompt(patient.getChatbotTemplate(),
+                            "The document does not have readable text"));
+        }
+
+        patientDocument.getConversation()
+                .setWelcomeMessage(WelcomeMessageUtil.getDocumentWelcomeMessage(patient.getLanguage()));
+
+        patientDocument.getConversation().setConversationName(document.getFilename() + " - chat");
+
+        patientDocumentRepository.save(patientDocument);
 
         return document;
 
@@ -114,5 +145,20 @@ public class DocumentService {
         for (Document doc : docs) {
             removeDocumentForPatient(patientId, doc.getId());
         }
+    }
+
+    public DocumentChatbotOutputDTO getDocumentChatbot(Patient patient, String documentId) {
+        PatientDocumentId pk = new PatientDocumentId(patient.getId(), documentId);
+        PatientDocument patientDocument = patientDocumentRepository.findById(pk)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "No PatientDocument for patient=" + patient.getId() + " and document=" + documentId));
+
+        DocumentConversation conversation = patientDocument.getConversation();
+
+        if (conversation == null) {
+            throw new IllegalArgumentException("No conversation found for exercise with ID: " + documentId);
+        }
+
+        return documentMapper.documentConversationToExcerciseChatbotOutputDTO(conversation);
     }
 }

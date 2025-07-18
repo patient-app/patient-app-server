@@ -21,19 +21,17 @@ import java.util.Optional;
 public class ConversationService {
     private final ConversationRepository conversationRepository;
     private final AuthorizationService authorizationService;
-    private final ExerciseConversationRepository exerciseConversationRepository;
     private final PromptBuilderService promptBuilderService;
     private final ChatbotTemplateRepository chatbotTemplateRepository;
-    private final MessageRepository messageRepository;
 
     public ConversationService(ConversationRepository conversationRepository,
-                               AuthorizationService authorizationService, ExerciseConversationRepository exerciseConversationRepository, PromptBuilderService promptBuilderService, ChatbotTemplateRepository chatbotTemplateRepository, MessageRepository messageRepository) {
+            AuthorizationService authorizationService, ExerciseConversationRepository exerciseConversationRepository,
+            PromptBuilderService promptBuilderService, ChatbotTemplateRepository chatbotTemplateRepository,
+            MessageRepository messageRepository) {
         this.conversationRepository = conversationRepository;
         this.authorizationService = authorizationService;
-        this.exerciseConversationRepository = exerciseConversationRepository;
         this.promptBuilderService = promptBuilderService;
         this.chatbotTemplateRepository = chatbotTemplateRepository;
-        this.messageRepository = messageRepository;
     }
 
     public GeneralConversation createConversation(Patient patient) {
@@ -72,7 +70,8 @@ public class ConversationService {
         conversationRepository.save(conversation);
     }
 
-    public void setConversationName(PutConversationNameDTO putConversationNameDTO, String conversationId, Patient loggedInPatient) {
+    public void setConversationName(PutConversationNameDTO putConversationNameDTO, String conversationId,
+            Patient loggedInPatient) {
         Optional<Conversation> optionalConversation = conversationRepository.findById(conversationId);
         GeneralConversation conversation;
         if (optionalConversation.isPresent()) {
@@ -96,25 +95,23 @@ public class ConversationService {
         return conversation;
     }
 
-
     public List<GeneralConversation> getAllConversationsFromPatient(Patient patient) {
-        return  this.conversationRepository.getConversationByPatientId(patient.getId());
+        return this.conversationRepository.getConversationByPatientId(patient.getId());
     }
 
-    public void deleteAllMessagesFromExerciseConversation(String conversationId, Patient loggedInPatient) {
+    public void deleteAllMessagesFromConversation(String conversationId, Patient loggedInPatient) {
 
-        Optional<ExerciseConversation> optionalExerciseConversation = this.exerciseConversationRepository.findById(conversationId);
-        if (optionalExerciseConversation.isPresent()) {
-            ExerciseConversation exerciseConversation = optionalExerciseConversation.get();
-            authorizationService.checkConversationAccess(exerciseConversation, loggedInPatient,
+        Optional<Conversation> optionalConversation = this.conversationRepository
+                .findById(conversationId);
+        if (optionalConversation.isPresent()) {
+            Conversation conversation = optionalConversation.get();
+            authorizationService.checkConversationAccess(conversation, loggedInPatient,
                     "You can't delete chats of a different user.");
-            exerciseConversation.getMessages().clear();
-            this.exerciseConversationRepository.save(exerciseConversation);
+            conversation.getMessages().clear();
+            this.conversationRepository.save(conversation);
         } else {
             throw new NoSuchElementException("No conversation found with external ID: " + conversationId);
         }
     }
-
-
 
 }

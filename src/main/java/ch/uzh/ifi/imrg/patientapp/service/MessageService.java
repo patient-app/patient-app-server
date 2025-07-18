@@ -33,15 +33,15 @@ public class MessageService {
     }
 
     static List<Map<String, String>> parseMessagesFromConversation(Conversation conversation,
-                                                                   String key) {
+            String key) {
         List<Map<String, String>> priorMessages = new ArrayList<>();
 
         for (Message msg : conversation.getMessages()) {
-            if (msg.getRequest() != null && !msg.getRequest().trim().isEmpty()&& !msg.isInSystemPromptSummary()) {
+            if (msg.getRequest() != null && !msg.getRequest().trim().isEmpty() && !msg.isInSystemPromptSummary()) {
                 String decryptedRequest = CryptographyUtil.decrypt(msg.getRequest(), key);
                 priorMessages.add(Map.of(
                         "role", "user",
-                        "content", decryptedRequest.trim())) ;
+                        "content", decryptedRequest.trim()));
             }
             if (msg.getResponse() != null && !msg.getResponse().trim().isEmpty()) {
                 String decryptedResponse = CryptographyUtil.decrypt(msg.getResponse(), key);
@@ -53,6 +53,7 @@ public class MessageService {
 
         return priorMessages;
     }
+
     static List<Map<String, String>> parseMessages(List<Message> messages, String key) {
         List<Map<String, String>> decryptedMessages = new ArrayList<>();
 
@@ -88,19 +89,20 @@ public class MessageService {
         newMessage.setRequest(CryptographyUtil.encrypt(message, key));
 
         String harm = promptBuilderService.getHarmRating(message);
-        //toDo add sending email to therapeut if harmful content is detected
+        // toDo add sending email to therapeut if harmful content is detected
 
-        if(harm.equals("true")){
+        if (harm.equals("true")) {
             System.out.println("Message contains harmful content.");
         }
 
         List<Map<String, String>> priorMessages = parseMessagesFromConversation(conversation, key);
-        if(priorMessages.size() > summaryThreshold) {
-            List<Map<String, String>> oldMessages = priorMessages.subList( 0, priorMessages.size() - 20);
+        if (priorMessages.size() > summaryThreshold) {
+            List<Map<String, String>> oldMessages = priorMessages.subList(0, priorMessages.size() - 20);
             conversation.setChatSummary(promptBuilderService.getSummary(oldMessages, conversation.getChatSummary()));
             priorMessages = priorMessages.subList(priorMessages.size() - 20, priorMessages.size());
 
-            List<Message> conversationMessages = messageRepository.findByConversationIdAndInSystemPromptSummaryFalseOrderByCreatedAt(conversationId);
+            List<Message> conversationMessages = messageRepository
+                    .findByConversationIdAndInSystemPromptSummaryFalseOrderByCreatedAt(conversationId);
             // Mark all except the last 10 as summarized
             int messagesToSummarize = conversationMessages.size() - 10;
             if (messagesToSummarize > 0) {
@@ -139,15 +141,17 @@ public class MessageService {
         return frontendMessage;
     }
 
-    public String getConversationSummary(GeneralConversation conversation, GetConversationSummaryInputDTO getConversationSummaryInputDTO) {
-        List<Message> messagesList =  messageRepository.findByConversationIdAndCreatedAtBetweenOrderByCreatedAt(conversation.getId(), getConversationSummaryInputDTO.getStart(), getConversationSummaryInputDTO.getEnd());
+    public String getConversationSummary(GeneralConversation conversation,
+            GetConversationSummaryInputDTO getConversationSummaryInputDTO) {
+        List<Message> messagesList = messageRepository.findByConversationIdAndCreatedAtBetweenOrderByCreatedAt(
+                conversation.getId(), getConversationSummaryInputDTO.getStart(),
+                getConversationSummaryInputDTO.getEnd());
         if (messagesList.isEmpty()) {
             return "No messages found in the specified time range.";
         }
         String key = CryptographyUtil.decrypt(conversation.getPatient().getPrivateKey());
         List<Map<String, String>> messages = parseMessages(messagesList, key);
 
-        return promptBuilderService.getSummary(messages,"");
+        return promptBuilderService.getSummary(messages, "");
     }
-
 }

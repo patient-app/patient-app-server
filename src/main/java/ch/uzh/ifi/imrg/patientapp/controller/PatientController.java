@@ -10,6 +10,7 @@ import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.ChangePasswordDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreatePatientDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.LoginPatientDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutAvatarDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PatientOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.PatientMapper;
 import ch.uzh.ifi.imrg.patientapp.service.PatientService;
@@ -129,5 +130,23 @@ public class PatientController {
         Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
         patientService.changePassword(loggedInPatient, changePasswordDTO);
 
+    }
+
+    @PutMapping("patients/chat-bot-avatar")
+    @ResponseStatus(HttpStatus.OK)
+    public void setAvatar(
+            @Valid @RequestBody PutAvatarDTO putAvatarDTO, HttpServletRequest httpServletRequest)
+            throws IOException {
+
+        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
+        loggedInPatient.setChatBotAvatar(putAvatarDTO.getChatBotAvatar());
+        patientService.setField(loggedInPatient);
+    }
+
+    @GetMapping("patients/chat-bot-avatar")
+    @ResponseStatus(HttpStatus.OK)
+    public PatientOutputDTO getAvatar(HttpServletRequest httpServletRequest) {
+        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
+        return PatientMapper.INSTANCE.convertEntityToPatientOutputDTO(loggedInPatient);
     }
 }
