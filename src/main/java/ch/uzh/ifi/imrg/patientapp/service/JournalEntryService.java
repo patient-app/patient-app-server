@@ -12,16 +12,21 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import ch.uzh.ifi.imrg.patientapp.entity.ChatbotTemplate;
 import ch.uzh.ifi.imrg.patientapp.entity.JournalEntry;
+import ch.uzh.ifi.imrg.patientapp.entity.JournalEntryConversation;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
+import ch.uzh.ifi.imrg.patientapp.repository.ChatbotTemplateRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.JournalEntryRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.PatientRepository;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.JournalEntryRequestDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.CoachGetAllJournalEntriesDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.CoachJournalEntryOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.GetAllJournalEntriesDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.output.JournalChatbotOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.JournalEntryOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.JournalEntryMapper;
+import ch.uzh.ifi.imrg.patientapp.service.aiService.PromptBuilderService;
 import ch.uzh.ifi.imrg.patientapp.utils.CryptographyUtil;
 
 @Service
@@ -32,9 +37,16 @@ public class JournalEntryService {
 
     private final PatientRepository patientRepository;
 
-    public JournalEntryService(JournalEntryRepository journalEntryRepository, PatientRepository patientRepository) {
+    private final ChatbotTemplateRepository chatbotTemplateRepository;
+
+    private final PromptBuilderService promptBuilderService;
+
+    public JournalEntryService(JournalEntryRepository journalEntryRepository, PatientRepository patientRepository,
+            ChatbotTemplateRepository chatbotTemplateRepository, PromptBuilderService promptBuilderService) {
         this.journalEntryRepository = journalEntryRepository;
         this.patientRepository = patientRepository;
+        this.chatbotTemplateRepository = chatbotTemplateRepository;
+        this.promptBuilderService = promptBuilderService;
     }
 
     public JournalEntryOutputDTO createEntry(JournalEntryRequestDTO dto, Patient loggedInPatient) {
@@ -46,6 +58,20 @@ public class JournalEntryService {
         encryptJournalEntity(newEntry, key);
 
         newEntry.setPatient(loggedInPatient);
+
+        // create journalChatbot
+        ChatbotTemplate chatbotTemplate = chatbotTemplateRepository.findByPatientId(loggedInPatient.getId()).stream()
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "No chatbot template found for patient with ID: " + loggedInPatient.getId()));
+
+        JournalEntryConversation conversation = new JournalEntryConversation();
+        conversation.setPatient(loggedInPatient);
+        conversation.setSystemPrompt(
+                promptBuilderService.getJournalSystemPrompt(chatbotTemplate, dto.getTitle(), dto.getContent()));
+        conversation.setConversationName("journal-chatbot");
+
+        newEntry.setJournalEntryConversation(conversation);
 
         JournalEntry savedEntry = journalEntryRepository.saveAndFlush(newEntry);
 
@@ -195,9 +221,7 @@ public class JournalEntryService {
 
         Patient patient = patientRepository.getPatientById(patientId);
 
-        if (!entry.getPatient().getId().equals(patient.getId()))
-
-        {
+        if (!entry.getPatient().getId().equals(patient.getId())) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Entry not found for that patient");
         }
 
@@ -208,6 +232,21 @@ public class JournalEntryService {
         decryptJournalDTO(dto, key);
 
         return dto;
+    }
+
+    public JournalChatbotOutputDTO getJournalChatbot(Patient patient, String entryId) {
+        JournalEntry entry = journalEntryRepository.findById(entryId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Journal Entry not found"));
+
+        if (!entry.getPatient().getId().equals(patient.getId())) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Entry not found for that patient");
+        }
+
+        JournalEntryConversation conversation = entry.getJournalEntryConversation();
+        if (conversation == null) {
+            throw new IllegalArgumentException("No conversation found for exercise with ID: " + entryId);
+        }
+        return JournalEntryMapper.INSTANCE.convertEntityToJournalChatbotOutputDTO(conversation);
     }
 
 }

@@ -2,10 +2,12 @@ package ch.uzh.ifi.imrg.patientapp.rest.mapper;
 
 import ch.uzh.ifi.imrg.patientapp.entity.ExerciseConversation;
 import ch.uzh.ifi.imrg.patientapp.entity.GeneralConversation;
+import ch.uzh.ifi.imrg.patientapp.entity.JournalEntryConversation;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutConversationNameDTO;
 import ch.uzh.ifi.imrg.patientapp.entity.Document.DocumentConversation;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutSharingDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.CompleteConversationOutputDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.output.JournalConversationOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.NameConversationOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.document.DocumentConversationOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.CompleteExerciseConversationOutputDTO;
@@ -43,4 +45,9 @@ public interface ConversationMapper {
                         @MappingTarget GeneralConversation conversation);
 
         DocumentConversationOutputDTO convertEntityToDocumentConversationOutputDTO(DocumentConversation conversation);
+
+        @Mapping(source = "id", target = "id")
+        @Mapping(source = "conversationName", target = "name")
+        JournalConversationOutputDTO convertEntityToJournalConversationOutputDTO(
+                        JournalEntryConversation journalEntryConversation);
 }

@@ -3,7 +3,6 @@ package ch.uzh.ifi.imrg.patientapp.service;
 import ch.uzh.ifi.imrg.patientapp.entity.*;
 import ch.uzh.ifi.imrg.patientapp.repository.ChatbotTemplateRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.ConversationRepository;
-import ch.uzh.ifi.imrg.patientapp.repository.ExerciseConversationRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.MessageRepository;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutConversationNameDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutSharingDTO;
@@ -25,7 +24,7 @@ public class ConversationService {
     private final ChatbotTemplateRepository chatbotTemplateRepository;
 
     public ConversationService(ConversationRepository conversationRepository,
-            AuthorizationService authorizationService, ExerciseConversationRepository exerciseConversationRepository,
+            AuthorizationService authorizationService,
             PromptBuilderService promptBuilderService, ChatbotTemplateRepository chatbotTemplateRepository,
             MessageRepository messageRepository) {
         this.conversationRepository = conversationRepository;
@@ -112,6 +111,21 @@ public class ConversationService {
         } else {
             throw new NoSuchElementException("No conversation found with external ID: " + conversationId);
         }
+    }
+
+    public void updateJournalConversationSystemPrompt(Patient patient, String journalConversationId,
+            String journalEntryTitle,
+            String journalEntryContent) {
+        Conversation conversation = this.conversationRepository.findById(journalConversationId)
+                .orElseThrow(() -> new NoSuchElementException(
+                        "No conversation found with this ID: " + journalConversationId));
+
+        ChatbotTemplate chatbotTemplate = chatbotTemplateRepository.findByPatientId(patient.getId()).getFirst();
+
+        conversation.setSystemPrompt(promptBuilderService.getJournalSystemPrompt(chatbotTemplate, journalEntryTitle,
+                journalEntryContent));
+
+        this.conversationRepository.save(conversation);
     }
 
 }

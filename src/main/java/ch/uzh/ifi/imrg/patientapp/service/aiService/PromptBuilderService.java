@@ -36,6 +36,16 @@ public class PromptBuilderService {
 
     }
 
+    public String getJournalSystemPrompt(ChatbotTemplate chatbotTemplate, String journalTitle, String journalContent) {
+        return String.format(
+                "Act as a %s, who cares about the other person. Your tone should be %s. You will interact with a human, that needs someone to talk to. You should help the person to reflect on her/his journal entry (%s): %s. When answering questions about the journal mostly use the content from the journal. It is really important to stick to this journal. Please keep your own responses to the person short. No longer than 400 characters.",
+                chatbotTemplate.getChatbotRole(),
+                chatbotTemplate.getChatbotTone(),
+                journalTitle,
+                journalContent);
+
+    }
+
     public String getDocumentSystemPrompt(ChatbotTemplate chatbotTemplate, String documentContext) {
         return String.format(
                 "Act as a %s, who cares about the other person. Your tone should be %s. You will interact with a human, that needs someone to talk to. You should help the person to understand this document: %s When answering questions about the document only use the content from the document. It is really important to stick to this document. Please keep your own responses to the person short. No longer than 400 characters.",
@@ -101,9 +111,9 @@ public class PromptBuilderService {
         // System prompt: explain what you want *at the meta level*
         messages.add(Map.of(
                 "role", "system",
-                "content", "You are an assistant that summarizes multiple conversation summaries into a single concise summary. " +
-                        "Do not use bullet points or lists. Just write a short summary no longer than 100 words."
-        ));
+                "content",
+                "You are an assistant that summarizes multiple conversation summaries into a single concise summary. " +
+                        "Do not use bullet points or lists. Just write a short summary no longer than 100 words."));
 
         // Combine all summaries into a clear single string
         StringBuilder sb = new StringBuilder();
@@ -113,12 +123,10 @@ public class PromptBuilderService {
 
         messages.add(Map.of(
                 "role", "user",
-                "content", "Here are the conversation summaries:\n\n" + sb
-        ));
+                "content", "Here are the conversation summaries:\n\n" + sb));
 
         return extractContentFromResponse(chatGPTService.getResponse(messages));
     }
-
 
     public String getHarmRating(String message) {
         List<Map<String, String>> messages = new ArrayList<>();

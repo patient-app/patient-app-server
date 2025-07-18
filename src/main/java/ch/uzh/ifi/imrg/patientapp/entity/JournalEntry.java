@@ -52,4 +52,8 @@ public class JournalEntry {
     @Column(name = "ai_access_allowed", nullable = false)
     private boolean aiAccessAllowed = false;
 
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "journal_entry_conversation_id", referencedColumnName = "id")
+    private JournalEntryConversation journalEntryConversation;
+
 }
