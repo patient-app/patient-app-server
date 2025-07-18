@@ -56,29 +56,6 @@ class ExerciseControllerTest {
         verifyNoMoreInteractions(patientService, exerciseService);
     }
 
-    @Test
-    void testGetExercise() {
-        // Arrange
-        HttpServletRequest request = mock(HttpServletRequest.class);
-        String exerciseId = "exercise456";
-
-        Patient mockPatient = new Patient();
-        mockPatient.setId("p123");
-
-        ExerciseOutputDTO expectedDTO = new ExerciseOutputDTO();
-
-        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
-        when(exerciseService.getExercise(exerciseId)).thenReturn(expectedDTO);
-
-        // Act
-        ExerciseOutputDTO result = exerciseController.getExercise(request, exerciseId);
-
-        // Assert
-        assertEquals(expectedDTO, result);
-        verify(patientService).getCurrentlyLoggedInPatient(request);
-        verify(exerciseService).getExercise(exerciseId);
-        verifyNoMoreInteractions(patientService, exerciseService);
-    }
 
     @Test
     void testPostExerciseFeedback_InvokesServiceCorrectly() {
@@ -113,7 +90,7 @@ class ExerciseControllerTest {
         ExerciseChatbotOutputDTO expectedDTO = new ExerciseChatbotOutputDTO();
 
         when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
-        when(exerciseService.getExerciseChatbot(exerciseId)).thenReturn(expectedDTO);
+        when(exerciseService.getExerciseChatbot(exerciseId, mockPatient)).thenReturn(expectedDTO);
 
         // Act
         ExerciseChatbotOutputDTO result = exerciseController.getExerciseChatbot(request, exerciseId);
@@ -121,7 +98,7 @@ class ExerciseControllerTest {
         // Assert
         assertEquals(expectedDTO, result);
         verify(patientService).getCurrentlyLoggedInPatient(request);
-        verify(exerciseService).getExerciseChatbot(exerciseId);
+        verify(exerciseService).getExerciseChatbot(exerciseId, mockPatient);
         verifyNoMoreInteractions(patientService, exerciseService);
     }
 

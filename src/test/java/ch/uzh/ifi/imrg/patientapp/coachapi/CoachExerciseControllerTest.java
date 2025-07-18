@@ -2,6 +2,7 @@ package ch.uzh.ifi.imrg.patientapp.coachapi;
 
 
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseInputDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseUpdateInputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExerciseInformationOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExercisesOverviewOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.service.ExerciseService;
@@ -75,7 +76,7 @@ class CoachExerciseControllerTest {
         // Arrange
         String patientId = "patient123";
         String exerciseId = "exercise456";
-        ExerciseInputDTO inputDTO = new ExerciseInputDTO();
+        ExerciseUpdateInputDTO inputDTO = new ExerciseUpdateInputDTO();
 
         // Act
         coachExerciseController.updateExercise(patientId, exerciseId, inputDTO);

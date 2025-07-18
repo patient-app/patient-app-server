@@ -69,9 +69,8 @@ class CoachDocumentControllerTest {
     void uploadAndShare_shouldReturnCreatedOverview() throws Exception {
         String patientId = "p1";
         MockMultipartFile file = new MockMultipartFile(
-                "patientFile", "test.txt", MediaType.TEXT_PLAIN_VALUE, "hello".getBytes());
+                "file", "test.txt", MediaType.TEXT_PLAIN_VALUE, "hello".getBytes());
 
-        // stub service and mapper
         Document doc = new Document();
         doc.setId("d1");
         when(documentService.uploadAndShare(eq(patientId), any())).thenReturn(doc);
@@ -84,8 +83,8 @@ class CoachDocumentControllerTest {
         when(documentMapper.toOverview(doc)).thenReturn(dto);
 
         mockMvc.perform(multipart("/coach/patients/{patientId}/documents", patientId)
-                .file(file)
-                .header("X-Coach-Key", "key"))
+                        .file(file)
+                        .header("X-Coach-Key", "key"))
                 .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id").value("d1"))
@@ -93,6 +92,7 @@ class CoachDocumentControllerTest {
                 .andExpect(jsonPath("$.contentType").value(MediaType.TEXT_PLAIN_VALUE))
                 .andExpect(jsonPath("$.uploadedAt").value("2025-07-01T12:00:00Z"));
     }
+
 
     @Test
     void list_shouldReturnAllOverviews() throws Exception {
