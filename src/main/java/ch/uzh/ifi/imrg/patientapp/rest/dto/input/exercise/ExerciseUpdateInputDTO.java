@@ -5,10 +5,10 @@ import lombok.Setter;
 
 import java.time.Instant;
 import java.util.List;
+
 @Getter
 @Setter
-public class ExerciseInputDTO {
-    private String id;
+public class ExerciseUpdateInputDTO {
     private String exerciseTitle;
     private String exerciseDescription;
     private String exerciseExplanation;
