@@ -47,7 +47,9 @@ public abstract class Conversation implements Serializable {
     private String chatSummary;
 
     private String chatbotIcon;
-    private String welcomeMessage;
 
+    @Lob
+    @Column(name = "welcome_message")
+    private String welcomeMessage;
 
 }

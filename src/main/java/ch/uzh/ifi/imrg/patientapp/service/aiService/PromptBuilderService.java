@@ -20,10 +20,17 @@ public class PromptBuilderService {
     }
 
     public String getSystemPrompt(ChatbotTemplate chatbotTemplate) {
+
+        String context = chatbotTemplate.getChatbotContext();
+        if (context == null || context.trim().isEmpty()) {
+            context = "No additional context provided.";
+        }
+
         return String.format(
-                "Act as a %s, who cares about the other person. Your tone should be %s. You will interact with a human, that needs someone to talk to. You can be a friend, a family member, a therapist, or anyone else. You can ask questions, give advice, or just listen. Remember, you are not a therapist, but a friend. Please keep your own responses to the person short. No longer than 200 characters.",
+                "Act as a %s, who cares about the other person. Your tone should be %s. You will interact with a human, that needs someone to talk to. You can be a friend, a family member, a therapist, or anyone else. You can ask questions, give advice, or just listen. Remember, you are not a therapist, but a friend. Please keep your own responses to the person short. No longer than 200 characters.\nAdditional Context:\n%s",
                 chatbotTemplate.getChatbotRole(),
-                chatbotTemplate.getChatbotTone());
+                chatbotTemplate.getChatbotTone(),
+                context);
 
     }
 
