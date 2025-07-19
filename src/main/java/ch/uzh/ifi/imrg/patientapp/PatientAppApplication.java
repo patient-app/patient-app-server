@@ -16,34 +16,35 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @SpringBootApplication
 public class PatientAppApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(PatientAppApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(PatientAppApplication.class, args);
+    }
 
-	@GetMapping(value = "/", produces = MediaType.TEXT_PLAIN_VALUE)
-	@ResponseStatus(HttpStatus.OK)
-	public String helloWorld() {
-		return "The application is running.";
-	}
+    @GetMapping(value = "/", produces = MediaType.TEXT_PLAIN_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public String helloWorld() {
+        return "The application is running.";
+    }
 
-	@Bean
-	public WebMvcConfigurer corsConfigurer() {
-		return new WebMvcConfigurer() {
-			@Override
-			public void addCorsMappings(CorsRegistry registry) {
-				registry
-						.addMapping("/**")
-						.allowedOriginPatterns("*")
-						.allowedMethods("*")
-						.allowedHeaders("*")
-						.allowCredentials(true);
-			}
-		};
-	}
+    @Bean
+    public WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry
+                        .addMapping("/**")
+                        .allowedOriginPatterns("*")
+                        .allowedMethods("*")
+                        .allowedHeaders("*")
+                        .exposedHeaders("Content-Disposition")
+                        .allowCredentials(true);
+            }
+        };
+    }
 
-	@Bean
-	public RestTemplate restTemplate() {
-		return new RestTemplate();
-	}
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
+    }
 
 }
