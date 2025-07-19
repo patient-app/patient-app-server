@@ -31,10 +31,17 @@ public class ChatbotTemplate implements Serializable {
     @Column(name = "updated_at")
     @UpdateTimestamp
     private Instant updatedAt;
+
+    @Lob
+    @Column(name = "chatbot_context")
     private String chatbotContext;
+
     private String chatbotIcon;
     private String chatbotRole;
     private String chatbotTone;
+
+    @Lob
+    @Column(name = "welcome_message")
     private String welcomeMessage;
 
 }
