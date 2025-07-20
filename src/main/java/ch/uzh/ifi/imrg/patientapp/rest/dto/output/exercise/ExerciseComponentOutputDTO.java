@@ -1,6 +1,7 @@
 package ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise;
 
 import ch.uzh.ifi.imrg.patientapp.constant.ExerciseComponentType;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,6 +14,7 @@ public class ExerciseComponentOutputDTO {
     private String userInput;
     private String fileName;
     private String fileType;
+    @Schema(type = "string", format = "byte", description = "File data encoded in Base64")
     private byte[] fileData;
     private Integer orderNumber;
 }
