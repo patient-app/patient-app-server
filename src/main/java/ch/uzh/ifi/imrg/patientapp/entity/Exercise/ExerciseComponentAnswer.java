@@ -14,6 +14,9 @@ public class ExerciseComponentAnswer {
     @Column(unique = true)
     private String id = UUID.randomUUID().toString();
     private String exerciseComponentId;
+
+    @Lob
+    @Column()
     private String userInput;
 
     @ManyToOne(fetch = FetchType.LAZY)
