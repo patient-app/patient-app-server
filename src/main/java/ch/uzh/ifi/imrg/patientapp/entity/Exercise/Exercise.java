@@ -1,6 +1,5 @@
 package ch.uzh.ifi.imrg.patientapp.entity.Exercise;
 
-
 import ch.uzh.ifi.imrg.patientapp.entity.ExerciseConversation;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import jakarta.persistence.*;
@@ -42,8 +41,14 @@ public class Exercise implements Serializable {
     private int doEveryNDays;
 
     private String exerciseTitle;
+
+    @Lob
+    @Column()
     private String exerciseDescription;
-    //used in teh system prompt
+
+    // used in the system prompt
+    @Lob
+    @Column()
     private String exerciseExplanation;
 
     @OneToMany(mappedBy = "exercise", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -54,11 +59,10 @@ public class Exercise implements Serializable {
     private Patient patient;
 
     @OneToMany(mappedBy = "exercise", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List <ExerciseCompletionInformation> exerciseCompletionInformation;
+    private List<ExerciseCompletionInformation> exerciseCompletionInformation;
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "exercise_conversation_id", referencedColumnName = "id")
     private ExerciseConversation exerciseConversation;
-
 
 }
