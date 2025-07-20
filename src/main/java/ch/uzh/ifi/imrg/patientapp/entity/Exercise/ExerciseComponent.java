@@ -27,12 +27,14 @@ public class ExerciseComponent {
     @UpdateTimestamp
     private Instant updatedAt;
 
-
     @Column
     private ExerciseComponentType exerciseComponentType;
 
+    @Lob
     @Column
     private String userInput;
+
+    @Lob
     @Column
     private String exerciseComponentDescription;
 
