@@ -6,8 +6,10 @@ import ch.uzh.ifi.imrg.patientapp.entity.PsychologicalTestQuestions;
 import ch.uzh.ifi.imrg.patientapp.repository.PsychologicalTestRepository;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PsychologicalTestInputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PsychologicalTestQuestionInputDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestNameAndPatientIdOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestNameOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestOutputDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.mapper.PsychologicalTestMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -15,6 +17,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import org.springframework.security.access.AccessDeniedException;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -144,6 +147,126 @@ class PsychologicalTestServiceTest {
         assertEquals("Description2", result.get(1).getDescription());
 
         verify(repository).findAllByPatientIdAndName(patientId, testName);
+        verifyNoMoreInteractions(repository);
+    }
+
+    @Test
+    void getAllTestNamesForPatient_whenListIsEmpty_shouldReturnEmptyList() {
+        Patient loggedInPatient = new Patient();
+        loggedInPatient.setId("p1");
+
+        when(repository.findAllTestsByPatientId("p1")).thenReturn(List.of());
+
+        List<PsychologicalTestNameAndPatientIdOutputDTO> result =
+                service.getAllTestNamesForPatient(loggedInPatient, "p1");
+
+        assertTrue(result.isEmpty());
+        verify(repository).findAllTestsByPatientId("p1");
+        verifyNoMoreInteractions(repository);
+    }
+
+    @Test
+    void getAllTestNamesForPatient_whenPatientMatches_shouldReturnList() {
+        Patient loggedInPatient = new Patient();
+        loggedInPatient.setId("p1");
+
+        PsychologicalTestNameAndPatientIdOutputDTO dto =
+                new PsychologicalTestNameAndPatientIdOutputDTO("Test A", "p1");
+        dto.setPatientId("p1");
+
+        List<PsychologicalTestNameAndPatientIdOutputDTO> expected = List.of(dto);
+
+        when(repository.findAllTestsByPatientId("p1")).thenReturn(expected);
+
+        List<PsychologicalTestNameAndPatientIdOutputDTO> result =
+                service.getAllTestNamesForPatient(loggedInPatient, "p1");
+
+        assertEquals(expected, result);
+        verify(repository).findAllTestsByPatientId("p1");
+        verifyNoMoreInteractions(repository);
+    }
+
+    @Test
+    void getAllTestNamesForPatient_whenPatientMismatch_shouldThrowAccessDenied() {
+        Patient loggedInPatient = new Patient();
+        loggedInPatient.setId("p1");
+
+        PsychologicalTestNameAndPatientIdOutputDTO dto =
+                new PsychologicalTestNameAndPatientIdOutputDTO("Test A", "p2");
+        dto.setPatientId("differentPatient");
+
+        when(repository.findAllTestsByPatientId("p1")).thenReturn(List.of(dto));
+
+        assertThrows(AccessDeniedException.class, () ->
+                service.getAllTestNamesForPatient(loggedInPatient, "p1"));
+
+        verify(repository).findAllTestsByPatientId("p1");
+        verifyNoMoreInteractions(repository);
+    }
+
+    @Test
+    void getPsychologicalTestResults_whenEmptyList_shouldReturnEmpty() {
+        Patient loggedInPatient = new Patient();
+        loggedInPatient.setId("p1");
+
+        when(repository.findAllByPatientIdAndName("p1", "DepressionTest")).thenReturn(List.of());
+
+        List<PsychologicalTestOutputDTO> result =
+                service.getPsychologicalTestResults(loggedInPatient, "p1", "DepressionTest");
+
+        assertTrue(result.isEmpty());
+        verify(repository).findAllByPatientIdAndName("p1", "DepressionTest");
+        verifyNoMoreInteractions(repository);
+    }
+
+    @Test
+    void getPsychologicalTestResults_whenPatientMatches_shouldReturnList() {
+        Patient loggedInPatient = new Patient();
+        loggedInPatient.setId("p1");
+
+        Patient testOwner = new Patient();
+        testOwner.setId("p1");
+
+        PsychologicalTest test = new PsychologicalTest();
+        test.setName("TestName");
+        test.setDescription("TestDesc");
+        test.setPatient(testOwner);
+        test.setPsychologicalTestsQuestions(List.of());
+
+        when(repository.findAllByPatientIdAndName("p1", "TestName")).thenReturn(List.of(test));
+
+        List<PsychologicalTestOutputDTO> result =
+                service.getPsychologicalTestResults(loggedInPatient, "p1", "TestName");
+
+        assertEquals(1, result.size());
+        assertEquals("p1", result.get(0).getPatientId());
+        assertEquals("TestName", result.get(0).getName());
+
+        verify(repository).findAllByPatientIdAndName("p1", "TestName");
+        verifyNoMoreInteractions(repository);
+    }
+
+    @Test
+    void getPsychologicalTestResults_whenPatientMismatch_shouldThrow() {
+        Patient loggedInPatient = new Patient();
+        loggedInPatient.setId("loggedIn");
+
+        Patient testOwner = new Patient();
+        testOwner.setId("someoneElse");
+
+        PsychologicalTest test = new PsychologicalTest();
+        test.setName("TestName");
+        test.setPatient(testOwner);
+        test.setPsychologicalTestsQuestions(List.of());
+
+        when(repository.findAllByPatientIdAndName("p1", "TestName")).thenReturn(List.of(test));
+
+        AccessDeniedException ex = assertThrows(AccessDeniedException.class, () ->
+                service.getPsychologicalTestResults(loggedInPatient, "p1", "TestName"));
+
+        assertEquals("You do not have access to this patient's psychological tests.", ex.getMessage());
+
+        verify(repository).findAllByPatientIdAndName("p1", "TestName");
         verifyNoMoreInteractions(repository);
     }
 
