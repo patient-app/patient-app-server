@@ -30,14 +30,14 @@ public class CoachPsychologicalTestControllerTest {
         PsychologicalTestNameOutputDTO test2 = new PsychologicalTestNameOutputDTO("Test2");
         List<PsychologicalTestNameOutputDTO> expected = List.of(test1, test2);
 
-        when(psychologicalTestService.getAllTestNamesForPatient(patientId)).thenReturn(expected);
+        when(psychologicalTestService.getAllTestNamesForPatientForCoach(patientId)).thenReturn(expected);
 
         // Act
         List<PsychologicalTestNameOutputDTO> result = controller.getPsychologicalTestNames(patientId);
 
         // Assert
         assertEquals(expected, result);
-        verify(psychologicalTestService).getAllTestNamesForPatient(patientId);
+        verify(psychologicalTestService).getAllTestNamesForPatientForCoach(patientId);
         verifyNoMoreInteractions(psychologicalTestService);
     }
 
@@ -54,14 +54,14 @@ public class CoachPsychologicalTestControllerTest {
 
         List<PsychologicalTestOutputDTO> expected = List.of(dto);
 
-        when(psychologicalTestService.getPsychologicalTestResults(patientId, testName)).thenReturn(expected);
+        when(psychologicalTestService.getPsychologicalTestResultsForCoach(patientId, testName)).thenReturn(expected);
 
         // Act
         List<PsychologicalTestOutputDTO> result = controller.getPsychologicalTestResults(patientId, testName);
 
         // Assert
         assertEquals(expected, result);
-        verify(psychologicalTestService).getPsychologicalTestResults(patientId, testName);
+        verify(psychologicalTestService).getPsychologicalTestResultsForCoach(patientId, testName);
         verifyNoMoreInteractions(psychologicalTestService);
     }
 

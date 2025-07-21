@@ -19,11 +19,12 @@ public class CoachPsychologicalTestController {
     public CoachPsychologicalTestController(PsychologicalTestService psychologicalTestService) {
         this.psychologicalTestService = psychologicalTestService;
     }
+
     @GetMapping("/coach/patients/{patientId}/psychological-tests")
     @ResponseStatus(HttpStatus.OK)
     @SecurityRequirement(name = "X-Coach-Key")
     public List<PsychologicalTestNameOutputDTO> getPsychologicalTestNames(@PathVariable String patientId) {
-        return psychologicalTestService.getAllTestNamesForPatient(patientId);
+        return psychologicalTestService.getAllTestNamesForPatientForCoach(patientId);
     }
 
     @GetMapping("/coach/patients/{patientId}/psychological-tests/{psychologicalTestName}")
@@ -31,6 +32,6 @@ public class CoachPsychologicalTestController {
     @SecurityRequirement(name = "X-Coach-Key")
     public List<PsychologicalTestOutputDTO> getPsychologicalTestResults(@PathVariable String patientId,
                                                                         @PathVariable String psychologicalTestName) {
-        return psychologicalTestService.getPsychologicalTestResults(patientId, psychologicalTestName);
+        return psychologicalTestService.getPsychologicalTestResultsForCoach(patientId, psychologicalTestName);
     }
 }
