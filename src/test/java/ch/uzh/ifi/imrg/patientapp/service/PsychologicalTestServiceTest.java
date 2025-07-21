@@ -97,7 +97,7 @@ class PsychologicalTestServiceTest {
     }
 
     @Test
-    void getAllTestNamesForPatient_shouldReturnListFromRepository() {
+    void getAllTestNamesForPatient_ForCoach_shouldReturnListFromRepository() {
         String patientId = "p123";
 
         PsychologicalTestNameOutputDTO dto1 = new PsychologicalTestNameOutputDTO("Test1");
@@ -108,14 +108,14 @@ class PsychologicalTestServiceTest {
 
         when(repository.findAllByPatientId(patientId)).thenReturn(expected);
 
-        List<PsychologicalTestNameOutputDTO> result = service.getAllTestNamesForPatient(patientId);
+        List<PsychologicalTestNameOutputDTO> result = service.getAllTestNamesForPatientForCoach(patientId);
 
         assertEquals(expected, result);
         verify(repository).findAllByPatientId(patientId);
         verifyNoMoreInteractions(repository);
     }
     @Test
-    void getPsychologicalTestResults_shouldReturnListFromRepository() {
+    void getPsychologicalTestResults_ForCoach_shouldReturnListFromRepository() {
         String patientId = "p123";
         String testName = "DepressionTest";
 
@@ -137,7 +137,7 @@ class PsychologicalTestServiceTest {
 
         when(repository.findAllByPatientIdAndName(patientId, testName)).thenReturn(returnedEntities);
 
-        List<PsychologicalTestOutputDTO> result = service.getPsychologicalTestResults(patientId, testName);
+        List<PsychologicalTestOutputDTO> result = service.getPsychologicalTestResultsForCoach(patientId, testName);
 
         assertEquals(2, result.size());
         assertEquals("Description1", result.get(0).getDescription());
