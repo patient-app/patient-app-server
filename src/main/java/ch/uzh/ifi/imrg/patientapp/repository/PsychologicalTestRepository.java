@@ -1,6 +1,6 @@
 package ch.uzh.ifi.imrg.patientapp.repository;
 
-import ch.uzh.ifi.imrg.patientapp.entity.PsychologicalTest;
+import ch.uzh.ifi.imrg.patientapp.entity.PsychologicalTest.PsychologicalTest;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestNameAndPatientIdOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestNameOutputDTO;
 import org.springframework.data.jpa.repository.JpaRepository;
