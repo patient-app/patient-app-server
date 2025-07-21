@@ -15,10 +15,9 @@ import jakarta.transaction.Transactional;
 import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.awt.SystemColor.info;
@@ -323,6 +322,41 @@ public class ExerciseService {
 
         container.setExerciseMoods(moods);
         return container;
+    }
+
+
+    public List<ExercisesOverviewOutputDTO> getExercisesToShow(Patient patient){
+        Instant now = Instant.now();
+
+        List<Exercise> candidates = exerciseRepository.findAllActiveExercisesWithinTime(now);
+        if (candidates.isEmpty()) {
+            return Collections.emptyList();
+        }
+        authorizationService.checkExerciseAccess(candidates.getFirst(), patient, "Patient does not have access to this exercise");
+
+        List<Exercise> filtered = candidates.stream()
+                .filter(e -> {
+                    List<ExerciseCompletionInformation> completions = e.getExerciseCompletionInformation();
+
+                    if (completions == null || completions.isEmpty()) {
+                        return true;
+                    }
+
+                    ExerciseCompletionInformation latest = completions.stream()
+                            .filter(c -> c.getEndTime() != null)
+                            .max(Comparator.comparing(ExerciseCompletionInformation::getEndTime))
+                            .orElse(null);
+
+                    if (latest == null) return true;
+
+                    Instant dueDate = latest.getEndTime().plus(e.getDoEveryNDays(), ChronoUnit.DAYS);
+                    Instant threshold = dueDate.minus(24, ChronoUnit.HOURS);
+
+                    return now.isAfter(threshold) && now.isBefore(dueDate.plus(1, ChronoUnit.DAYS));
+                })
+                .toList();
+
+        return exerciseMapper.exercisesToExerciseOverviewOutputDTOs(filtered);
     }
 
 
