@@ -65,14 +65,14 @@ public class CoachMeetingControllerTest {
         void createMeeting_shouldReturnCreatedMeeting() throws Exception {
                 String patientId = "p1";
                 CreateMeetingDTO dto = new CreateMeetingDTO();
-                dto.setExternalMeetingId("ext1");
+                dto.setId("id1");
                 dto.setStartAt(Instant.parse("2025-06-15T10:00:00Z"));
                 dto.setEndAt(Instant.parse("2025-06-15T11:00:00Z"));
                 dto.setLocation("Room 101");
 
                 Meeting saved = new Meeting();
                 saved.setId("m1");
-                saved.setExternalMeetingId("ext1");
+                saved.setId("id1");
                 saved.setStartAt(dto.getStartAt());
                 saved.setEndAt(dto.getEndAt());
                 saved.setLocation("Room 101");
@@ -90,7 +90,7 @@ public class CoachMeetingControllerTest {
                                 .content(objectMapper.writeValueAsString(dto)))
                                 .andExpect(status().isCreated())
                                 .andExpect(jsonPath("$.id").value("m1"))
-                                .andExpect(jsonPath("$.externalMeetingId").value("ext1"))
+                                .andExpect(jsonPath("$.id").value("id1"))
                                 .andExpect(jsonPath("$.patientId").value(patientId))
                                 .andExpect(jsonPath("$.startAt").value("2025-06-15T10:00:00Z"))
                                 .andExpect(jsonPath("$.endAt").value("2025-06-15T11:00:00Z"))
@@ -123,14 +123,14 @@ public class CoachMeetingControllerTest {
                 String meetingId = "m1";
                 Meeting m = new Meeting();
                 m.setId(meetingId);
-                m.setExternalMeetingId("ext1");
+                m.setId("id1");
 
                 when(meetingService.getMeeting(meetingId, patientId)).thenReturn(m);
 
                 mockMvc.perform(get("/coach/patients/{patientId}/meetings/{meetingId}", patientId, meetingId))
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.id").value(meetingId))
-                                .andExpect(jsonPath("$.externalMeetingId").value("ext1"));
+                                .andExpect(jsonPath("$.id").value("id1"));
         }
 
         @Test
@@ -145,7 +145,7 @@ public class CoachMeetingControllerTest {
 
                 Meeting updated = new Meeting();
                 updated.setId(meetingId);
-                updated.setExternalMeetingId("ext1");
+                updated.setId("id1");
                 updated.setStartAt(dto.getStartAt());
                 updated.setEndAt(dto.getEndAt());
                 updated.setLocation("Room 103");
