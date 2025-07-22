@@ -64,6 +64,9 @@ public class ExerciseService {
 
     public List<ExercisesOverviewOutputDTO> getExercisesOverview(Patient patient){
         List<Exercise> exercises = exerciseRepository.getExercisesByPatientId(patient.getId());
+        if (exercises.isEmpty()) {
+            return Collections.emptyList();
+        }
         authorizationService.checkExerciseAccess(exercises.getFirst(), patient, "Patient does not have access to this exercise");
         return exerciseMapper.exercisesToExerciseOverviewOutputDTOs(exercises);
     }
