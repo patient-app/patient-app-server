@@ -12,8 +12,6 @@ public class MeetingOutputDTO {
 
     private String id;
 
-    private String externalMeetingId;
-
     private Instant createdAt;
 
     private Instant updatedAt;

@@ -22,9 +22,6 @@ public class Meeting {
     @Column
     private String id = UUID.randomUUID().toString();
 
-    @Column(name = "external_meeting_id", unique = true, nullable = false, updatable = false)
-    private String externalMeetingId;
-
     @Column(name = "created_at", updatable = false)
     @CreationTimestamp
     private Instant createdAt;
