@@ -45,6 +45,6 @@ public class Meeting {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private MeetingStatus meetingStatus = MeetingStatus.PENDING;
+    private MeetingStatus meetingStatus;
 
 }
