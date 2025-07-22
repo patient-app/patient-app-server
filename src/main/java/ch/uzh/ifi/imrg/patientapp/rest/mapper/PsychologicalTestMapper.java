@@ -34,4 +34,6 @@ public interface PsychologicalTestMapper {
 
     PsychologicalTestsOverviewOutputDTO convertEntityToPsychologicalTestAssignmentOverviewDTO(PsychologicalTestAssignment assignment);
     List<PsychologicalTestsOverviewOutputDTO> convertEntityToPsychologicalTestAssignmentOverviewDTOs(List<PsychologicalTestAssignment> assignments);
+
+    PsychologicalTestAssignment convertPsychologicalTestAssignmentInputDTOToPsychologicalTestAssignment(PsychologicalTestInputDTO dto);
 }

@@ -5,8 +5,10 @@ import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.entity.PsychologicalTest;
 import ch.uzh.ifi.imrg.patientapp.entity.PsychologicalTestAssignment;
 import ch.uzh.ifi.imrg.patientapp.entity.PsychologicalTestQuestions;
+import ch.uzh.ifi.imrg.patientapp.repository.PatientRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.PsychologicalTestRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.PsychologicalTestsAssignmentRepository;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PsychologicalTestAssignmentInputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PsychologicalTestInputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestNameAndPatientIdOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestNameOutputDTO;
@@ -29,14 +31,24 @@ public class PsychologicalTestService {
     private final PsychologicalTestMapper psychologicalTestMapper;
     private final AuthorizationService authorizationService;
     private final PsychologicalTestsAssignmentRepository psychologicalTestsAssignmentRepository;
+    private final PatientRepository patientRepository;
 
-    public PsychologicalTestService(PsychologicalTestRepository psychologicalTestRepository, PsychologicalTestMapper psychologicalTestMapper, AuthorizationService authorizationService, PsychologicalTestsAssignmentRepository psychologicalTestsAssignmentRepository) {
+    public PsychologicalTestService(PsychologicalTestRepository psychologicalTestRepository, PsychologicalTestMapper psychologicalTestMapper, AuthorizationService authorizationService, PsychologicalTestsAssignmentRepository psychologicalTestsAssignmentRepository, PatientRepository patientRepository) {
         this.psychologicalTestRepository = psychologicalTestRepository;
         this.psychologicalTestMapper = psychologicalTestMapper;
         this.authorizationService = authorizationService;
         this.psychologicalTestsAssignmentRepository = psychologicalTestsAssignmentRepository;
+        this.patientRepository = patientRepository;
     }
 
+    public void createPsychologicalTestAssginment(String patientId, String psychologicalTestName, PsychologicalTestAssignmentInputDTO psychologicalTestAssignmentInputDTO) {
+        Patient patient = patientRepository.getPatientById(patientId);
+
+        PsychologicalTestAssignment psychologicalTestAssignment = PsychologicalTestMapper.INSTANCE.convertPsychologicalTestAssignmentInputDTOToPsychologicalTestAssignment(psychologicalTestAssignmentInputDTO);
+        psychologicalTestAssignment.setTestName(psychologicalTestName);
+        psychologicalTestAssignment.setPatient(patient);
+        psychologicalTestsAssignmentRepository.save(psychologicalTestAssignment);
+    }
 
     public void createPsychologicalTest(Patient loggedInPatient, PsychologicalTestInputDTO psychologicalTestInputDTO) {
         PsychologicalTest psychologicalTest = PsychologicalTestMapper.INSTANCE.convertPsychologicalTestInputDTOToPsychologicalTest(psychologicalTestInputDTO);
