@@ -2,14 +2,17 @@ package ch.uzh.ifi.imrg.patientapp.service;
 
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.entity.PsychologicalTest;
+import ch.uzh.ifi.imrg.patientapp.entity.PsychologicalTestAssignment;
 import ch.uzh.ifi.imrg.patientapp.entity.PsychologicalTestQuestions;
+import ch.uzh.ifi.imrg.patientapp.repository.PatientRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.PsychologicalTestRepository;
+import ch.uzh.ifi.imrg.patientapp.repository.PsychologicalTestsAssignmentRepository;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PsychologicalTestAssignmentInputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PsychologicalTestInputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PsychologicalTestQuestionInputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestNameAndPatientIdOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestNameOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestOutputDTO;
-import ch.uzh.ifi.imrg.patientapp.rest.mapper.PsychologicalTestMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -18,8 +21,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import org.springframework.security.access.AccessDeniedException;
-import java.util.List;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.Optional;
+
+import static java.util.Optional.empty;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -29,18 +37,32 @@ class PsychologicalTestServiceTest {
     @Mock
     private PsychologicalTestRepository repository;
 
+    @Mock
+    private PsychologicalTestsAssignmentRepository psychologicalTestsAssignmentRepository;
+
+    @Mock
+    private PatientRepository patientRepository;
+
     @InjectMocks
     private PsychologicalTestService service;
 
     @Test
-    void createPsychologicalTest_shouldSetPatientAndBackReferences_andSave() {
+    void createPsychologicalTest_shouldSetPatientAndBackReferences_andSave() throws Exception {
         // Arrange
+        String patientId = "123";
         Patient patient = new Patient();
+        patient.setId(patientId);
+
+        PsychologicalTestAssignment assignment = new PsychologicalTestAssignment();
+        assignment.setPatient(patient);
+        assignment.setTestName("Test Name");
+
         PsychologicalTestInputDTO inputDTO = new PsychologicalTestInputDTO();
-
-
         inputDTO.setName("Test Name");
         inputDTO.setDescription("Test Description");
+
+        when(psychologicalTestsAssignmentRepository.findByPatientIdAndTestName("123", "Test Name"))
+                .thenReturn(assignment);
 
         // Act
         service.createPsychologicalTest(patient, inputDTO);
@@ -50,28 +72,29 @@ class PsychologicalTestServiceTest {
         verify(repository).save(captor.capture());
 
         PsychologicalTest saved = captor.getValue();
-
         assertSame(patient, saved.getPatient());
 
-        // Check that back-references are set if questions exist
         if (saved.getPsychologicalTestsQuestions() != null) {
             for (PsychologicalTestQuestions q : saved.getPsychologicalTestsQuestions()) {
                 assertSame(saved, q.getPsychologicalTest());
             }
         }
 
+        verify(psychologicalTestsAssignmentRepository).save(assignment);
+        assertNotNull(assignment.getLastCompletedAt());
         verifyNoMoreInteractions(repository);
     }
 
+
     @Test
-    void createPsychologicalTest_whenQuestionsPresent_setsBackReferencesAndSaves() {
+    void createPsychologicalTest_whenQuestionsPresent_setsBackReferencesAndSaves() throws Exception {
         Patient patient = new Patient();
+        patient.setId("123");
 
         PsychologicalTestInputDTO inputDTO = new PsychologicalTestInputDTO();
         inputDTO.setName("Test Name");
         inputDTO.setDescription("Test Description");
 
-        // You must have a list of questions in your DTO if your mapper expects them:
         PsychologicalTestQuestionInputDTO q1 = new PsychologicalTestQuestionInputDTO();
         q1.setQuestion("Question 1");
         q1.setScore(5);
@@ -81,6 +104,13 @@ class PsychologicalTestServiceTest {
         q2.setScore(3);
 
         inputDTO.setQuestions(List.of(q1, q2));
+
+        // ✅ Mock the assignment repository to return an assignment
+        PsychologicalTestAssignment mockAssignment = new PsychologicalTestAssignment();
+        mockAssignment.setTestName("Test Name");
+        mockAssignment.setPatient(patient);
+        when(psychologicalTestsAssignmentRepository.findByPatientIdAndTestName(any(), any()))
+                .thenReturn(mockAssignment);
 
         service.createPsychologicalTest(patient, inputDTO);
 
@@ -98,6 +128,7 @@ class PsychologicalTestServiceTest {
 
         verifyNoMoreInteractions(repository);
     }
+
 
     @Test
     void getAllTestNamesForPatient_ForCoach_shouldReturnListFromRepository() {
