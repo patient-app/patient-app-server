@@ -1,5 +1,6 @@
 package ch.uzh.ifi.imrg.patientapp.repository;
 
+import ch.uzh.ifi.imrg.patientapp.constant.MeetingStatus;
 import org.springframework.test.context.ActiveProfiles;
 
 import ch.uzh.ifi.imrg.patientapp.entity.ChatbotTemplate;
@@ -135,6 +136,7 @@ public class PatientRepositoryCascadeTest {
         patient = patientRepository.saveAndFlush(patient);
 
         Meeting meeting = new Meeting();
+        meeting.setMeetingStatus(MeetingStatus.PENDING);
         meeting.setId("MeetId");
         meeting.setId("id1");
         meeting.setStartAt(Instant.parse("2025-06-26T10:15:30+02:00"));

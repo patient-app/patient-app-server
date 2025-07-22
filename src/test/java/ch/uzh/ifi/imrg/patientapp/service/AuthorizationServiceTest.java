@@ -4,6 +4,7 @@ import ch.uzh.ifi.imrg.patientapp.entity.Conversation;
 import ch.uzh.ifi.imrg.patientapp.entity.Exercise.Exercise;
 import ch.uzh.ifi.imrg.patientapp.entity.GeneralConversation;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
+import ch.uzh.ifi.imrg.patientapp.entity.PsychologicalTestAssignment;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -80,4 +81,34 @@ public class AuthorizationServiceTest {
 
         assertEquals("Access denied", ex.getMessage());
     }
+
+    @Test
+    void checkPsychologicalTestAssignmentAccess_shouldThrow_whenPatientDoesNotMatch() {
+        Patient patient = new Patient();
+        patient.setId("p123");
+
+        Patient otherPatient = new Patient();
+        otherPatient.setId("p456");
+
+        PsychologicalTestAssignment assignment = new PsychologicalTestAssignment();
+        assignment.setPatient(otherPatient);
+
+        AccessDeniedException ex = assertThrows(AccessDeniedException.class, () ->
+                authorizationService.checkPsychologicalTestAssignmentAccess(assignment, patient, "Access denied"));
+
+        assertEquals("Access denied", ex.getMessage());
+    }
+
+    @Test
+    void checkPsychologicalTestAssignmentAccess_shouldPass_whenPatientMatches() {
+        Patient patient = new Patient();
+        patient.setId("p123");
+
+        PsychologicalTestAssignment assignment = new PsychologicalTestAssignment();
+        assignment.setPatient(patient);
+
+        assertDoesNotThrow(() ->
+                authorizationService.checkPsychologicalTestAssignmentAccess(assignment, patient, "Access denied"));
+    }
+
 }

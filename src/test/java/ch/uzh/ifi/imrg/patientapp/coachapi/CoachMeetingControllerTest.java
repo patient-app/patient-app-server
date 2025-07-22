@@ -89,7 +89,6 @@ public class CoachMeetingControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(dto)))
                                 .andExpect(status().isCreated())
-                                .andExpect(jsonPath("$.id").value("m1"))
                                 .andExpect(jsonPath("$.id").value("id1"))
                                 .andExpect(jsonPath("$.patientId").value(patientId))
                                 .andExpect(jsonPath("$.startAt").value("2025-06-15T10:00:00Z"))
@@ -123,14 +122,13 @@ public class CoachMeetingControllerTest {
                 String meetingId = "m1";
                 Meeting m = new Meeting();
                 m.setId(meetingId);
-                m.setId("id1");
 
                 when(meetingService.getMeeting(meetingId, patientId)).thenReturn(m);
 
                 mockMvc.perform(get("/coach/patients/{patientId}/meetings/{meetingId}", patientId, meetingId))
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.id").value(meetingId))
-                                .andExpect(jsonPath("$.id").value("id1"));
+                                .andExpect(jsonPath("$.id").value("m1"));
         }
 
         @Test
@@ -145,7 +143,6 @@ public class CoachMeetingControllerTest {
 
                 Meeting updated = new Meeting();
                 updated.setId(meetingId);
-                updated.setId("id1");
                 updated.setStartAt(dto.getStartAt());
                 updated.setEndAt(dto.getEndAt());
                 updated.setLocation("Room 103");

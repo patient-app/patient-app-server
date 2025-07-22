@@ -34,7 +34,7 @@ public class PsychologicalTestControllerTest {
     private HttpServletRequest request;
 
     @Test
-    void createPsychologicalTest_shouldCallServices() {
+    void createPsychologicalTest_shouldCallServices() throws Exception {
         // Arrange
         PsychologicalTestInputDTO inputDTO = new PsychologicalTestInputDTO();
         Patient patient = new Patient();
