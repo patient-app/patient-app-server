@@ -26,14 +26,7 @@ public class DashboardController {
     @ResponseStatus(HttpStatus.OK)
     public List<ExercisesOverviewOutputDTO> getExerciseOverview(HttpServletRequest httpServletRequest){
         Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
-        return exerciseService.getExercisesForDashboard(loggedInPatient);
-    }
-
-    @GetMapping("/patients/dashboard/questionnaires")
-    @ResponseStatus(HttpStatus.OK)
-    public List<ExercisesOverviewOutputDTO> getQuestionnairesOverview(HttpServletRequest httpServletRequest){
-        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
-        return exerciseService.getQuestionnairesForDashboard(loggedInPatient);
+        return exerciseService.getExercisesToShow(loggedInPatient);
     }
 
 

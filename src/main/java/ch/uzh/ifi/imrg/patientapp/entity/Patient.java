@@ -3,7 +3,6 @@ package ch.uzh.ifi.imrg.patientapp.entity;
 import ch.uzh.ifi.imrg.patientapp.constant.ChatBotAvatar;
 import ch.uzh.ifi.imrg.patientapp.entity.Document.PatientDocument;
 import ch.uzh.ifi.imrg.patientapp.entity.Exercise.Exercise;
-import ch.uzh.ifi.imrg.patientapp.entity.PsychologicalTest.PsychologicalTest;
 import jakarta.persistence.*;
 import java.io.Serializable;
 import java.time.Instant;

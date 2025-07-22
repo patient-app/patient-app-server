@@ -12,12 +12,15 @@ import ch.uzh.ifi.imrg.patientapp.rest.mapper.ExerciseComponentMapper;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.ExerciseMapper;
 import ch.uzh.ifi.imrg.patientapp.service.aiService.PromptBuilderService;
 import jakarta.transaction.Transactional;
+import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static java.awt.SystemColor.info;
 
 @Service
 @Transactional
@@ -322,7 +325,7 @@ public class ExerciseService {
     }
 
 
-    public List<ExercisesOverviewOutputDTO> getExercisesForDashboard(Patient patient){
+    public List<ExercisesOverviewOutputDTO> getExercisesToShow(Patient patient){
         Instant now = Instant.now();
 
         List<Exercise> candidates = exerciseRepository.findAllActiveExercisesWithinTime(now);

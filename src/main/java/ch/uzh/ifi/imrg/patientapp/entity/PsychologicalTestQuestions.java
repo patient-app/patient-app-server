@@ -1,10 +1,12 @@
-package ch.uzh.ifi.imrg.patientapp.entity.PsychologicalTest;
+package ch.uzh.ifi.imrg.patientapp.entity;
 
 
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
+
+import java.util.UUID;
 
 @Getter
 @Setter

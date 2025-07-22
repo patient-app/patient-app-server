@@ -1,7 +1,6 @@
-package ch.uzh.ifi.imrg.patientapp.entity.PsychologicalTest;
+package ch.uzh.ifi.imrg.patientapp.entity;
 
 
-import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -31,13 +30,9 @@ public class PsychologicalTest {
     @OneToMany(mappedBy = "psychologicalTest", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PsychologicalTestQuestions> psychologicalTestsQuestions;
 
-    @OneToMany(mappedBy = "psychologicalTest", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<PsychologicalTestCompletion> psychologicalTestCompletions;
-
-
     String name;
     String description;
-    private int doEveryNDays;
+
 
 
 }
