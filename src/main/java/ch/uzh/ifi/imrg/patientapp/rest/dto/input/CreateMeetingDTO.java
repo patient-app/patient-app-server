@@ -2,6 +2,7 @@ package ch.uzh.ifi.imrg.patientapp.rest.dto.input;
 
 import java.time.Instant;
 
+import ch.uzh.ifi.imrg.patientapp.constant.MeetingStatus;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,12 +12,11 @@ public class CreateMeetingDTO {
 
     private String id;
 
-    // this is not needed, becaus patientId comes from path variable
-    // private String patientId;
-
     private Instant startAt;
 
     private Instant endAt;
+
+    private MeetingStatus meetingStatus;
 
     private String location;
 

@@ -26,6 +26,7 @@ public interface MeetingMapper {
     @Mapping(source = "id", target = "id")
     @Mapping(source = "startAt", target = "startAt")
     @Mapping(source = "endAt", target = "endAt")
+    @Mapping(source = "meetingStatus", target = "meetingStatus")
     @Mapping(source = "location", target = "location")
     Meeting convertCreateMeetingDTOToEntity(CreateMeetingDTO createMeetingDTO);
 
