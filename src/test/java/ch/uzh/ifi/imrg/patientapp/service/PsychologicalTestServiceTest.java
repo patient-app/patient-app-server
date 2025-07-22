@@ -1,5 +1,6 @@
 package ch.uzh.ifi.imrg.patientapp.service;
 
+import ch.uzh.ifi.imrg.patientapp.constant.AvailableTests;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.entity.PsychologicalTest;
 import ch.uzh.ifi.imrg.patientapp.entity.PsychologicalTestAssignment;
@@ -13,21 +14,25 @@ import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PsychologicalTestQuestionInputD
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestNameAndPatientIdOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestNameOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestOutputDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestsOverviewOutputDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.mapper.PsychologicalTestMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
-import static java.util.Optional.empty;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -35,13 +40,16 @@ import static org.mockito.Mockito.*;
 class PsychologicalTestServiceTest {
 
     @Mock
-    private PsychologicalTestRepository repository;
+    private PsychologicalTestRepository psychologicalTestRepository;
 
     @Mock
     private PsychologicalTestsAssignmentRepository psychologicalTestsAssignmentRepository;
 
     @Mock
     private PatientRepository patientRepository;
+
+    @Mock
+    private AuthorizationService authorizationService;
 
     @InjectMocks
     private PsychologicalTestService service;
@@ -69,7 +77,7 @@ class PsychologicalTestServiceTest {
 
         // Assert
         ArgumentCaptor<PsychologicalTest> captor = ArgumentCaptor.forClass(PsychologicalTest.class);
-        verify(repository).save(captor.capture());
+        verify(psychologicalTestRepository).save(captor.capture());
 
         PsychologicalTest saved = captor.getValue();
         assertSame(patient, saved.getPatient());
@@ -82,7 +90,7 @@ class PsychologicalTestServiceTest {
 
         verify(psychologicalTestsAssignmentRepository).save(assignment);
         assertNotNull(assignment.getLastCompletedAt());
-        verifyNoMoreInteractions(repository);
+        verifyNoMoreInteractions(psychologicalTestRepository);
     }
 
 
@@ -115,7 +123,7 @@ class PsychologicalTestServiceTest {
         service.createPsychologicalTest(patient, inputDTO);
 
         ArgumentCaptor<PsychologicalTest> captor = ArgumentCaptor.forClass(PsychologicalTest.class);
-        verify(repository).save(captor.capture());
+        verify(psychologicalTestRepository).save(captor.capture());
         PsychologicalTest saved = captor.getValue();
 
         assertSame(patient, saved.getPatient());
@@ -126,8 +134,30 @@ class PsychologicalTestServiceTest {
             assertSame(saved, q.getPsychologicalTest());
         }
 
-        verifyNoMoreInteractions(repository);
+        verifyNoMoreInteractions(psychologicalTestRepository);
     }
+
+    @Test
+    void createPsychologicalTest_shouldThrowException_whenAssignmentIsNull() {
+        // Arrange
+        Patient patient = new Patient();
+        patient.setId("p1");
+
+        PsychologicalTestInputDTO inputDTO = new PsychologicalTestInputDTO();
+        inputDTO.setName("TestName");
+        inputDTO.setDescription("Some desc");
+
+        // Return null for assignment lookup
+        when(psychologicalTestsAssignmentRepository.findByPatientIdAndTestName("p1", "TestName"))
+                .thenReturn(null);
+
+        // Act + Assert
+        Exception ex = assertThrows(Exception.class, () ->
+                service.createPsychologicalTest(patient, inputDTO));
+
+        assertEquals("No psychological test assignment found for the given patient and test name.", ex.getMessage());
+    }
+
 
 
     @Test
@@ -140,13 +170,13 @@ class PsychologicalTestServiceTest {
 
         List<PsychologicalTestNameOutputDTO> expected = List.of(dto1, dto2);
 
-        when(repository.findAllByPatientId(patientId)).thenReturn(expected);
+        when(psychologicalTestRepository.findAllByPatientId(patientId)).thenReturn(expected);
 
         List<PsychologicalTestNameOutputDTO> result = service.getAllTestNamesForPatientForCoach(patientId);
 
         assertEquals(expected, result);
-        verify(repository).findAllByPatientId(patientId);
-        verifyNoMoreInteractions(repository);
+        verify(psychologicalTestRepository).findAllByPatientId(patientId);
+        verifyNoMoreInteractions(psychologicalTestRepository);
     }
     @Test
     void getPsychologicalTestResults_ForCoach_shouldReturnListFromRepository() {
@@ -169,7 +199,7 @@ class PsychologicalTestServiceTest {
 
         List<PsychologicalTest> returnedEntities = List.of(test1, test2);
 
-        when(repository.findAllByPatientIdAndName(patientId, testName)).thenReturn(returnedEntities);
+        when(psychologicalTestRepository.findAllByPatientIdAndName(patientId, testName)).thenReturn(returnedEntities);
 
         List<PsychologicalTestOutputDTO> result = service.getPsychologicalTestResultsForCoach(patientId, testName);
 
@@ -177,8 +207,8 @@ class PsychologicalTestServiceTest {
         assertEquals("Description1", result.get(0).getDescription());
         assertEquals("Description2", result.get(1).getDescription());
 
-        verify(repository).findAllByPatientIdAndName(patientId, testName);
-        verifyNoMoreInteractions(repository);
+        verify(psychologicalTestRepository).findAllByPatientIdAndName(patientId, testName);
+        verifyNoMoreInteractions(psychologicalTestRepository);
     }
 
     @Test
@@ -186,14 +216,14 @@ class PsychologicalTestServiceTest {
         Patient loggedInPatient = new Patient();
         loggedInPatient.setId("p1");
 
-        when(repository.findAllTestsByPatientId("p1")).thenReturn(List.of());
+        when(psychologicalTestRepository.findAllTestsByPatientId("p1")).thenReturn(List.of());
 
         List<PsychologicalTestNameAndPatientIdOutputDTO> result =
                 service.getAllTestNamesForPatient(loggedInPatient, "p1");
 
         assertTrue(result.isEmpty());
-        verify(repository).findAllTestsByPatientId("p1");
-        verifyNoMoreInteractions(repository);
+        verify(psychologicalTestRepository).findAllTestsByPatientId("p1");
+        verifyNoMoreInteractions(psychologicalTestRepository);
     }
 
     @Test
@@ -207,14 +237,14 @@ class PsychologicalTestServiceTest {
 
         List<PsychologicalTestNameAndPatientIdOutputDTO> expected = List.of(dto);
 
-        when(repository.findAllTestsByPatientId("p1")).thenReturn(expected);
+        when(psychologicalTestRepository.findAllTestsByPatientId("p1")).thenReturn(expected);
 
         List<PsychologicalTestNameAndPatientIdOutputDTO> result =
                 service.getAllTestNamesForPatient(loggedInPatient, "p1");
 
         assertEquals(expected, result);
-        verify(repository).findAllTestsByPatientId("p1");
-        verifyNoMoreInteractions(repository);
+        verify(psychologicalTestRepository).findAllTestsByPatientId("p1");
+        verifyNoMoreInteractions(psychologicalTestRepository);
     }
 
     @Test
@@ -226,13 +256,13 @@ class PsychologicalTestServiceTest {
                 new PsychologicalTestNameAndPatientIdOutputDTO("Test A", "p2");
         dto.setPatientId("differentPatient");
 
-        when(repository.findAllTestsByPatientId("p1")).thenReturn(List.of(dto));
+        when(psychologicalTestRepository.findAllTestsByPatientId("p1")).thenReturn(List.of(dto));
 
         assertThrows(AccessDeniedException.class, () ->
                 service.getAllTestNamesForPatient(loggedInPatient, "p1"));
 
-        verify(repository).findAllTestsByPatientId("p1");
-        verifyNoMoreInteractions(repository);
+        verify(psychologicalTestRepository).findAllTestsByPatientId("p1");
+        verifyNoMoreInteractions(psychologicalTestRepository);
     }
 
     @Test
@@ -240,14 +270,14 @@ class PsychologicalTestServiceTest {
         Patient loggedInPatient = new Patient();
         loggedInPatient.setId("p1");
 
-        when(repository.findAllByPatientIdAndName("p1", "DepressionTest")).thenReturn(List.of());
+        when(psychologicalTestRepository.findAllByPatientIdAndName("p1", "DepressionTest")).thenReturn(List.of());
 
         List<PsychologicalTestOutputDTO> result =
                 service.getPsychologicalTestResults(loggedInPatient, "p1", "DepressionTest");
 
         assertTrue(result.isEmpty());
-        verify(repository).findAllByPatientIdAndName("p1", "DepressionTest");
-        verifyNoMoreInteractions(repository);
+        verify(psychologicalTestRepository).findAllByPatientIdAndName("p1", "DepressionTest");
+        verifyNoMoreInteractions(psychologicalTestRepository);
     }
 
     @Test
@@ -264,7 +294,7 @@ class PsychologicalTestServiceTest {
         test.setPatient(testOwner);
         test.setPsychologicalTestsQuestions(List.of());
 
-        when(repository.findAllByPatientIdAndName("p1", "TestName")).thenReturn(List.of(test));
+        when(psychologicalTestRepository.findAllByPatientIdAndName("p1", "TestName")).thenReturn(List.of(test));
 
         List<PsychologicalTestOutputDTO> result =
                 service.getPsychologicalTestResults(loggedInPatient, "p1", "TestName");
@@ -273,8 +303,8 @@ class PsychologicalTestServiceTest {
         assertEquals("p1", result.get(0).getPatientId());
         assertEquals("TestName", result.get(0).getName());
 
-        verify(repository).findAllByPatientIdAndName("p1", "TestName");
-        verifyNoMoreInteractions(repository);
+        verify(psychologicalTestRepository).findAllByPatientIdAndName("p1", "TestName");
+        verifyNoMoreInteractions(psychologicalTestRepository);
     }
 
     @Test
@@ -290,16 +320,258 @@ class PsychologicalTestServiceTest {
         test.setPatient(testOwner);
         test.setPsychologicalTestsQuestions(List.of());
 
-        when(repository.findAllByPatientIdAndName("p1", "TestName")).thenReturn(List.of(test));
+        when(psychologicalTestRepository.findAllByPatientIdAndName("p1", "TestName")).thenReturn(List.of(test));
 
         AccessDeniedException ex = assertThrows(AccessDeniedException.class, () ->
                 service.getPsychologicalTestResults(loggedInPatient, "p1", "TestName"));
 
         assertEquals("You do not have access to this patient's psychological tests.", ex.getMessage());
 
-        verify(repository).findAllByPatientIdAndName("p1", "TestName");
-        verifyNoMoreInteractions(repository);
+        verify(psychologicalTestRepository).findAllByPatientIdAndName("p1", "TestName");
+        verifyNoMoreInteractions(psychologicalTestRepository);
     }
+
+    @Test
+    void createPsychologicalTestAssignment_shouldMapAndSaveAssignment() {
+        // Arrange
+        String patientId = "p1";
+        String testName = "GAD7";
+
+        Patient patient = new Patient();
+        patient.setId(patientId);
+
+        PsychologicalTestAssignmentInputDTO inputDTO = new PsychologicalTestAssignmentInputDTO();
+        inputDTO.setDoEveryNDays(7);
+        inputDTO.setExerciseStart(Instant.now());
+        inputDTO.setExerciseEnd(Instant.now().plus(7, ChronoUnit.DAYS));
+        inputDTO.setIsPaused(false);
+
+        when(patientRepository.getPatientById(patientId)).thenReturn(patient);
+
+        // Act
+        service.createPsychologicalTestAssginment(patientId, testName, inputDTO);
+
+        // Assert
+        ArgumentCaptor<PsychologicalTestAssignment> captor = ArgumentCaptor.forClass(PsychologicalTestAssignment.class);
+        verify(psychologicalTestsAssignmentRepository).save(captor.capture());
+
+        PsychologicalTestAssignment saved = captor.getValue();
+        assertEquals(testName, saved.getTestName());
+        assertSame(patient, saved.getPatient());
+        assertEquals(7, saved.getDoEveryNDays());
+        assertEquals(inputDTO.getExerciseStart(), saved.getExerciseStart());
+        assertEquals(inputDTO.getExerciseEnd(), saved.getExerciseEnd());
+        assertFalse(saved.getIsPaused());
+
+        verify(patientRepository).getPatientById(patientId);
+        verifyNoMoreInteractions(patientRepository, psychologicalTestsAssignmentRepository);
+    }
+
+    @Test
+    void updatePsychologicalTestAssignment_shouldUpdateAndSave_whenAssignmentExistsAndAccessAllowed() {
+        // Arrange
+        String patientId = "p1";
+        String testName = "GAD7";
+
+        Patient patient = new Patient();
+        patient.setId(patientId);
+
+        PsychologicalTestAssignment assignment = new PsychologicalTestAssignment();
+        assignment.setPatient(patient);
+        assignment.setTestName(testName);
+
+        PsychologicalTestAssignmentInputDTO inputDTO = new PsychologicalTestAssignmentInputDTO();
+        inputDTO.setDoEveryNDays(5);
+        inputDTO.setIsPaused(true);
+
+        when(patientRepository.getPatientById(patientId)).thenReturn(patient);
+        when(psychologicalTestsAssignmentRepository.findByPatientIdAndTestName(patientId, testName))
+                .thenReturn(assignment);
+
+        // Act
+        service.updatePsychologicalTestAssginment(patientId, testName, inputDTO);
+
+        // Assert
+        verify(psychologicalTestsAssignmentRepository).save(assignment);
+        assertEquals(5, assignment.getDoEveryNDays());
+        assertTrue(assignment.getIsPaused());
+
+        verify(authorizationService).checkPsychologicalTestAssignmentAccess(assignment, patient,
+                "You do not have access to this patient's psychological test assignment.");
+    }
+
+    @Test
+    void updatePsychologicalTestAssignment_shouldThrow_whenAssignmentNotFound() {
+        // Arrange
+        String patientId = "p1";
+        String testName = "GAD7";
+
+        Patient patient = new Patient();
+        patient.setId(patientId);
+
+        PsychologicalTestAssignmentInputDTO inputDTO = new PsychologicalTestAssignmentInputDTO();
+
+        when(patientRepository.getPatientById(patientId)).thenReturn(patient);
+        when(psychologicalTestsAssignmentRepository.findByPatientIdAndTestName(patientId, testName))
+                .thenReturn(null);
+
+        // Act + Assert
+        AccessDeniedException ex = assertThrows(AccessDeniedException.class, () ->
+                service.updatePsychologicalTestAssginment(patientId, testName, inputDTO));
+
+        assertEquals("No psychological test assignment found for the given patient and test name.", ex.getMessage());
+    }
+
+    @Test
+    void updatePsychologicalTestAssignment_shouldThrow_whenAccessDenied() {
+        // Arrange
+        String patientId = "p1";
+        String testName = "GAD7";
+
+        Patient loggedIn = new Patient();
+        loggedIn.setId(patientId);
+
+        Patient different = new Patient();
+        different.setId("someoneElse");
+
+        PsychologicalTestAssignment assignment = new PsychologicalTestAssignment();
+        assignment.setPatient(different); // <-- not same as logged in
+        assignment.setTestName(testName);
+
+        PsychologicalTestAssignmentInputDTO inputDTO = new PsychologicalTestAssignmentInputDTO();
+
+        when(patientRepository.getPatientById(patientId)).thenReturn(loggedIn);
+        when(psychologicalTestsAssignmentRepository.findByPatientIdAndTestName(patientId, testName))
+                .thenReturn(assignment);
+
+        doThrow(new AccessDeniedException("You do not have access to this patient's psychological test assignment."))
+                .when(authorizationService)
+                .checkPsychologicalTestAssignmentAccess(assignment, loggedIn,
+                        "You do not have access to this patient's psychological test assignment.");
+
+        // Act + Assert
+        AccessDeniedException ex = assertThrows(AccessDeniedException.class, () ->
+                service.updatePsychologicalTestAssginment(patientId, testName, inputDTO));
+
+    }
+    @Test
+    void getAllAvailableTestNamesForPatientForCoach_shouldReturnAllEnumNames() {
+        // Act
+        List<PsychologicalTestNameOutputDTO> result = service.getAllAvailableTestNamesForPatientForCoach("anyPatientId");
+
+        // Assert
+        List<String> expectedTestNames = Arrays.stream(AvailableTests.values())
+                .map(Enum::name)
+                .toList();
+
+        List<String> actualTestNames = result.stream()
+                .map(PsychologicalTestNameOutputDTO::getName)
+                .toList();
+
+        assertEquals(expectedTestNames.size(), actualTestNames.size());
+        assertTrue(actualTestNames.containsAll(expectedTestNames));
+    }
+
+    @Test
+    void getPsychologicalTestsForDashboard_whenNoAssignments_returnsEmptyList() {
+        Patient patient = new Patient();
+        patient.setId("p1");
+
+        when(psychologicalTestsAssignmentRepository.findActiveAssignments(eq(patient), any()))
+                .thenReturn(List.of());
+
+        List<PsychologicalTestsOverviewOutputDTO> result = service.getPsychologicalTestsForDashboard(patient);
+
+        assertTrue(result.isEmpty());
+        verify(psychologicalTestsAssignmentRepository).findActiveAssignments(eq(patient), any());
+    }
+
+    @Test
+    void returnsEmptyListWhenNoAssignments() {
+        Patient patient = new Patient();
+        when(psychologicalTestsAssignmentRepository.findActiveAssignments(any(), any()))
+                .thenReturn(Collections.emptyList());
+
+        List<PsychologicalTestsOverviewOutputDTO> result = service.getPsychologicalTestsForDashboard(patient);
+
+        assertTrue(result.isEmpty());
+        verify(authorizationService, never()).checkPsychologicalTestAssignmentAccess(any(), any(), anyString());
+    }
+
+    @Test
+    void getPsychologicalTestsForDashboard_withLastCompletedNull_shouldReturnAssignment() {
+        // Arrange
+        Patient patient = new Patient();
+        patient.setId("p1");
+
+        PsychologicalTestAssignment assignment = new PsychologicalTestAssignment();
+        assignment.setPatient(patient);
+        assignment.setTestName("TestX");
+        assignment.setLastCompletedAt(null); // this triggers the null branch
+        assignment.setDoEveryNDays(3);
+
+        when(psychologicalTestsAssignmentRepository.findActiveAssignments(eq(patient), any()))
+                .thenReturn(List.of(assignment));
+
+        // Act
+        List<PsychologicalTestsOverviewOutputDTO> result = service.getPsychologicalTestsForDashboard(patient);
+
+        // Assert
+        assertEquals(1, result.size());
+        verify(authorizationService).checkPsychologicalTestAssignmentAccess(eq(assignment), eq(patient),
+                eq("You do not have access to this patient's psychological tests."));
+    }
+
+    @Test
+    void getPsychologicalTestsForDashboard_withDueDateInPast_shouldReturnAssignment() {
+        // Arrange
+        Patient patient = new Patient();
+        patient.setId("p1");
+
+        PsychologicalTestAssignment assignment = new PsychologicalTestAssignment();
+        assignment.setPatient(patient);
+        assignment.setTestName("TestY");
+        assignment.setLastCompletedAt(Instant.now().minus(10, ChronoUnit.DAYS)); // old completion
+        assignment.setDoEveryNDays(5);
+
+        when(psychologicalTestsAssignmentRepository.findActiveAssignments(eq(patient), any()))
+                .thenReturn(List.of(assignment));
+
+        // Act
+        List<PsychologicalTestsOverviewOutputDTO> result = service.getPsychologicalTestsForDashboard(patient);
+
+        // Assert
+        assertEquals(1, result.size());
+        verify(authorizationService).checkPsychologicalTestAssignmentAccess(eq(assignment), eq(patient),
+                eq("You do not have access to this patient's psychological tests."));
+    }
+
+    @Test
+    void getPsychologicalTestsForDashboard_withDueDateNotReached_shouldReturnEmptyList() {
+        // Arrange
+        Patient patient = new Patient();
+        patient.setId("p1");
+
+        Instant recentCompletion = Instant.now().minus(1, ChronoUnit.DAYS);
+
+        PsychologicalTestAssignment assignment = new PsychologicalTestAssignment();
+        assignment.setPatient(patient);
+        assignment.setTestName("TestZ");
+        assignment.setLastCompletedAt(recentCompletion); // not due yet
+        assignment.setDoEveryNDays(7);
+
+        when(psychologicalTestsAssignmentRepository.findActiveAssignments(eq(patient), any()))
+                .thenReturn(List.of(assignment));
+
+        // Act
+        List<PsychologicalTestsOverviewOutputDTO> result = service.getPsychologicalTestsForDashboard(patient);
+
+        // Assert
+        assertTrue(result.isEmpty());
+        verify(authorizationService).checkPsychologicalTestAssignmentAccess(eq(assignment), eq(patient),
+                eq("You do not have access to this patient's psychological tests."));
+    }
+
 
 
 }
