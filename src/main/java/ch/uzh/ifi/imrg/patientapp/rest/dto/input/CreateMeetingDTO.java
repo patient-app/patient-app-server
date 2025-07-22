@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 public class CreateMeetingDTO {
 
-    private String externalMeetingId;
+    private String id;
 
     // this is not needed, becaus patientId comes from path variable
     // private String patientId;
