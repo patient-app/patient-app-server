@@ -41,7 +41,7 @@ class MeetingServiceTest {
     @Test
     void createMeeting_success() {
         CreateMeetingDTO dto = new CreateMeetingDTO();
-        dto.setExternalMeetingId("ext-1");
+        dto.setId("id1");
         dto.setStartAt(Instant.parse("2025-06-15T10:00:00Z"));
         dto.setEndAt(Instant.parse("2025-06-15T11:00:00Z"));
         dto.setLocation("Room A");

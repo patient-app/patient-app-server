@@ -19,11 +19,8 @@ import lombok.Setter;
 public class Meeting {
 
     @Id
-    @Column
-    private String id = UUID.randomUUID().toString();
-
-    @Column(name = "external_meeting_id", unique = true, nullable = false, updatable = false)
-    private String externalMeetingId;
+    @Column(unique = true)
+    private String id;
 
     @Column(name = "created_at", updatable = false)
     @CreationTimestamp
@@ -48,6 +45,6 @@ public class Meeting {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private MeetingStatus meetingStatus = MeetingStatus.PENDING;
+    private MeetingStatus meetingStatus;
 
 }
