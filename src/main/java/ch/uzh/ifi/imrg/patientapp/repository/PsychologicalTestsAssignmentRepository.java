@@ -13,6 +13,7 @@ import java.util.List;
 @Repository
 public interface PsychologicalTestsAssignmentRepository  extends JpaRepository<PsychologicalTestAssignment, String> {
 
+    PsychologicalTestAssignment findByPatientIdAndTestName(String patientId, String testName);
 
     @Query("SELECT a FROM PsychologicalTestAssignment a " +
             "WHERE a.patient = :patient " +

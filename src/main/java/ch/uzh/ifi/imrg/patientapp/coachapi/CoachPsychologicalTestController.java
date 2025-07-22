@@ -25,6 +25,13 @@ public class CoachPsychologicalTestController {
         return psychologicalTestService.getAllTestNamesForPatientForCoach(patientId);
     }
 
+    @GetMapping("/coach/patients/{patientId}/psychological-tests/available-tests")
+    @ResponseStatus(HttpStatus.OK)
+    @SecurityRequirement(name = "X-Coach-Key")
+    public List<PsychologicalTestNameOutputDTO> getAvailablePsychologicalTestNames(@PathVariable String patientId) {
+        return psychologicalTestService.getAllAvailableTestNamesForPatientForCoach(patientId);
+    }
+
     @GetMapping("/coach/patients/{patientId}/psychological-tests/{psychologicalTestName}")
     @ResponseStatus(HttpStatus.OK)
     @SecurityRequirement(name = "X-Coach-Key")
@@ -40,5 +47,14 @@ public class CoachPsychologicalTestController {
                                         @PathVariable String psychologicalTestName,
                                         @RequestBody PsychologicalTestAssignmentInputDTO psychologicalTestAssignmentInputDTO) {
         psychologicalTestService.createPsychologicalTestAssginment(patientId, psychologicalTestName, psychologicalTestAssignmentInputDTO);
+    }
+
+    @PutMapping("/coach/patients/{patientId}/psychological-tests/{psychologicalTestName}")
+    @ResponseStatus(HttpStatus.OK)
+    @SecurityRequirement(name = "X-Coach-Key")
+    public void updatePsychologicalTest(@PathVariable String patientId,
+                                        @PathVariable String psychologicalTestName,
+                                        @RequestBody PsychologicalTestAssignmentInputDTO psychologicalTestAssignmentInputDTO) {
+        psychologicalTestService.updatePsychologicalTestAssginment(patientId, psychologicalTestName, psychologicalTestAssignmentInputDTO);
     }
 }

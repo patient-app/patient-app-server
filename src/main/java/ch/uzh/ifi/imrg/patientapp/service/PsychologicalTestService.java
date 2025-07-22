@@ -5,6 +5,7 @@ import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.entity.PsychologicalTest;
 import ch.uzh.ifi.imrg.patientapp.entity.PsychologicalTestAssignment;
 import ch.uzh.ifi.imrg.patientapp.entity.PsychologicalTestQuestions;
+import ch.uzh.ifi.imrg.patientapp.constant.AvailableTests;
 import ch.uzh.ifi.imrg.patientapp.repository.PatientRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.PsychologicalTestRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.PsychologicalTestsAssignmentRepository;
@@ -21,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -28,14 +30,12 @@ import java.util.List;
 @Transactional
 public class PsychologicalTestService {
     private final PsychologicalTestRepository psychologicalTestRepository;
-    private final PsychologicalTestMapper psychologicalTestMapper;
     private final AuthorizationService authorizationService;
     private final PsychologicalTestsAssignmentRepository psychologicalTestsAssignmentRepository;
     private final PatientRepository patientRepository;
 
-    public PsychologicalTestService(PsychologicalTestRepository psychologicalTestRepository, PsychologicalTestMapper psychologicalTestMapper, AuthorizationService authorizationService, PsychologicalTestsAssignmentRepository psychologicalTestsAssignmentRepository, PatientRepository patientRepository) {
+    public PsychologicalTestService(PsychologicalTestRepository psychologicalTestRepository, AuthorizationService authorizationService, PsychologicalTestsAssignmentRepository psychologicalTestsAssignmentRepository, PatientRepository patientRepository) {
         this.psychologicalTestRepository = psychologicalTestRepository;
-        this.psychologicalTestMapper = psychologicalTestMapper;
         this.authorizationService = authorizationService;
         this.psychologicalTestsAssignmentRepository = psychologicalTestsAssignmentRepository;
         this.patientRepository = patientRepository;
@@ -47,6 +47,18 @@ public class PsychologicalTestService {
         PsychologicalTestAssignment psychologicalTestAssignment = PsychologicalTestMapper.INSTANCE.convertPsychologicalTestAssignmentInputDTOToPsychologicalTestAssignment(psychologicalTestAssignmentInputDTO);
         psychologicalTestAssignment.setTestName(psychologicalTestName);
         psychologicalTestAssignment.setPatient(patient);
+        psychologicalTestsAssignmentRepository.save(psychologicalTestAssignment);
+    }
+
+    public void updatePsychologicalTestAssginment(String patientId, String psychologicalTestName, PsychologicalTestAssignmentInputDTO psychologicalTestAssignmentInputDTO) {
+        Patient patient = patientRepository.getPatientById(patientId);
+        PsychologicalTestAssignment psychologicalTestAssignment = psychologicalTestsAssignmentRepository.findByPatientIdAndTestName(patientId, psychologicalTestName);
+        if (psychologicalTestAssignment == null) {
+            throw new AccessDeniedException("No psychological test assignment found for the given patient and test name.");
+        }
+        authorizationService.checkPsychologicalTestAssignmentAccess(psychologicalTestAssignment, patient, "You do not have access to this patient's psychological test assignment.");
+        PsychologicalTestMapper.INSTANCE.updatePsychologicalTestAssignmentFromDTO(psychologicalTestAssignmentInputDTO, psychologicalTestAssignment);
+
         psychologicalTestsAssignmentRepository.save(psychologicalTestAssignment);
     }
 
@@ -78,6 +90,13 @@ public class PsychologicalTestService {
         }
         return psychologicalTestNames;
     }
+
+    public List<PsychologicalTestNameOutputDTO> getAllAvailableTestNamesForPatientForCoach(String patientId) {
+        return Arrays.stream(AvailableTests.values())
+                .map(test -> new PsychologicalTestNameOutputDTO(test.name()))
+                .toList();
+    }
+
 
     public List<PsychologicalTestOutputDTO> getPsychologicalTestResultsForCoach(String patientId, String psychologicalTestName) {
         return psychologicalTestRepository.findAllByPatientIdAndName(patientId, psychologicalTestName)
@@ -125,7 +144,7 @@ public class PsychologicalTestService {
                 })
                 .toList();
 
-        return psychologicalTestMapper.convertEntityToPsychologicalTestAssignmentOverviewDTOs(dueAssignments);
+        return PsychologicalTestMapper.INSTANCE.convertEntityToPsychologicalTestAssignmentOverviewDTOs(dueAssignments);
     }
 
 }

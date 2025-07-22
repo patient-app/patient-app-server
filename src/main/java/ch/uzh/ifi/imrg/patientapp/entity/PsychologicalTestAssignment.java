@@ -31,7 +31,7 @@ public class PsychologicalTestAssignment {
     private Instant exerciseEnd;
 
     @Column(name = "is_paused")
-    private boolean isPaused;
+    private Boolean isPaused;
 
     @Column(name = "do_every_n_days")
     private int doEveryNDays;
