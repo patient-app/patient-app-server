@@ -12,8 +12,6 @@ import java.util.List;
 public interface ExerciseMapper {
 
     ExerciseChatbotOutputDTO exerciseConversationToExerciseChatbotOutputDTO(ExerciseConversation exerciseConversation);
-
-
     List<ExercisesOverviewOutputDTO> exercisesToExerciseOverviewOutputDTOs(List<Exercise> exercises);
     Exercise exerciseInputDTOToExercise(ExerciseInputDTO exerciseInputDTO);
 

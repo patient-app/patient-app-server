@@ -15,7 +15,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -1499,6 +1502,112 @@ class ExerciseServiceTest {
         );
 
         assertEquals("No exercise completion information found with ID: " + execId, ex.getMessage());
+    }
+
+    @Test
+    void getExercisesForDashboard_shouldFilterAndMapCorrectly() {
+        // Given
+        Patient patient = new Patient();
+        patient.setId("p1");
+
+        ExerciseCompletionInformation info = new ExerciseCompletionInformation();
+        Instant latestCompletion = Instant.now().minus(10, ChronoUnit.DAYS);
+        info.setEndTime(latestCompletion);
+
+        Exercise exercise = new Exercise();
+        exercise.setPatient(patient);
+        exercise.setDoEveryNDays(7);
+        exercise.setExerciseCompletionInformation(List.of(info));
+
+        List<Exercise> activeExercises = List.of(exercise);
+        when(exerciseRepository.findAllActiveExercisesWithinTime(any())).thenReturn(activeExercises);
+
+        ExercisesOverviewOutputDTO dto = new ExercisesOverviewOutputDTO();
+        when(exerciseMapper.exercisesToExerciseOverviewOutputDTOs(anyList())).thenReturn(List.of(dto));
+
+        // When
+        List<ExercisesOverviewOutputDTO> result = exerciseService.getExercisesForDashboard(patient);
+
+        // Then
+        assertEquals(1, result.size());
+        verify(authorizationService).checkExerciseAccess(eq(exercise), eq(patient), anyString());
+        verify(exerciseMapper).exercisesToExerciseOverviewOutputDTOs(anyList());
+    }
+
+    @Test
+    void getExercisesForDashboard_shouldReturnEmpty_whenNoCandidates() {
+        when(exerciseRepository.findAllActiveExercisesWithinTime(any())).thenReturn(Collections.emptyList());
+
+        List<ExercisesOverviewOutputDTO> result = exerciseService.getExercisesForDashboard(new Patient());
+
+        assertTrue(result.isEmpty());
+        verifyNoInteractions(authorizationService);
+        verifyNoInteractions(exerciseMapper);
+    }
+
+    @Test
+    void getExercisesForDashboard_shouldIncludeExercise_whenCompletionsAreNullOrEmpty() {
+        // Arrange
+        Patient patient = new Patient();
+        patient.setId("p1");
+
+        Exercise exerciseWithNullCompletions = new Exercise();
+        exerciseWithNullCompletions.setPatient(patient);
+        exerciseWithNullCompletions.setDoEveryNDays(7);
+        exerciseWithNullCompletions.setExerciseCompletionInformation(null);
+
+        Exercise exerciseWithEmptyCompletions = new Exercise();
+        exerciseWithEmptyCompletions.setPatient(patient);
+        exerciseWithEmptyCompletions.setDoEveryNDays(7);
+        exerciseWithEmptyCompletions.setExerciseCompletionInformation(Collections.emptyList());
+
+        List<Exercise> activeExercises = List.of(exerciseWithNullCompletions, exerciseWithEmptyCompletions);
+        when(exerciseRepository.findAllActiveExercisesWithinTime(any())).thenReturn(activeExercises);
+
+        // Stub authorization and mapping
+        doNothing().when(authorizationService).checkExerciseAccess(any(), any(), anyString());
+
+        List<ExercisesOverviewOutputDTO> mappedDTOs = List.of(new ExercisesOverviewOutputDTO(), new ExercisesOverviewOutputDTO());
+        when(exerciseMapper.exercisesToExerciseOverviewOutputDTOs(anyList())).thenReturn(mappedDTOs);
+
+        // Act
+        List<ExercisesOverviewOutputDTO> result = exerciseService.getExercisesForDashboard(patient);
+
+        // Assert
+        assertEquals(2, result.size()); // Both exercises should be included
+        verify(authorizationService).checkExerciseAccess(eq(exerciseWithNullCompletions), eq(patient), anyString());
+        verify(exerciseMapper).exercisesToExerciseOverviewOutputDTOs(anyList());
+    }
+
+    @Test
+    void getExercisesForDashboard_shouldIncludeExercise_whenLatestCompletionHasNullEndTime() {
+        // Arrange
+        Patient patient = new Patient();
+        patient.setId("p1");
+
+        Exercise exercise = new Exercise();
+        exercise.setPatient(patient);
+        exercise.setDoEveryNDays(7);
+
+        ExerciseCompletionInformation incomplete = new ExerciseCompletionInformation();
+        incomplete.setEndTime(null); // <-- Important: endTime is null
+
+        exercise.setExerciseCompletionInformation(List.of(incomplete));
+
+        when(exerciseRepository.findAllActiveExercisesWithinTime(any())).thenReturn(List.of(exercise));
+
+        doNothing().when(authorizationService).checkExerciseAccess(any(), any(), anyString());
+
+        List<ExercisesOverviewOutputDTO> mappedDTOs = List.of(new ExercisesOverviewOutputDTO());
+        when(exerciseMapper.exercisesToExerciseOverviewOutputDTOs(anyList())).thenReturn(mappedDTOs);
+
+        // Act
+        List<ExercisesOverviewOutputDTO> result = exerciseService.getExercisesForDashboard(patient);
+
+        // Assert
+        assertEquals(1, result.size()); // Should include this exercise
+        verify(authorizationService).checkExerciseAccess(eq(exercise), eq(patient), anyString());
+        verify(exerciseMapper).exercisesToExerciseOverviewOutputDTOs(anyList());
     }
 
 
