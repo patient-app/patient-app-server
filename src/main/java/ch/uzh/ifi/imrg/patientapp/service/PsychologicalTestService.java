@@ -62,7 +62,7 @@ public class PsychologicalTestService {
         psychologicalTestsAssignmentRepository.save(psychologicalTestAssignment);
     }
 
-    public void createPsychologicalTest(Patient loggedInPatient, PsychologicalTestInputDTO psychologicalTestInputDTO) {
+    public void createPsychologicalTest(Patient loggedInPatient, PsychologicalTestInputDTO psychologicalTestInputDTO) throws Exception {
         PsychologicalTest psychologicalTest = PsychologicalTestMapper.INSTANCE.convertPsychologicalTestInputDTOToPsychologicalTest(psychologicalTestInputDTO);
 
         psychologicalTest.setPatient(loggedInPatient);
@@ -73,8 +73,15 @@ public class PsychologicalTestService {
                 question.setPsychologicalTest(psychologicalTest);
             }
         }
+        PsychologicalTestAssignment psychologicalTestAssignment = psychologicalTestsAssignmentRepository.findByPatientIdAndTestName(loggedInPatient.getId(), psychologicalTestInputDTO.getName());
+        if (psychologicalTestAssignment == null) {
+            throw new Exception("No psychological test assignment found for the given patient and test name.");
+        }
 
         psychologicalTestRepository.save(psychologicalTest);
+        psychologicalTestAssignment.setLastCompletedAt(Instant.now());
+        psychologicalTestsAssignmentRepository.save(psychologicalTestAssignment);
+
     }
 
     public List<PsychologicalTestNameOutputDTO> getAllTestNamesForPatientForCoach(String patientId) {

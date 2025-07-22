@@ -27,7 +27,7 @@ public class PsychologicalTestController {
 
     @PostMapping("/patients/tests")
     @ResponseStatus(HttpStatus.CREATED)
-    public void createPsychologicalTest(HttpServletRequest httpServletRequest, @RequestBody PsychologicalTestInputDTO psychologicalTestInputDTO) {
+    public void createPsychologicalTest(HttpServletRequest httpServletRequest, @RequestBody PsychologicalTestInputDTO psychologicalTestInputDTO) throws Exception {
         Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
         psychologicalTestService.createPsychologicalTest(loggedInPatient, psychologicalTestInputDTO);
     }

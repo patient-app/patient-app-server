@@ -7,5 +7,5 @@ import lombok.Setter;
 @Setter
 public class PsychologicalTestsOverviewOutputDTO {
     private String id;
-    private String name;
+    private String testName;
 }

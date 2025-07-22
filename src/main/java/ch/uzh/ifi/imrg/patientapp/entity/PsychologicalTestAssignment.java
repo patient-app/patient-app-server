@@ -11,7 +11,8 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity
-@Table(name = "psychological_test_assignments")
+@Table(name = "psychological_test_assignments",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"patient_id", "test_name"}))
 public class PsychologicalTestAssignment {
 
     @Id
@@ -21,7 +22,7 @@ public class PsychologicalTestAssignment {
     @JoinColumn(name = "patient_id", nullable = false)
     private Patient patient;
 
-    @Column(name = "test_name", nullable = false,  unique = true)
+    @Column(name = "test_name", nullable = false)
     private String testName;
 
     @Column(name = "exercise_start")
