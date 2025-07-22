@@ -19,8 +19,8 @@ import lombok.Setter;
 public class Meeting {
 
     @Id
-    @Column
-    private String id = UUID.randomUUID().toString();
+    @Column(unique = true)
+    private String id;
 
     @Column(name = "created_at", updatable = false)
     @CreationTimestamp
