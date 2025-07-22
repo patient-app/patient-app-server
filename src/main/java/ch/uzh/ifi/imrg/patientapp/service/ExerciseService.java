@@ -5,22 +5,21 @@ import ch.uzh.ifi.imrg.patientapp.entity.ChatbotTemplate;
 import ch.uzh.ifi.imrg.patientapp.entity.Exercise.*;
 import ch.uzh.ifi.imrg.patientapp.entity.ExerciseConversation;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
+import ch.uzh.ifi.imrg.patientapp.entity.PsychologicalTestAssignment;
 import ch.uzh.ifi.imrg.patientapp.repository.*;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.*;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestsOverviewOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.*;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.ExerciseComponentMapper;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.ExerciseMapper;
 import ch.uzh.ifi.imrg.patientapp.service.aiService.PromptBuilderService;
 import jakarta.transaction.Transactional;
-import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static java.awt.SystemColor.info;
 
 @Service
 @Transactional
@@ -325,7 +324,7 @@ public class ExerciseService {
     }
 
 
-    public List<ExercisesOverviewOutputDTO> getExercisesToShow(Patient patient){
+    public List<ExercisesOverviewOutputDTO> getExercisesForDashboard(Patient patient){
         Instant now = Instant.now();
 
         List<Exercise> candidates = exerciseRepository.findAllActiveExercisesWithinTime(now);
@@ -352,7 +351,7 @@ public class ExerciseService {
                     Instant dueDate = latest.getEndTime().plus(e.getDoEveryNDays(), ChronoUnit.DAYS);
                     Instant threshold = dueDate.minus(24, ChronoUnit.HOURS);
 
-                    return now.isAfter(threshold) && now.isBefore(dueDate.plus(1, ChronoUnit.DAYS));
+                    return now.isAfter(threshold);
                 })
                 .toList();
 

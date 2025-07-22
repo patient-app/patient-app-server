@@ -1,11 +1,13 @@
 package ch.uzh.ifi.imrg.patientapp.rest.mapper;
 
 import ch.uzh.ifi.imrg.patientapp.entity.PsychologicalTest;
+import ch.uzh.ifi.imrg.patientapp.entity.PsychologicalTestAssignment;
 import ch.uzh.ifi.imrg.patientapp.entity.PsychologicalTestQuestions;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PsychologicalTestInputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PsychologicalTestQuestionInputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestQuestionOutputDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestsOverviewOutputDTO;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
@@ -29,4 +31,7 @@ public interface PsychologicalTestMapper {
     PsychologicalTestQuestionOutputDTO convertPsychologicalTestQuestionToPsychologicalTestQuestionOutputDTO(PsychologicalTestQuestions entity);
     List<PsychologicalTestQuestionOutputDTO> convertPsychologicalTestQuestionsToPsychologicalTestQuestionOutputDTOs(List<PsychologicalTestQuestions> entities);
 
+
+    PsychologicalTestsOverviewOutputDTO convertEntityToPsychologicalTestAssignmentOverviewDTO(PsychologicalTestAssignment assignment);
+    List<PsychologicalTestsOverviewOutputDTO> convertEntityToPsychologicalTestAssignmentOverviewDTOs(List<PsychologicalTestAssignment> assignments);
 }
