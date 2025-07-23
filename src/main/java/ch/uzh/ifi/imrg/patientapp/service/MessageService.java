@@ -24,12 +24,16 @@ public class MessageService {
     private final PromptBuilderService promptBuilderService;
     private final AuthorizationService authorizationService;
 
+    private final EmailService emailService;
+
     public MessageService(MessageRepository messageRepository, ConversationRepository conversationRepository,
-            PromptBuilderService promptBuilderService, AuthorizationService authorizationService) {
+            PromptBuilderService promptBuilderService, AuthorizationService authorizationService,
+            EmailService emailService) {
         this.messageRepository = messageRepository;
         this.conversationRepository = conversationRepository;
         this.promptBuilderService = promptBuilderService;
         this.authorizationService = authorizationService;
+        this.emailService = emailService;
     }
 
     static List<Map<String, String>> parseMessagesFromConversation(Conversation conversation,
@@ -89,10 +93,13 @@ public class MessageService {
         newMessage.setRequest(CryptographyUtil.encrypt(message, key));
 
         String harm = promptBuilderService.getHarmRating(message);
-        // toDo add sending email to therapeut if harmful content is detected
 
         if (harm.equals("true")) {
             System.out.println("Message contains harmful content.");
+            String coachEmail = patient.getCoachEmail();
+            if (coachEmail != null) {
+                notifyCoach(coachEmail);
+            }
         }
 
         List<Map<String, String>> priorMessages = parseMessagesFromConversation(conversation, key);
@@ -153,5 +160,24 @@ public class MessageService {
         List<Map<String, String>> messages = parseMessages(messagesList, key);
 
         return promptBuilderService.getSummary(messages, "");
+    }
+
+    private void notifyCoach(String coachEmail) {
+        String subject = "[PatientApp] Alert: Potential harmful content detected\n"
+                + "[PatientApp] Увага: виявлено потенційно шкідливий контент";
+
+        String body = String.join("\n",
+                // English
+                "An incoming message from one of your patients may contain harmful content or intent.",
+                "Please log in to the TherapistApp to review the conversation and take any necessary action.",
+                "",
+                // Ukrainian
+                "Повідомлення від одного з ваших пацієнтів може містити потенційно шкідливий вміст або наміри.",
+                "Будь ласка, увійдіть у TherapistApp, щоб переглянути переписку та вжити необхідних заходів.",
+                "",
+                "— Lumina Team",
+                "— Команда Lumina");
+
+        emailService.sendSimpleMessage(coachEmail, subject, body);
     }
 }
