@@ -80,6 +80,9 @@ public class Patient implements Serializable {
     @Column(name = "coach_access_key", nullable = false)
     private String coachAccessKey;
 
+    @Column(name = "coach_email", nullable = true)
+    private String coachEmail;
+
     @Column(name = "chat_bot_avatar", nullable = true)
     private ChatBotAvatar chatBotAvatar = ChatBotAvatar.NONE;
 

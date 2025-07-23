@@ -6,6 +6,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreatePatientDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.UpdateCoachEmailDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PatientOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.PatientMapper;
 import ch.uzh.ifi.imrg.patientapp.service.PatientService;
@@ -52,5 +53,12 @@ public class CoachPatientController {
     @SecurityRequirement(name = "X-Coach-Key")
     public void deletePatient(@PathVariable String patientId) {
         patientService.removePatient(patientId);
+    }
+
+    @PutMapping("/coach/patients/{patientId}/coach-email")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @SecurityRequirement(name = "X-Coach-Key")
+    public void setCoachEmail(@RequestBody UpdateCoachEmailDTO dto, @PathVariable String patientId) {
+        patientService.updateCoachEmail(patientId, dto.getCoachEmail());
     }
 }

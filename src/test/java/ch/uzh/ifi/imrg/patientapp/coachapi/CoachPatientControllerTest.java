@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -27,7 +28,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreatePatientDTO;
-
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.UpdateCoachEmailDTO;
 import ch.uzh.ifi.imrg.patientapp.service.PatientService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -97,5 +98,26 @@ class CoachPatientControllerTest {
                                 .andExpect(status().isNoContent());
 
                 verify(patientService).removePatient(patientId);
+        }
+
+        @Test
+        void setCoachEmail_shouldReturnNoContentAndInvokeService() throws Exception {
+                String patientId = "p1";
+
+                // prepare DTO
+                UpdateCoachEmailDTO dto = new UpdateCoachEmailDTO();
+                dto.setCoachEmail("coach@example.com");
+
+                // stub service
+                doNothing().when(patientService).updateCoachEmail(patientId, dto.getCoachEmail());
+
+                // exercise endpoint
+                mockMvc.perform(put("/coach/patients/{patientId}/coach-email", patientId)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(dto)))
+                                .andExpect(status().isNoContent());
+
+                // verify service call
+                verify(patientService).updateCoachEmail(patientId, dto.getCoachEmail());
         }
 }

@@ -193,4 +193,16 @@ public class PatientService {
         emailService.sendSimpleMessage(patient.getEmail(), subject, body);
     }
 
+    public void updateCoachEmail(String patientId, String coachEmail) {
+
+        Patient patient = patientRepository.getPatientById(patientId);
+
+        if (patient == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Patient not found");
+        }
+
+        patient.setCoachEmail(coachEmail);
+        patientRepository.save(patient);
+    }
+
 }

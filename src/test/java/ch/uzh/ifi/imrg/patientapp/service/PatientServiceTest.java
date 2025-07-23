@@ -420,4 +420,37 @@ public class PatientServiceTest {
                 () -> patientService.resetPasswordAndNotify(EMAIL));
         assertTrue(ex.getMessage().contains("No patient found with email: " + EMAIL));
     }
+
+    @Test
+    void updateCoachEmail_shouldSetEmailAndSave_whenPatientExists() {
+        // Arrange
+        String patientId = "p123";
+        String newCoachEmail = "coach@lumina.com";
+        Patient patient = new Patient();
+        patient.setId(patientId);
+        patient.setCoachEmail("old@lumina.com");
+
+        when(patientRepository.getPatientById(patientId)).thenReturn(patient);
+
+        // Act
+        patientService.updateCoachEmail(patientId, newCoachEmail);
+
+        // Assert
+        assertEquals(newCoachEmail, patient.getCoachEmail(), "Coach email should be updated on the entity");
+        verify(patientRepository).save(patient);
+    }
+
+    @Test
+    void updateCoachEmail_shouldThrowNotFound_whenPatientDoesNotExist() {
+        // Arrange
+        String patientId = "unknown";
+        when(patientRepository.getPatientById(patientId)).thenReturn(null);
+
+        // Act & Assert
+        ResponseStatusException ex = assertThrows(
+                ResponseStatusException.class,
+                () -> patientService.updateCoachEmail(patientId, "any@coach.com"));
+        assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode(), "Should return 404 when patient is missing");
+        assertTrue(ex.getReason().contains("Patient not found"), "Exception reason should mention 'Patient not found'");
+    }
 }
