@@ -17,9 +17,6 @@ import ch.uzh.ifi.imrg.patientapp.utils.PasswordUtil;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.Valid;
-
-import static ch.uzh.ifi.imrg.patientapp.utils.CryptographyUtil.decrypt;
 
 import java.util.UUID;
 
@@ -188,6 +185,18 @@ public class PatientService {
         }
 
         emailService.sendSimpleMessage(patient.getEmail(), subject, body);
+    }
+
+    public void updateCoachEmail(String patientId, String coachEmail) {
+
+        Patient patient = patientRepository.getPatientById(patientId);
+
+        if (patient == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Patient not found");
+        }
+
+        patient.setCoachEmail(coachEmail);
+        patientRepository.save(patient);
     }
 
 }

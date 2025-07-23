@@ -21,6 +21,8 @@ public class CreatePatientDTO {
     @NotBlank
     private String coachAccessKey;
 
+    private String coachEmail;
+
     public CreatePatientDTO() {
     }
 
