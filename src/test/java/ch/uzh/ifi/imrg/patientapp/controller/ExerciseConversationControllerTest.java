@@ -1,14 +1,13 @@
 package ch.uzh.ifi.imrg.patientapp.controller;
 
-import ch.uzh.ifi.imrg.patientapp.entity.ExerciseConversation;
-import ch.uzh.ifi.imrg.patientapp.entity.GeneralConversation;
-import ch.uzh.ifi.imrg.patientapp.entity.Message;
-import ch.uzh.ifi.imrg.patientapp.entity.Patient;
+import ch.uzh.ifi.imrg.patientapp.constant.LogTypes;
+import ch.uzh.ifi.imrg.patientapp.entity.*;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreateMessageDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.CompleteConversationOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.MessageOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.CompleteExerciseConversationOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.service.ConversationService;
+import ch.uzh.ifi.imrg.patientapp.service.LogService;
 import ch.uzh.ifi.imrg.patientapp.service.MessageService;
 import ch.uzh.ifi.imrg.patientapp.service.PatientService;
 import ch.uzh.ifi.imrg.patientapp.utils.CryptographyUtil;
@@ -36,6 +35,9 @@ class ExerciseConversationControllerTest {
     @Mock
     private ConversationService conversationService;
 
+    @Mock
+    private LogService logService;
+
     @InjectMocks
     private ExerciseConversationController controller;
 
@@ -50,12 +52,17 @@ class ExerciseConversationControllerTest {
         Patient patient = new Patient();
         patient.setId("p123");
 
+        Conversation conversation = new GeneralConversation();
+        conversation.setId(conversationId);
+
         Message message = new Message();
         message.setRequest("Hello Exercise");
         message.setResponse("Hi there!");
+        message.setConversation(conversation); // <- important fix
 
         when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
         when(messageService.generateAnswer(patient, conversationId, "Hello Exercise")).thenReturn(message);
+        doNothing().when(logService).createLog(nullable(String.class), any(LogTypes.class), anyString());
 
         // Act
         MessageOutputDTO result = controller.sendMessage(request, createMessageDTO, conversationId);
@@ -67,6 +74,7 @@ class ExerciseConversationControllerTest {
         verify(messageService).generateAnswer(patient, conversationId, "Hello Exercise");
         verifyNoMoreInteractions(patientService, messageService, conversationService);
     }
+
 
     @Test
     void testGetAllMessages_ReturnsCompleteConversationOutputDTO() {

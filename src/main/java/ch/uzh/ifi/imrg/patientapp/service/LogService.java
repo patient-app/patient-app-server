@@ -11,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -29,8 +28,6 @@ public class LogService {
         log.setLogType(logType);
         log.setTimestamp(Instant.now());
         log.setUniqueIdentifier(uniqueIdentifier);
-
-        // Assuming there's a repository to save the log
         logRepository.save(log);
     }
 

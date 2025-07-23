@@ -1,5 +1,6 @@
 package ch.uzh.ifi.imrg.patientapp.service;
 
+import ch.uzh.ifi.imrg.patientapp.constant.LogTypes;
 import ch.uzh.ifi.imrg.patientapp.entity.*;
 import ch.uzh.ifi.imrg.patientapp.repository.ChatbotTemplateRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.ConversationRepository;
@@ -40,6 +41,9 @@ public class ConversationServiceTest {
 
         @Mock
         private PromptBuilderService promptBuilderService;
+
+        @Mock
+        private LogService logService;
 
         @InjectMocks
         private ConversationService conversationService;
@@ -252,7 +256,7 @@ public class ConversationServiceTest {
 
                 when(conversationRepository.findById(conversationId))
                                 .thenReturn(Optional.of(conversation));
-
+                doNothing().when(logService).createLog(nullable(String.class), any(LogTypes.class), anyString());
                 // Act
                 conversationService.setConversationName(dto, conversationId, patient);
 

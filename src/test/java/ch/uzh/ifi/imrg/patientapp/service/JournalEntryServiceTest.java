@@ -8,6 +8,7 @@ import java.lang.reflect.Method;
 import java.time.Instant;
 import java.util.*;
 
+import ch.uzh.ifi.imrg.patientapp.constant.LogTypes;
 import ch.uzh.ifi.imrg.patientapp.entity.ChatbotTemplate;
 import ch.uzh.ifi.imrg.patientapp.entity.JournalEntry;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
@@ -43,6 +44,9 @@ public class JournalEntryServiceTest {
 
     @Mock
     private PromptBuilderService promptBuilderService;
+
+    @Mock
+    private LogService logService;
 
     @InjectMocks
     private JournalEntryService service;
@@ -216,6 +220,8 @@ public class JournalEntryServiceTest {
         updated.setContent("encNewC");
         updated.setTags(Set.of("encTag1"));
         when(repo.saveAndFlush(entry)).thenReturn(updated);
+
+        doNothing().when(logService).createLog(anyString(), any(LogTypes.class), anyString());
 
         try (MockedStatic<CryptographyUtil> crypto = mockStatic(CryptographyUtil.class)) {
             crypto.when(() -> CryptographyUtil.decrypt("encKey")).thenReturn("rawKey");
