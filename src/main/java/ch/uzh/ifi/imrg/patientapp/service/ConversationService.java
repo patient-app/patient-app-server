@@ -85,7 +85,7 @@ public class ConversationService {
                 "You can't set the name of a chat of a different user.");
         ConversationMapper.INSTANCE.updateConversationFromPutConversationNameDTO(putConversationNameDTO, conversation);
         conversationRepository.save(conversation);
-        logService.createLog(loggedInPatient.getId(), LogTypes.GENERAL_CONVERSATION_NAME_UPDATE, conversation.getId());
+        logService.createLog(loggedInPatient.getId(), LogTypes.GENERAL_CONVERSATION_NAME_UPDATE, conversation.getId(),"");
     }
 
     public Conversation getAllMessagesFromConversation(String conversationId, Patient patient) {

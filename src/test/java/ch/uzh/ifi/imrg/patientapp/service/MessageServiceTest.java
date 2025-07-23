@@ -646,7 +646,7 @@ public class MessageServiceTest {
                         // Mock getting response
                         when(promptBuilderService.getResponse(anyList(), eq(inputMessage), eq("system-prompt")))
                                         .thenReturn(mockAnswer);
-                        doNothing().when(logService).createLog(nullable(String.class), eq(LogTypes.HARMFUL_CONTENT_DETECTED), eq(conversationId), eq("Potentially harmful message: \"I want to hurt myself.\""));
+                        lenient().doNothing().when(logService).createLog(nullable(String.class), eq(LogTypes.HARMFUL_CONTENT_DETECTED), eq(conversationId), eq("Potentially harmful message: \"I want to hurt myself.\""));
                         // Act
                         Message result = messageService.generateAnswer(patient, conversationId, inputMessage);
 

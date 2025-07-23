@@ -97,7 +97,7 @@ public class MessageService {
 
         if (harm.equals("true")) {
             System.out.println("Message contains harmful content.");
-            logService.createLog(patient.getId(), LogTypes.HARMFUL_CONTENT_DETECTED, conversationId);
+            logService.createLog(patient.getId(), LogTypes.HARMFUL_CONTENT_DETECTED, conversationId,"");
             String coachEmail = patient.getCoachEmail();
             if (coachEmail != null) {
                 notifyCoach(coachEmail);
