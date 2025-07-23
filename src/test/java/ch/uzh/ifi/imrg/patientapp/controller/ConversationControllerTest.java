@@ -1,5 +1,7 @@
 package ch.uzh.ifi.imrg.patientapp.controller;
 
+import ch.uzh.ifi.imrg.patientapp.constant.LogTypes;
+import ch.uzh.ifi.imrg.patientapp.entity.Conversation;
 import ch.uzh.ifi.imrg.patientapp.entity.GeneralConversation;
 import ch.uzh.ifi.imrg.patientapp.entity.Message;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
@@ -48,6 +50,9 @@ public class ConversationControllerTest {
     @Mock
     private HttpServletRequest request;
 
+    @Mock
+    private LogService logService;
+
 
     @Test
     void createConversation_shouldReturnOutputDTO() {
@@ -71,17 +76,24 @@ public class ConversationControllerTest {
         CreateMessageDTO dto = new CreateMessageDTO();
         dto.setMessage("Hello");
 
+        Conversation conversation = new GeneralConversation();
+        conversation.setId("cid123");
+
         Message message = new Message();
         message.setRequest("Hello");
         message.setResponse("Hi!");
+        message.setConversation(conversation); // <-- Fix: set conversation
 
         when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
         when(messageService.generateAnswer(patient, "cid123", "Hello")).thenReturn(message);
+        doNothing().when(logService).createLog(nullable(String.class), any(LogTypes.class), anyString());
 
         MessageOutputDTO result = conversationController.sendMessage(request, dto, "cid123");
+
         assertEquals("Hello", result.getRequestMessage());
         assertEquals("Hi!", result.getResponseMessage());
     }
+
 
     @Test
     void getAllMessages_shouldReturnDecryptedMessages() {

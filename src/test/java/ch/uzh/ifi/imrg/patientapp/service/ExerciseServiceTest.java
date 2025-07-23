@@ -1,5 +1,6 @@
 package ch.uzh.ifi.imrg.patientapp.service;
 
+import ch.uzh.ifi.imrg.patientapp.constant.LogTypes;
 import ch.uzh.ifi.imrg.patientapp.entity.ChatbotTemplate;
 import ch.uzh.ifi.imrg.patientapp.entity.Exercise.*;
 import ch.uzh.ifi.imrg.patientapp.entity.ExerciseConversation;
@@ -53,6 +54,9 @@ class ExerciseServiceTest {
 
     @Mock
     private AuthorizationService authorizationService;
+
+    @Mock
+    private LogService logService;
 
     @InjectMocks
     private ExerciseService exerciseService;
@@ -1336,8 +1340,7 @@ class ExerciseServiceTest {
         when(exerciseRepository.getExerciseById(exerciseId)).thenReturn(exercise);
         doNothing().when(authorizationService).checkExerciseAccess(eq(exercise), eq(patient), anyString());
         when(exerciseInformationRepository.findById(execId)).thenReturn(Optional.of(completionInfo));
-
-        // Act
+        doNothing().when(logService).createLog(anyString(), any(LogTypes.class), anyString());        // Act
         exerciseService.setExerciseComponentResult(patient, exerciseId, dto, componentId);
 
         // Assert
@@ -1369,8 +1372,8 @@ class ExerciseServiceTest {
         when(exerciseRepository.getExerciseById(exerciseId)).thenReturn(exercise);
         doNothing().when(authorizationService).checkExerciseAccess(eq(exercise), eq(patient), anyString());
         when(exerciseInformationRepository.findById(execId)).thenReturn(Optional.of(completionInfo));
+        doNothing().when(logService).createLog(anyString(), any(LogTypes.class), anyString());        // Act
 
-        // Act
         exerciseService.setExerciseComponentResult(patient, exerciseId, dto, componentId);
 
         // Assert

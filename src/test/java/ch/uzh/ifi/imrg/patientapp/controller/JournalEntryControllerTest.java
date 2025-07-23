@@ -1,7 +1,6 @@
 package ch.uzh.ifi.imrg.patientapp.controller;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -11,6 +10,8 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 
+import ch.uzh.ifi.imrg.patientapp.constant.LogTypes;
+import ch.uzh.ifi.imrg.patientapp.service.LogService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -55,6 +56,9 @@ public class JournalEntryControllerTest {
         @Mock
         private HttpServletRequest request;
 
+        @Mock
+        private LogService logService;
+
         @InjectMocks
         private JournalEntryController controller;
 
@@ -94,7 +98,7 @@ public class JournalEntryControllerTest {
 
                 when(journalEntryService.createEntry(any(JournalEntryRequestDTO.class), any(Patient.class)))
                                 .thenReturn(outDto);
-
+                doNothing().when(logService).createLog(nullable(String.class), any(LogTypes.class), anyString());
                 // Act & Assert
                 mockMvc.perform(post("/patients/journal-entries")
                                 .contentType(MediaType.APPLICATION_JSON)
