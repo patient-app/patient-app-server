@@ -86,7 +86,7 @@ public class ConversationControllerTest {
 
         when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
         when(messageService.generateAnswer(patient, "cid123", "Hello")).thenReturn(message);
-        doNothing().when(logService).createLog(nullable(String.class), any(LogTypes.class), anyString());
+        doNothing().when(logService).createLog(nullable(String.class), any(LogTypes.class), anyString(), eq(""));
 
         MessageOutputDTO result = conversationController.sendMessage(request, dto, "cid123");
 

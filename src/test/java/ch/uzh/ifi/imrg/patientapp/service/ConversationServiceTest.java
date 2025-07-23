@@ -256,7 +256,7 @@ public class ConversationServiceTest {
 
                 when(conversationRepository.findById(conversationId))
                                 .thenReturn(Optional.of(conversation));
-                doNothing().when(logService).createLog(nullable(String.class), any(LogTypes.class), anyString());
+                doNothing().when(logService).createLog(nullable(String.class), any(LogTypes.class), anyString(),eq(""));
                 // Act
                 conversationService.setConversationName(dto, conversationId, patient);
 

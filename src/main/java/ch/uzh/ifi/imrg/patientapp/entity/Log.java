@@ -23,5 +23,6 @@ public class Log {
     private LogTypes logType;
 
     private Instant timestamp;
-    private String uniqueIdentifier;
+    private String associatedEntityId;
+    private String comment;
 }

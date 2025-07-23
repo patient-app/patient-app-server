@@ -98,7 +98,7 @@ public class JournalEntryControllerTest {
 
                 when(journalEntryService.createEntry(any(JournalEntryRequestDTO.class), any(Patient.class)))
                                 .thenReturn(outDto);
-                doNothing().when(logService).createLog(nullable(String.class), any(LogTypes.class), anyString());
+                doNothing().when(logService).createLog(nullable(String.class), any(LogTypes.class), anyString(), eq(""));
                 // Act & Assert
                 mockMvc.perform(post("/patients/journal-entries")
                                 .contentType(MediaType.APPLICATION_JSON)

@@ -85,7 +85,7 @@ public class PsychologicalTestService {
         psychologicalTestAssignment.setLastCompletedAt(Instant.now());
         psychologicalTestsAssignmentRepository.save(psychologicalTestAssignment);
 
-        logService.createLog(loggedInPatient.getId(), LogTypes.PSYCHOLOGICAL_TEST_COMPLETED, psychologicalTest.getName());
+        logService.createLog(loggedInPatient.getId(), LogTypes.PSYCHOLOGICAL_TEST_COMPLETED, psychologicalTest.getName(),"" );
     }
 
     public List<PsychologicalTestNameOutputDTO> getAllTestNamesForPatientForCoach(String patientId) {

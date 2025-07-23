@@ -57,7 +57,7 @@ public class JournalEntryConversationController {
 
                 Message answeredMessage = messageService.generateAnswer(loggedInPatient, conversationId,
                                 createJournalMessageDTO.getMessage());
-                logService.createLog(loggedInPatient.getId(), LogTypes.JOURNAL_CONVERSATION_MESSAGE_CREATION, conversationId);
+                logService.createLog(loggedInPatient.getId(), LogTypes.JOURNAL_CONVERSATION_MESSAGE_CREATION, conversationId, "");
                 return MessageMapper.INSTANCE.convertEntityToMessageOutputDTO(answeredMessage);
         }
 
