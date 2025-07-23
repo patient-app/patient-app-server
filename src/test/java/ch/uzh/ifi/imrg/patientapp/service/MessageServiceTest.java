@@ -599,7 +599,6 @@ public class MessageServiceTest {
                         assertEquals("A2", result.get(1).get("content"));
                 }
         }
-
         @Test
         void generateAnswer_shouldLogWhenHarmfulContentDetected() {
                 // Arrange
