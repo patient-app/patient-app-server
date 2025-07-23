@@ -2,6 +2,8 @@ package ch.uzh.ifi.imrg.patientapp.controller;
 
 import java.util.ArrayList;
 
+import ch.uzh.ifi.imrg.patientapp.constant.LogTypes;
+import ch.uzh.ifi.imrg.patientapp.service.LogService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,12 +34,14 @@ public class DocumentConversationController {
     private final PatientService patientService;
     private final MessageService messageService;
     private final ConversationService conversationService;
+    private final LogService logService;
 
     public DocumentConversationController(PatientService patientService, MessageService messageService,
-            ConversationService conversationService) {
+                                          ConversationService conversationService, LogService logService) {
         this.patientService = patientService;
         this.messageService = messageService;
         this.conversationService = conversationService;
+        this.logService = logService;
     }
 
     @PostMapping("/patients/document-conversation/{conversationId}/messages")
@@ -48,6 +52,7 @@ public class DocumentConversationController {
         Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
         Message answeredMessage = messageService.generateAnswer(loggedInPatient, conversationId,
                 createMessageDTO.getMessage());
+        logService.createLog(loggedInPatient.getId(), LogTypes.DOCUMENT_CONVERSATION_MESSAGE_CREATION,conversationId);
         return MessageMapper.INSTANCE.convertEntityToMessageOutputDTO(answeredMessage);
     }
 

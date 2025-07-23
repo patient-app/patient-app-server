@@ -2,7 +2,7 @@ package ch.uzh.ifi.imrg.patientapp.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
@@ -16,6 +16,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.time.Instant;
 
+import ch.uzh.ifi.imrg.patientapp.service.LogService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -53,8 +54,9 @@ public class JournalEntryConversationControllerTest {
     private MessageService messageService;
     @Mock
     private ConversationService conversationService;
+
     @Mock
-    private HttpServletRequest request;
+    private LogService logService;
 
     @InjectMocks
     private JournalEntryConversationController controller;
@@ -99,6 +101,7 @@ public class JournalEntryConversationControllerTest {
 
         when(messageService.generateAnswer(mockPatient, "conv1", "Hello"))
                 .thenReturn(msg);
+        doNothing().when(logService).createLog(nullable(String.class), any(), anyString());
 
         // Act & Assert
         mockMvc.perform(post("/patients/journal-entry-conversation/conv1/messages")

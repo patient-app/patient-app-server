@@ -15,7 +15,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "meetings", indexes = @Index(name = "idx_meeting_external", columnList = "external_meeting_id"))
+@Table(name = "meetings")
 public class Meeting {
 
     @Id

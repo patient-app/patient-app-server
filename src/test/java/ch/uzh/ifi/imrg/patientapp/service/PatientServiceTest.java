@@ -1,5 +1,6 @@
 package ch.uzh.ifi.imrg.patientapp.service;
 
+import ch.uzh.ifi.imrg.patientapp.constant.LogTypes;
 import ch.uzh.ifi.imrg.patientapp.entity.GeneralConversation;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.repository.PatientRepository;
@@ -37,6 +38,9 @@ public class PatientServiceTest {
 
     @Mock
     HttpServletResponse response;
+
+    @Mock
+    LogService logService;
 
     @Mock
     private EmailService emailService;

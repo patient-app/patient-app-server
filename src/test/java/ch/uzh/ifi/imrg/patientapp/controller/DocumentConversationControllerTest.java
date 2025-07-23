@@ -1,12 +1,16 @@
 package ch.uzh.ifi.imrg.patientapp.controller;
 
+import ch.uzh.ifi.imrg.patientapp.constant.LogTypes;
+import ch.uzh.ifi.imrg.patientapp.entity.Conversation;
 import ch.uzh.ifi.imrg.patientapp.entity.Document.DocumentConversation;
+import ch.uzh.ifi.imrg.patientapp.entity.GeneralConversation;
 import ch.uzh.ifi.imrg.patientapp.entity.Message;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreateMessageDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.MessageOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.document.DocumentConversationOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.service.ConversationService;
+import ch.uzh.ifi.imrg.patientapp.service.LogService;
 import ch.uzh.ifi.imrg.patientapp.service.MessageService;
 import ch.uzh.ifi.imrg.patientapp.service.PatientService;
 import ch.uzh.ifi.imrg.patientapp.utils.CryptographyUtil;
@@ -33,6 +37,9 @@ class DocumentConversationControllerTest {
     @Mock
     private ConversationService conversationService;
 
+    @Mock
+    private LogService logService;
+
     @InjectMocks
     private DocumentConversationController controller;
 
@@ -48,13 +55,18 @@ class DocumentConversationControllerTest {
         Patient patient = new Patient();
         patient.setId("p123");
 
+        Conversation conversation = new GeneralConversation();
+        conversation.setId(conversationId); // Fix: mock the conversation
+
         Message answered = new Message();
         answered.setRequest("Hello Doc");
         answered.setResponse("Doc says hi");
+        answered.setConversation(conversation); // Fix: set the conversation on the message
 
         when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
         when(messageService.generateAnswer(patient, conversationId, "Hello Doc"))
                 .thenReturn(answered);
+        doNothing().when(logService).createLog(nullable(String.class), any(LogTypes.class), anyString());
 
         // Act
         MessageOutputDTO result = controller.sendMessage(request, createDto, conversationId);

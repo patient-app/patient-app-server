@@ -1,5 +1,6 @@
 package ch.uzh.ifi.imrg.patientapp.service;
 
+import ch.uzh.ifi.imrg.patientapp.constant.LogTypes;
 import ch.uzh.ifi.imrg.patientapp.entity.GeneralConversation;
 import ch.uzh.ifi.imrg.patientapp.utils.CryptographyUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,14 +27,16 @@ public class PatientService {
 
     private final PatientRepository patientRepository;
     private final DocumentService documentService;
+    private final LogService logService;
     private final EmailService emailService;
 
     @Autowired
     public PatientService(
             @Qualifier("patientRepository") PatientRepository patientRepository,
-            DocumentService documentService, EmailService emailService) {
+            DocumentService documentService, LogService logService, EmailService emailService) {
         this.patientRepository = patientRepository;
         this.documentService = documentService;
+        this.logService = logService;
         this.emailService = emailService;
     }
 
@@ -50,6 +53,7 @@ public class PatientService {
     public Patient addConversationToPatient(Patient patient, GeneralConversation conversation) {
         patient.getConversations().add(conversation);
         patientRepository.save(patient);
+        logService.createLog(patient.getId(), LogTypes.GENERAL_CONVERSATION_CREATION, conversation.getId());
         return patient;
     }
 
@@ -58,7 +62,7 @@ public class PatientService {
     }
 
     // Registering patients is not necessary in the patient app (this is done via
-    // the therapist app) but for testing purposes it might be usefule
+    // the therapist app) but for testing purposes it might be useful
     public Patient registerPatient(
             Patient patient,
             HttpServletRequest httpServletRequest,

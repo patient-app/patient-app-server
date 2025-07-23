@@ -1,6 +1,7 @@
 package ch.uzh.ifi.imrg.patientapp.service;
 
 import ch.uzh.ifi.imrg.patientapp.constant.AvailableTests;
+import ch.uzh.ifi.imrg.patientapp.constant.LogTypes;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.entity.PsychologicalTest;
 import ch.uzh.ifi.imrg.patientapp.entity.PsychologicalTestAssignment;
@@ -15,17 +16,14 @@ import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestNameAndPatien
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestNameOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestsOverviewOutputDTO;
-import ch.uzh.ifi.imrg.patientapp.rest.mapper.PsychologicalTestMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -51,6 +49,9 @@ class PsychologicalTestServiceTest {
     @Mock
     private AuthorizationService authorizationService;
 
+    @Mock
+    private LogService logService;
+
     @InjectMocks
     private PsychologicalTestService service;
 
@@ -71,7 +72,7 @@ class PsychologicalTestServiceTest {
 
         when(psychologicalTestsAssignmentRepository.findByPatientIdAndTestName("123", "Test Name"))
                 .thenReturn(assignment);
-
+        doNothing().when(logService).createLog(anyString(), any(LogTypes.class), anyString());
         // Act
         service.createPsychologicalTest(patient, inputDTO);
 
@@ -119,6 +120,7 @@ class PsychologicalTestServiceTest {
         mockAssignment.setPatient(patient);
         when(psychologicalTestsAssignmentRepository.findByPatientIdAndTestName(any(), any()))
                 .thenReturn(mockAssignment);
+        doNothing().when(logService).createLog(anyString(), any(LogTypes.class), anyString());
 
         service.createPsychologicalTest(patient, inputDTO);
 

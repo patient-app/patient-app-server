@@ -1,5 +1,6 @@
 package ch.uzh.ifi.imrg.patientapp.service;
 
+import ch.uzh.ifi.imrg.patientapp.constant.LogTypes;
 import ch.uzh.ifi.imrg.patientapp.entity.*;
 import ch.uzh.ifi.imrg.patientapp.repository.ChatbotTemplateRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.ConversationRepository;
@@ -43,6 +44,9 @@ public class MessageServiceTest {
 
         @Mock
         private AuthorizationService authorizationService;
+
+        @Mock
+        private LogService logService;
 
         @InjectMocks
         private MessageService messageService;
@@ -645,7 +649,7 @@ public class MessageServiceTest {
                         // Mock getting response
                         when(promptBuilderService.getResponse(anyList(), eq(inputMessage), eq("system-prompt")))
                                         .thenReturn(mockAnswer);
-
+                        doNothing().when(logService).createLog(nullable(String.class), eq(LogTypes.HARMFUL_CONTENT_DETECTED), eq(conversationId));
                         // Act
                         Message result = messageService.generateAnswer(patient, conversationId, inputMessage);
 

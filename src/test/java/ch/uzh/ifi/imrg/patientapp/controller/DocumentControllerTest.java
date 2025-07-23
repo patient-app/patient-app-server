@@ -1,6 +1,8 @@
 package ch.uzh.ifi.imrg.patientapp.controller;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -8,6 +10,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.time.Instant;
 import java.util.List;
 
+import ch.uzh.ifi.imrg.patientapp.constant.LogTypes;
+import ch.uzh.ifi.imrg.patientapp.service.LogService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -49,7 +53,7 @@ class DocumentControllerTest {
         @Mock
         private PatientService patientService;
         @Mock
-        private HttpServletRequest request;
+        private LogService logService;
 
         @InjectMocks
         private DocumentController controller;
@@ -128,8 +132,7 @@ class DocumentControllerTest {
                                 "application/vnd.openxmlformats-officedocument.wordprocessingml.document", data);
                 when(documentService.fetchDocument("p123", documentId))
                                 .thenReturn(downloadDto);
-
-                mockMvc.perform(get("/patients/documents/{documentId}", documentId)
+                doNothing().when(logService).createLog(eq("p123"), any(LogTypes.class), eq("dX"));                mockMvc.perform(get("/patients/documents/{documentId}", documentId)
                                 .accept(MediaType.ALL))
                                 .andExpect(status().isOk())
                                 .andExpect(header().string("Content-Disposition",
