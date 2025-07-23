@@ -3,7 +3,6 @@ package ch.uzh.ifi.imrg.patientapp.controller;
 import ch.uzh.ifi.imrg.patientapp.constant.LogTypes;
 import ch.uzh.ifi.imrg.patientapp.entity.*;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreateMessageDTO;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.output.CompleteConversationOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.MessageOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.CompleteExerciseConversationOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.service.ConversationService;
@@ -62,7 +61,7 @@ class ExerciseConversationControllerTest {
 
         when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
         when(messageService.generateAnswer(patient, conversationId, "Hello Exercise")).thenReturn(message);
-        doNothing().when(logService).createLog(nullable(String.class), any(LogTypes.class), anyString());
+        doNothing().when(logService).createLog(nullable(String.class), any(LogTypes.class), anyString(), "");
 
         // Act
         MessageOutputDTO result = controller.sendMessage(request, createMessageDTO, conversationId);

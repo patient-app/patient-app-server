@@ -22,12 +22,13 @@ public class LogService {
         this.logRepository = logRepository;
     }
 
-    public void createLog(String patientId, LogTypes logType, String uniqueIdentifier) {
+    public void createLog(String patientId, LogTypes logType, String uniqueIdentifier, String comment) {
         Log log = new Log();
         log.setPatientId(patientId);
         log.setLogType(logType);
         log.setTimestamp(Instant.now());
-        log.setUniqueIdentifier(uniqueIdentifier);
+        log.setAssociatedEntityId(uniqueIdentifier);
+        log.setComment(comment);
         logRepository.save(log);
     }
 

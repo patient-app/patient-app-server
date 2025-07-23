@@ -55,7 +55,7 @@ public class PatientService {
     public Patient addConversationToPatient(Patient patient, GeneralConversation conversation) {
         patient.getConversations().add(conversation);
         patientRepository.save(patient);
-        logService.createLog(patient.getId(), LogTypes.GENERAL_CONVERSATION_CREATION, conversation.getId());
+        logService.createLog(patient.getId(), LogTypes.GENERAL_CONVERSATION_CREATION, conversation.getId(), "");
         return patient;
     }
 

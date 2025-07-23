@@ -36,14 +36,14 @@ public class LogServiceTest {
         ArgumentCaptor<Log> captor = ArgumentCaptor.forClass(Log.class);
 
         // Act
-        logService.createLog(patientId, logType, uniqueId);
+        logService.createLog(patientId, logType, uniqueId, "");
 
         // Assert
         verify(logRepository).save(captor.capture());
         Log savedLog = captor.getValue();
         assertEquals(patientId, savedLog.getPatientId());
         assertEquals(logType, savedLog.getLogType());
-        assertEquals(uniqueId, savedLog.getUniqueIdentifier());
+        assertEquals(uniqueId, savedLog.getAssociatedEntityId());
         assertNotNull(savedLog.getTimestamp());
     }
 
@@ -58,14 +58,14 @@ public class LogServiceTest {
         log1.setPatientId(patientId);
         log1.setLogType(logType);
         log1.setTimestamp(Instant.now());
-        log1.setUniqueIdentifier("x1");
+        log1.setAssociatedEntityId("x1");
 
         Log log2 = new Log();
         log2.setId("2");
         log2.setPatientId(patientId);
         log2.setLogType(logType);
         log2.setTimestamp(Instant.now());
-        log2.setUniqueIdentifier("x2");
+        log2.setAssociatedEntityId("x2");
 
         List<Log> logs = List.of(log1, log2);
         when(logRepository.findByPatientIdAndLogType(patientId, logType)).thenReturn(logs);

@@ -101,7 +101,7 @@ public class JournalEntryConversationControllerTest {
 
         when(messageService.generateAnswer(mockPatient, "conv1", "Hello"))
                 .thenReturn(msg);
-        doNothing().when(logService).createLog(nullable(String.class), any(), anyString());
+        doNothing().when(logService).createLog(nullable(String.class), any(), anyString(), "");
 
         // Act & Assert
         mockMvc.perform(post("/patients/journal-entry-conversation/conv1/messages")

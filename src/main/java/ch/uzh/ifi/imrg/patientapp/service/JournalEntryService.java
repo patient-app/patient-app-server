@@ -157,7 +157,7 @@ public class JournalEntryService {
 
         decryptJournalDTO(outputDTO, key);
 
-        logService.createLog(patient.getId(), LogTypes.JOURNAL_UPDATE,entryId);
+        logService.createLog(patient.getId(), LogTypes.JOURNAL_UPDATE,entryId, "");
         return outputDTO;
 
     }

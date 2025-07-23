@@ -221,7 +221,7 @@ public class JournalEntryServiceTest {
         updated.setTags(Set.of("encTag1"));
         when(repo.saveAndFlush(entry)).thenReturn(updated);
 
-        doNothing().when(logService).createLog(anyString(), any(LogTypes.class), anyString());
+        doNothing().when(logService).createLog(anyString(), any(LogTypes.class), anyString(), "");
 
         try (MockedStatic<CryptographyUtil> crypto = mockStatic(CryptographyUtil.class)) {
             crypto.when(() -> CryptographyUtil.decrypt("encKey")).thenReturn("rawKey");

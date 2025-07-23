@@ -41,7 +41,7 @@ public class ExerciseConversationController {
                 Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
                 Message answeredMessage = messageService.generateAnswer(loggedInPatient, conversationId,
                                 createMessageDTO.getMessage());
-                logService.createLog(loggedInPatient.getId(), LogTypes.EXERCISE_CONVERSATION_MESSAGE_CREATION, conversationId);
+                logService.createLog(loggedInPatient.getId(), LogTypes.EXERCISE_CONVERSATION_MESSAGE_CREATION, conversationId, "");
                 return MessageMapper.INSTANCE.convertEntityToMessageOutputDTO(answeredMessage);
         }
 

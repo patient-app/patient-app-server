@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.*;
-import java.util.regex.*;
 
 @Service
 @Transactional
@@ -95,7 +94,7 @@ public class MessageService {
 
         if (harm.equals("true")) {
             System.out.println("Message contains harmful content.");
-            logService.createLog(patient.getId(), LogTypes.HARMFUL_CONTENT_DETECTED, conversationId);
+            logService.createLog(patient.getId(), LogTypes.HARMFUL_CONTENT_DETECTED, conversationId,"Potentially harmful message: \""+ message + "\"");
         }
 
         List<Map<String, String>> priorMessages = parseMessagesFromConversation(conversation, key);

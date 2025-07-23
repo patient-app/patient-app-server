@@ -2,13 +2,11 @@ package ch.uzh.ifi.imrg.patientapp.service;
 
 import ch.uzh.ifi.imrg.patientapp.constant.LogTypes;
 import ch.uzh.ifi.imrg.patientapp.entity.*;
-import ch.uzh.ifi.imrg.patientapp.repository.ChatbotTemplateRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.ConversationRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.MessageRepository;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.GetConversationSummaryInputDTO;
 import ch.uzh.ifi.imrg.patientapp.service.aiService.PromptBuilderService;
 import ch.uzh.ifi.imrg.patientapp.utils.CryptographyUtil;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
@@ -649,7 +647,7 @@ public class MessageServiceTest {
                         // Mock getting response
                         when(promptBuilderService.getResponse(anyList(), eq(inputMessage), eq("system-prompt")))
                                         .thenReturn(mockAnswer);
-                        doNothing().when(logService).createLog(nullable(String.class), eq(LogTypes.HARMFUL_CONTENT_DETECTED), eq(conversationId));
+                        doNothing().when(logService).createLog(nullable(String.class), eq(LogTypes.HARMFUL_CONTENT_DETECTED), eq(conversationId), "");
                         // Act
                         Message result = messageService.generateAnswer(patient, conversationId, inputMessage);
 
