@@ -3,6 +3,8 @@ package ch.uzh.ifi.imrg.patientapp.controller;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutLanguageDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutNameDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutOnboardedDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.ResetPasswordDTO;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -148,5 +150,11 @@ public class PatientController {
     public PatientOutputDTO getAvatar(HttpServletRequest httpServletRequest) {
         Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
         return PatientMapper.INSTANCE.convertEntityToPatientOutputDTO(loggedInPatient);
+    }
+
+    @PostMapping("/patients/reset-password")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void resetPassword(@Valid @RequestBody ResetPasswordDTO dto) {
+        patientService.resetPasswordAndNotify(dto.getEmail());
     }
 }

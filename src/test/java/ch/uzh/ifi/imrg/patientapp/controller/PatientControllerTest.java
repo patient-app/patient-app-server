@@ -7,9 +7,10 @@ import ch.uzh.ifi.imrg.patientapp.rest.dto.input.LoginPatientDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutLanguageDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutNameDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutOnboardedDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.ResetPasswordDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PatientOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.service.PatientService;
-
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -29,7 +30,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
-
 
 @ExtendWith(MockitoExtension.class)
 public class PatientControllerTest {
@@ -261,6 +261,37 @@ public class PatientControllerTest {
                 ResponseStatusException.class,
                 () -> patientController.changePassword(dto, request));
         assertEquals(HttpStatus.FORBIDDEN, ex.getStatusCode());
+    }
+
+    @Test
+    void resetPassword_shouldCallService_andReturnNoException() {
+        // Arrange
+        ResetPasswordDTO dto = new ResetPasswordDTO();
+        dto.setEmail("patient@example.com");
+
+        // service does nothing (void)
+        doNothing().when(patientService).resetPasswordAndNotify(dto.getEmail());
+
+        // Act & Assert
+        assertDoesNotThrow(() -> patientController.resetPassword(dto));
+        verify(patientService).resetPasswordAndNotify(dto.getEmail());
+    }
+
+    @Test
+    void resetPassword_whenPatientNotFound_shouldPropagateException() {
+        // Arrange
+        ResetPasswordDTO dto = new ResetPasswordDTO();
+        dto.setEmail("unknown@example.com");
+
+        // simulate not found
+        doThrow(new EntityNotFoundException("No patient found with email: " + dto.getEmail()))
+                .when(patientService).resetPasswordAndNotify(dto.getEmail());
+
+        // Act & Assert
+        EntityNotFoundException ex = assertThrows(
+                EntityNotFoundException.class,
+                () -> patientController.resetPassword(dto));
+        assertTrue(ex.getMessage().contains(dto.getEmail()));
     }
 
 }

@@ -62,7 +62,10 @@ dependencies {
     implementation 'org.apache.pdfbox:pdfbox:2.0.27'
     implementation 'org.apache.poi:poi:5.2.3'
     implementation 'org.apache.poi:poi-ooxml:5.2.3'
-    implementation 'org.apache.poi:poi-scratchpad:5.2.3' 
+    implementation 'org.apache.poi:poi-scratchpad:5.2.3'
+
+    //mail service
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
 
 }
 
