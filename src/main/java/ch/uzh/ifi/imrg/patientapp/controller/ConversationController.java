@@ -1,5 +1,6 @@
 package ch.uzh.ifi.imrg.patientapp.controller;
 
+import ch.uzh.ifi.imrg.patientapp.constant.LogTypes;
 import ch.uzh.ifi.imrg.patientapp.entity.Conversation;
 import ch.uzh.ifi.imrg.patientapp.entity.GeneralConversation;
 import ch.uzh.ifi.imrg.patientapp.entity.Message;
@@ -13,10 +14,7 @@ import ch.uzh.ifi.imrg.patientapp.rest.dto.output.MessageOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.NameConversationOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.ConversationMapper;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.MessageMapper;
-import ch.uzh.ifi.imrg.patientapp.service.ChatbotService;
-import ch.uzh.ifi.imrg.patientapp.service.ConversationService;
-import ch.uzh.ifi.imrg.patientapp.service.MessageService;
-import ch.uzh.ifi.imrg.patientapp.service.PatientService;
+import ch.uzh.ifi.imrg.patientapp.service.*;
 
 import ch.uzh.ifi.imrg.patientapp.utils.CryptographyUtil;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,15 +30,16 @@ public class ConversationController {
         private final ConversationService conversationService;
         private final MessageService messageService;
         private final ChatbotService chatbotService;
+        private final LogService logService;
 
         ConversationController(PatientService patientService,
-                        ConversationService conversationService,
-                        MessageService messageService, ChatbotService chatbotService) {
+                               ConversationService conversationService,
+                               MessageService messageService, ChatbotService chatbotService, LogService logService) {
                 this.patientService = patientService;
                 this.conversationService = conversationService;
                 this.messageService = messageService;
-
                 this.chatbotService = chatbotService;
+            this.logService = logService;
         }
 
         @PostMapping("/patients/conversations")
@@ -89,6 +88,7 @@ public class ConversationController {
                 Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
                 Message answeredMessage = messageService.generateAnswer(loggedInPatient, conversationId,
                                 createMessageDTO.getMessage());
+                logService.createLog(loggedInPatient.getId(), LogTypes.GENERAL_CONVERSATION_MESSAGE_CREATION, conversationId);
                 return MessageMapper.INSTANCE.convertEntityToMessageOutputDTO(answeredMessage);
         }
 

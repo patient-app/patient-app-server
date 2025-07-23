@@ -1,6 +1,7 @@
 package ch.uzh.ifi.imrg.patientapp.service;
 
 
+import ch.uzh.ifi.imrg.patientapp.constant.LogTypes;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.entity.PsychologicalTest;
 import ch.uzh.ifi.imrg.patientapp.entity.PsychologicalTestAssignment;
@@ -33,12 +34,14 @@ public class PsychologicalTestService {
     private final AuthorizationService authorizationService;
     private final PsychologicalTestsAssignmentRepository psychologicalTestsAssignmentRepository;
     private final PatientRepository patientRepository;
+    private final LogService logService;
 
-    public PsychologicalTestService(PsychologicalTestRepository psychologicalTestRepository, AuthorizationService authorizationService, PsychologicalTestsAssignmentRepository psychologicalTestsAssignmentRepository, PatientRepository patientRepository) {
+    public PsychologicalTestService(PsychologicalTestRepository psychologicalTestRepository, AuthorizationService authorizationService, PsychologicalTestsAssignmentRepository psychologicalTestsAssignmentRepository, PatientRepository patientRepository, LogService logService) {
         this.psychologicalTestRepository = psychologicalTestRepository;
         this.authorizationService = authorizationService;
         this.psychologicalTestsAssignmentRepository = psychologicalTestsAssignmentRepository;
         this.patientRepository = patientRepository;
+        this.logService = logService;
     }
 
     public void createPsychologicalTestAssginment(String patientId, String psychologicalTestName, PsychologicalTestAssignmentInputDTO psychologicalTestAssignmentInputDTO) {
@@ -82,6 +85,7 @@ public class PsychologicalTestService {
         psychologicalTestAssignment.setLastCompletedAt(Instant.now());
         psychologicalTestsAssignmentRepository.save(psychologicalTestAssignment);
 
+        logService.createLog(loggedInPatient.getId(), LogTypes.PSYCHOLOGICAL_TEST_COMPLETED, psychologicalTest.getName());
     }
 
     public List<PsychologicalTestNameOutputDTO> getAllTestNamesForPatientForCoach(String patientId) {

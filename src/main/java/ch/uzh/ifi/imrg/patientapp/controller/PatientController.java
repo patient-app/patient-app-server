@@ -1,9 +1,11 @@
 package ch.uzh.ifi.imrg.patientapp.controller;
 
+import ch.uzh.ifi.imrg.patientapp.constant.LogTypes;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutLanguageDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutNameDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutOnboardedDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.ResetPasswordDTO;
+import ch.uzh.ifi.imrg.patientapp.service.LogService;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -27,9 +29,11 @@ import java.io.IOException;
 public class PatientController {
 
     private final PatientService patientService;
+    private final LogService logService;
 
-    public PatientController(PatientService patientService) {
+    public PatientController(PatientService patientService, LogService logService) {
         this.patientService = patientService;
+        this.logService = logService;
     }
 
     @GetMapping("/patients/me")
@@ -137,12 +141,12 @@ public class PatientController {
     @PutMapping("patients/chat-bot-avatar")
     @ResponseStatus(HttpStatus.OK)
     public void setAvatar(
-            @Valid @RequestBody PutAvatarDTO putAvatarDTO, HttpServletRequest httpServletRequest)
-            throws IOException {
+            @Valid @RequestBody PutAvatarDTO putAvatarDTO, HttpServletRequest httpServletRequest) {
 
         Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
         loggedInPatient.setChatBotAvatar(putAvatarDTO.getChatBotAvatar());
         patientService.setField(loggedInPatient);
+        logService.createLog(loggedInPatient.getId(), LogTypes.CHATBOT_ICON_UPDATE, null);
     }
 
     @GetMapping("patients/chat-bot-avatar")

@@ -1,7 +1,7 @@
 package ch.uzh.ifi.imrg.patientapp.service;
 
+import ch.uzh.ifi.imrg.patientapp.constant.LogTypes;
 import ch.uzh.ifi.imrg.patientapp.entity.*;
-import ch.uzh.ifi.imrg.patientapp.repository.ChatbotTemplateRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.ConversationRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.MessageRepository;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.GetConversationSummaryInputDTO;
@@ -23,13 +23,15 @@ public class MessageService {
 
     private final PromptBuilderService promptBuilderService;
     private final AuthorizationService authorizationService;
+    private final LogService logService;
 
     public MessageService(MessageRepository messageRepository, ConversationRepository conversationRepository,
-            PromptBuilderService promptBuilderService, AuthorizationService authorizationService) {
+                          PromptBuilderService promptBuilderService, AuthorizationService authorizationService, LogService logService) {
         this.messageRepository = messageRepository;
         this.conversationRepository = conversationRepository;
         this.promptBuilderService = promptBuilderService;
         this.authorizationService = authorizationService;
+        this.logService = logService;
     }
 
     static List<Map<String, String>> parseMessagesFromConversation(Conversation conversation,
@@ -93,6 +95,7 @@ public class MessageService {
 
         if (harm.equals("true")) {
             System.out.println("Message contains harmful content.");
+            logService.createLog(patient.getId(), LogTypes.HARMFUL_CONTENT_DETECTED, conversationId);
         }
 
         List<Map<String, String>> priorMessages = parseMessagesFromConversation(conversation, key);

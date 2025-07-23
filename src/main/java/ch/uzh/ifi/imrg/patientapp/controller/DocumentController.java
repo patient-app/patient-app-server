@@ -1,5 +1,7 @@
 package ch.uzh.ifi.imrg.patientapp.controller;
 
+import ch.uzh.ifi.imrg.patientapp.constant.LogTypes;
+import ch.uzh.ifi.imrg.patientapp.service.LogService;
 import org.springframework.web.bind.annotation.RestController;
 
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
@@ -33,6 +35,7 @@ public class DocumentController {
     private final DocumentService documentService;
     private final DocumentMapper documentMapper;
     private final PatientService patientService;
+    private final LogService logService;
 
     @GetMapping("/patients/documents")
     @ResponseStatus(HttpStatus.OK)
@@ -47,6 +50,7 @@ public class DocumentController {
             @ApiResponse(responseCode = "200", description = "The raw file bytes", content = @Content(mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE, schema = @Schema(type = "string", format = "binary"))),
             @ApiResponse(responseCode = "404", description = "Document not found")
     })
+
     @GetMapping(path = "/patients/documents/{documentId}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<byte[]> download(@PathVariable String documentId, HttpServletRequest httpServletRequest) {
         Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
@@ -55,6 +59,7 @@ public class DocumentController {
 
         MediaType mediaType = MediaType.parseMediaType(dto.getContentType());
 
+        logService.createLog(loggedInPatient.getId(), LogTypes.DOCUMENT_READ, documentId);
         return ResponseEntity.ok().contentType(mediaType)
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + dto.getFilename() + "\"")
                 .body(dto.getData());
