@@ -31,9 +31,8 @@ public class LogService {
         logRepository.save(log);
     }
 
-    public List<LogOutputDTO> getLogsByPatientIdAndLogType(String patientId, String logType) {
-        LogTypes type = LogTypes.valueOf(logType.toUpperCase());
-        List<Log> logs = logRepository.findByPatientIdAndLogType(patientId, type);
+    public List<LogOutputDTO> getLogsByPatientIdAndLogType(String patientId, LogTypes logType) {
+        List<Log> logs = logRepository.findByPatientIdAndLogType(patientId, logType);
 
         return LogMapper.INSTANCE.convertEntitiesToLogOutputDTOs(logs);
     }

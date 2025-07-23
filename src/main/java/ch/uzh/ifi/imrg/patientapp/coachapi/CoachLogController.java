@@ -1,5 +1,6 @@
 package ch.uzh.ifi.imrg.patientapp.coachapi;
 
+import ch.uzh.ifi.imrg.patientapp.constant.LogTypes;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.LogOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.service.LogService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -23,7 +24,7 @@ public class CoachLogController {
     @ResponseStatus(HttpStatus.OK)
     @SecurityRequirement(name = "X-Coach-Key")
     public List<LogOutputDTO> listAll(@PathVariable String patientId, @PathVariable String logType) {
-        return logService.getLogsByPatientIdAndLogType(patientId, logType);
+        return logService.getLogsByPatientIdAndLogType(patientId, LogTypes.valueOf(logType));
     }
 
 }
