@@ -29,13 +29,15 @@ public class PatientService {
 
     private final PatientRepository patientRepository;
     private final DocumentService documentService;
+    private final EmailService emailService;
 
     @Autowired
     public PatientService(
             @Qualifier("patientRepository") PatientRepository patientRepository,
-            DocumentService documentService) {
+            DocumentService documentService, EmailService emailService) {
         this.patientRepository = patientRepository;
         this.documentService = documentService;
+        this.emailService = emailService;
     }
 
     public Patient getCurrentlyLoggedInPatient(HttpServletRequest httpServletRequest) {
@@ -136,6 +138,56 @@ public class PatientService {
         documentService.removeAllDocumentsForPatient(patientId);
 
         patientRepository.deleteById(patientId);
+    }
+
+    public void resetPasswordAndNotify(String email) {
+
+        Patient patient = patientRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("No patient found with email: " + email));
+
+        PasswordUtil.Alphabet alphabet = "uk".equalsIgnoreCase(patient.getLanguage()) ? PasswordUtil.Alphabet.CYRILLIC
+                : PasswordUtil.Alphabet.LATIN;
+
+        String newPassword = PasswordUtil.generatePassword(alphabet);
+
+        patient.setPassword(PasswordUtil.encryptPassword(newPassword));
+        patientRepository.save(patient);
+
+        String lang = patient.getLanguage() != null ? patient.getLanguage().toLowerCase() : "en";
+        String subject;
+        String body;
+
+        if ("uk".equals(lang)) {
+            subject = "Lumina — Ваш новий пароль";
+            body = String.join("\n",
+                    "Привіт, " + patient.getName() + "!",
+                    "",
+                    "Ваш пароль було скинуто за вашим запитом.",
+                    "Ваш новий пароль:",
+                    "",
+                    "    " + newPassword,
+                    "",
+                    "Будь ласка, увійдіть у систему та змініть його якнайшвидше.",
+                    "",
+                    "З повагою,",
+                    "Команда Lumina");
+        } else {
+            subject = "Lumina — Your new password";
+            body = String.join("\n",
+                    "Hello " + patient.getName() + ",",
+                    "",
+                    "Your password has been reset per your request.",
+                    "Your new password is:",
+                    "",
+                    "    " + newPassword,
+                    "",
+                    "Please log in and change it as soon as possible.",
+                    "",
+                    "Best,",
+                    "Lumina Team");
+        }
+
+        emailService.sendSimpleMessage(patient.getEmail(), subject, body);
     }
 
 }
