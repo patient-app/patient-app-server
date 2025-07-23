@@ -13,7 +13,7 @@ import java.util.UUID;
 
 @Getter
 @Setter
-@Entity
+@Entity(name = "logs")
 public class Log {
     @Id
     private String id = UUID.randomUUID().toString();
