@@ -3,6 +3,8 @@ package ch.uzh.ifi.imrg.patientapp.controller;
 import java.util.List;
 import java.util.Set;
 
+import ch.uzh.ifi.imrg.patientapp.constant.LogTypes;
+import ch.uzh.ifi.imrg.patientapp.service.LogService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,10 +23,12 @@ public class JournalEntryController {
 
     private final JournalEntryService journalEntryService;
     private final PatientService patientService;
+    private final LogService logService;
 
-    JournalEntryController(JournalEntryService journalEntryService, PatientService patientService) {
+    JournalEntryController(JournalEntryService journalEntryService, PatientService patientService, LogService logService) {
         this.journalEntryService = journalEntryService;
         this.patientService = patientService;
+        this.logService = logService;
     }
 
     @PostMapping("/patients/journal-entries")
@@ -35,6 +39,8 @@ public class JournalEntryController {
         Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
 
         JournalEntryOutputDTO savedEntry = journalEntryService.createEntry(dto, loggedInPatient);
+
+        logService.createLog(loggedInPatient.getId(), LogTypes.JOURNAL_CREATION,savedEntry.getId());
         return savedEntry;
     }
 

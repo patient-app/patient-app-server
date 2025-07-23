@@ -1,5 +1,6 @@
 package ch.uzh.ifi.imrg.patientapp.service;
 
+import ch.uzh.ifi.imrg.patientapp.constant.LogTypes;
 import ch.uzh.ifi.imrg.patientapp.entity.*;
 import ch.uzh.ifi.imrg.patientapp.repository.ChatbotTemplateRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.ConversationRepository;
@@ -22,15 +23,17 @@ public class ConversationService {
     private final AuthorizationService authorizationService;
     private final PromptBuilderService promptBuilderService;
     private final ChatbotTemplateRepository chatbotTemplateRepository;
+    private final LogService logService;
 
     public ConversationService(ConversationRepository conversationRepository,
-            AuthorizationService authorizationService,
-            PromptBuilderService promptBuilderService, ChatbotTemplateRepository chatbotTemplateRepository,
-            MessageRepository messageRepository) {
+                               AuthorizationService authorizationService,
+                               PromptBuilderService promptBuilderService, ChatbotTemplateRepository chatbotTemplateRepository,
+                               MessageRepository messageRepository, LogService logService) {
         this.conversationRepository = conversationRepository;
         this.authorizationService = authorizationService;
         this.promptBuilderService = promptBuilderService;
         this.chatbotTemplateRepository = chatbotTemplateRepository;
+        this.logService = logService;
     }
 
     public GeneralConversation createConversation(Patient patient) {
@@ -82,6 +85,7 @@ public class ConversationService {
                 "You can't set the name of a chat of a different user.");
         ConversationMapper.INSTANCE.updateConversationFromPutConversationNameDTO(putConversationNameDTO, conversation);
         conversationRepository.save(conversation);
+        logService.createLog(loggedInPatient.getId(), LogTypes.GENERAL_CONVERSATION_NAME_UPDATE, conversation.getId());
     }
 
     public Conversation getAllMessagesFromConversation(String conversationId, Patient patient) {

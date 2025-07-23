@@ -1,6 +1,7 @@
 package ch.uzh.ifi.imrg.patientapp.service;
 
 
+import ch.uzh.ifi.imrg.patientapp.constant.LogTypes;
 import ch.uzh.ifi.imrg.patientapp.entity.ChatbotTemplate;
 import ch.uzh.ifi.imrg.patientapp.entity.Exercise.*;
 import ch.uzh.ifi.imrg.patientapp.entity.ExerciseConversation;
@@ -31,8 +32,9 @@ public class ExerciseService {
     private final AuthorizationService authorizationService;
     private final ChatbotTemplateRepository chatbotTemplateRepository;
     private final ExerciseMapper exerciseMapper;
+    private final LogService logService;
 
-    public ExerciseService(ExerciseRepository exerciseRepository, ExerciseComponentRepository exerciseComponentRepository, PatientRepository patientRepository, ExerciseInformationRepository exerciseInformationRepository, ExerciseConversationRepository exerciseConversationRepository, PromptBuilderService promptBuilderService, AuthorizationService authorizationService, ChatbotTemplateRepository chatbotTemplateRepository, ExerciseMapper exerciseMapper) {
+    public ExerciseService(ExerciseRepository exerciseRepository, ExerciseComponentRepository exerciseComponentRepository, PatientRepository patientRepository, ExerciseInformationRepository exerciseInformationRepository, ExerciseConversationRepository exerciseConversationRepository, PromptBuilderService promptBuilderService, AuthorizationService authorizationService, ChatbotTemplateRepository chatbotTemplateRepository, ExerciseMapper exerciseMapper, LogService logService) {
         this.exerciseRepository = exerciseRepository;
         this.exerciseComponentRepository = exerciseComponentRepository;
         this.patientRepository = patientRepository;
@@ -42,6 +44,7 @@ public class ExerciseService {
         this.authorizationService = authorizationService;
         this.chatbotTemplateRepository = chatbotTemplateRepository;
         this.exerciseMapper = exerciseMapper;
+        this.logService = logService;
     }
 
     public List<ExercisesOverviewOutputDTO>getAllExercisesForCoach(String patientId){
@@ -134,6 +137,8 @@ public class ExerciseService {
 
         ExerciseStartOutputDTO outputDTO = new ExerciseStartOutputDTO();
         outputDTO.setExerciseExecutionId(exerciseCompletionInformation.getId());
+
+        logService.createLog(patient.getId(), LogTypes.EXERCISE_START,exerciseId);
         return outputDTO;
     }
 
@@ -253,6 +258,8 @@ public class ExerciseService {
         exerciseCompletionInformation.setExerciseMoodAfter(toContainer(exerciseInformationInputDTO.getMoodsAfter()));
 
         exerciseInformationRepository.save(exerciseCompletionInformation);
+        logService.createLog(patient.getId(), LogTypes.EXERCISE_COMPLETION,exerciseId);
+
     }
 
     public void setExerciseComponentResult(Patient patient, String exerciseId, ExerciseComponentResultInputDTO exerciseComponentResultInputDTO, String exerciseComponentId) throws Exception {
@@ -281,6 +288,8 @@ public class ExerciseService {
             exerciseCompletionInformation.getComponentAnswers().add(answer);
         }
         exerciseInformationRepository.save(exerciseCompletionInformation);
+        logService.createLog(patient.getId(), LogTypes.EXERCISE_UPDATE, exerciseId);
+
     }
 
     public void setExerciseCompletionName(Patient patient, String exerciseId, ExerciseCompletionNameInputDTO exerciseCompletionNameInputDTO) {

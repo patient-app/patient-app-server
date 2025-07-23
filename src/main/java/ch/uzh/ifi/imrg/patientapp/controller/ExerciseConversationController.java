@@ -1,5 +1,6 @@
 package ch.uzh.ifi.imrg.patientapp.controller;
 
+import ch.uzh.ifi.imrg.patientapp.constant.LogTypes;
 import ch.uzh.ifi.imrg.patientapp.entity.*;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreateMessageDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.MessageOutputDTO;
@@ -7,6 +8,7 @@ import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.CompleteExerciseConve
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.ConversationMapper;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.MessageMapper;
 import ch.uzh.ifi.imrg.patientapp.service.ConversationService;
+import ch.uzh.ifi.imrg.patientapp.service.LogService;
 import ch.uzh.ifi.imrg.patientapp.service.MessageService;
 import ch.uzh.ifi.imrg.patientapp.service.PatientService;
 import ch.uzh.ifi.imrg.patientapp.utils.CryptographyUtil;
@@ -21,12 +23,14 @@ public class ExerciseConversationController {
         private final PatientService patientService;
         private final MessageService messageService;
         private final ConversationService conversationService;
+        private final LogService logService;
 
         public ExerciseConversationController(PatientService patientService, MessageService messageService,
-                        ConversationService conversationService) {
+                                              ConversationService conversationService, LogService logService) {
                 this.patientService = patientService;
                 this.messageService = messageService;
                 this.conversationService = conversationService;
+                this.logService = logService;
         }
 
         @PostMapping("/patients/exercise-conversation/{conversationId}/messages")
@@ -37,6 +41,7 @@ public class ExerciseConversationController {
                 Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
                 Message answeredMessage = messageService.generateAnswer(loggedInPatient, conversationId,
                                 createMessageDTO.getMessage());
+                logService.createLog(loggedInPatient.getId(), LogTypes.EXERCISE_CONVERSATION_MESSAGE_CREATION, answeredMessage.getConversation().getId());
                 return MessageMapper.INSTANCE.convertEntityToMessageOutputDTO(answeredMessage);
         }
 

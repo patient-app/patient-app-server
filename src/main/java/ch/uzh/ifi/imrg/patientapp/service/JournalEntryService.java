@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import ch.uzh.ifi.imrg.patientapp.constant.LogTypes;
 import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
@@ -40,13 +41,15 @@ public class JournalEntryService {
     private final ChatbotTemplateRepository chatbotTemplateRepository;
 
     private final PromptBuilderService promptBuilderService;
+    private final LogService logService;
 
     public JournalEntryService(JournalEntryRepository journalEntryRepository, PatientRepository patientRepository,
-            ChatbotTemplateRepository chatbotTemplateRepository, PromptBuilderService promptBuilderService) {
+                               ChatbotTemplateRepository chatbotTemplateRepository, PromptBuilderService promptBuilderService, LogService logService) {
         this.journalEntryRepository = journalEntryRepository;
         this.patientRepository = patientRepository;
         this.chatbotTemplateRepository = chatbotTemplateRepository;
         this.promptBuilderService = promptBuilderService;
+        this.logService = logService;
     }
 
     public JournalEntryOutputDTO createEntry(JournalEntryRequestDTO dto, Patient loggedInPatient) {
@@ -154,6 +157,7 @@ public class JournalEntryService {
 
         decryptJournalDTO(outputDTO, key);
 
+        logService.createLog(patient.getId(), LogTypes.JOURNAL_UPDATE,outputDTO.getId());
         return outputDTO;
 
     }
