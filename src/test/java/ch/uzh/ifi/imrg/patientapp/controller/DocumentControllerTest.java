@@ -132,7 +132,7 @@ class DocumentControllerTest {
                                 "application/vnd.openxmlformats-officedocument.wordprocessingml.document", data);
                 when(documentService.fetchDocument("p123", documentId))
                                 .thenReturn(downloadDto);
-                doNothing().when(logService).createLog(eq("p123"), any(LogTypes.class), eq("dX"), "");
+                doNothing().when(logService).createLog(eq("p123"), any(LogTypes.class), eq("dX"), eq(""));
                 mockMvc.perform(get("/patients/documents/{documentId}", documentId)
                                 .accept(MediaType.ALL))
                                 .andExpect(status().isOk())

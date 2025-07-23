@@ -61,7 +61,7 @@ class ExerciseConversationControllerTest {
 
         when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
         when(messageService.generateAnswer(patient, conversationId, "Hello Exercise")).thenReturn(message);
-        doNothing().when(logService).createLog(nullable(String.class), any(LogTypes.class), anyString(), "");
+        doNothing().when(logService).createLog(nullable(String.class), any(LogTypes.class), anyString(), eq(""));
 
         // Act
         MessageOutputDTO result = controller.sendMessage(request, createMessageDTO, conversationId);

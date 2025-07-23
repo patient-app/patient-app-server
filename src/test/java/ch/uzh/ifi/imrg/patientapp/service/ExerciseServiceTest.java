@@ -1340,7 +1340,7 @@ class ExerciseServiceTest {
         when(exerciseRepository.getExerciseById(exerciseId)).thenReturn(exercise);
         doNothing().when(authorizationService).checkExerciseAccess(eq(exercise), eq(patient), anyString());
         when(exerciseInformationRepository.findById(execId)).thenReturn(Optional.of(completionInfo));
-        doNothing().when(logService).createLog(anyString(), any(LogTypes.class), anyString(), "");        // Act
+        doNothing().when(logService).createLog(anyString(), any(LogTypes.class), anyString(), eq(""));        // Act
         exerciseService.setExerciseComponentResult(patient, exerciseId, dto, componentId);
 
         // Assert
@@ -1372,7 +1372,7 @@ class ExerciseServiceTest {
         when(exerciseRepository.getExerciseById(exerciseId)).thenReturn(exercise);
         doNothing().when(authorizationService).checkExerciseAccess(eq(exercise), eq(patient), anyString());
         when(exerciseInformationRepository.findById(execId)).thenReturn(Optional.of(completionInfo));
-        doNothing().when(logService).createLog(anyString(), any(LogTypes.class), anyString(), "");        // Act
+        doNothing().when(logService).createLog(anyString(), any(LogTypes.class), anyString(), eq(""));        // Act
 
         exerciseService.setExerciseComponentResult(patient, exerciseId, dto, componentId);
 
