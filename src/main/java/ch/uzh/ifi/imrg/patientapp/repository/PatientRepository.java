@@ -2,6 +2,8 @@ package ch.uzh.ifi.imrg.patientapp.repository;
 
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -15,4 +17,6 @@ public interface PatientRepository extends JpaRepository<Patient, String> {
     Patient getPatientById(String id);
 
     Patient getPatientByEmail(String email);
+
+    Optional<Patient> findByEmail(String email);
 }

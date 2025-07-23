@@ -9,9 +9,9 @@ import ch.uzh.ifi.imrg.patientapp.rest.dto.input.LoginPatientDTO;
 import ch.uzh.ifi.imrg.patientapp.utils.CryptographyUtil;
 import ch.uzh.ifi.imrg.patientapp.utils.JwtUtil;
 import ch.uzh.ifi.imrg.patientapp.utils.PasswordUtil;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
@@ -20,11 +20,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -41,6 +41,9 @@ public class PatientServiceTest {
 
     @Mock
     LogService logService;
+
+    @Mock
+    private EmailService emailService;
 
     @InjectMocks
     PatientService patientService;
@@ -79,7 +82,6 @@ public class PatientServiceTest {
 
         Patient saved = new Patient();
         when(patientRepository.save(patient)).thenReturn(saved);
-        doNothing().when(logService).createLog(nullable(String.class), any(LogTypes.class), anyString());
 
         Patient result = patientService.addConversationToPatient(patient, conversation);
         assertTrue(patient.getConversations().contains(conversation));
@@ -325,4 +327,97 @@ public class PatientServiceTest {
         }
     }
 
+    @Test
+    void resetPasswordAndNotify_shouldGenerateEncodeSaveAndSendEmail_inEnglish() {
+        // Arrange
+        Patient patient = new Patient();
+        patient.setEmail(EMAIL);
+        patient.setName("Alice");
+        patient.setLanguage("en");
+        when(patientRepository.findByEmail(EMAIL))
+                .thenReturn(Optional.of(patient));
+
+        // Stub the static PasswordUtil calls
+        try (MockedStatic<PasswordUtil> pwMock = mockStatic(PasswordUtil.class)) {
+            pwMock.when(() -> PasswordUtil.generatePassword(PasswordUtil.Alphabet.LATIN))
+                    .thenReturn("Abc1-Def2-Ghi3-Jkl4");
+            pwMock.when(() -> PasswordUtil.encryptPassword("Abc1-Def2-Ghi3-Jkl4"))
+                    .thenReturn("encrypted");
+
+            // Act
+            patientService.resetPasswordAndNotify(EMAIL);
+
+            // Assert: password was set & saved
+            assertEquals("encrypted", patient.getPassword());
+            verify(patientRepository).save(patient);
+
+            // Assert: emailService.sendSimpleMessage(...) called with correct args
+            ArgumentCaptor<String> toCap = ArgumentCaptor.forClass(String.class);
+            ArgumentCaptor<String> subjCap = ArgumentCaptor.forClass(String.class);
+            ArgumentCaptor<String> bodyCap = ArgumentCaptor.forClass(String.class);
+            verify(emailService).sendSimpleMessage(
+                    toCap.capture(),
+                    subjCap.capture(),
+                    bodyCap.capture());
+
+            assertEquals(EMAIL, toCap.getValue());
+            assertEquals("Lumina — Your new password", subjCap.getValue());
+            String body = bodyCap.getValue();
+            assertTrue(body.contains("Hello Alice,"));
+            assertTrue(body.contains("Your new password is:"));
+            assertTrue(body.contains("    Abc1-Def2-Ghi3-Jkl4"));
+        }
+    }
+
+    @Test
+    void resetPasswordAndNotify_shouldGenerateEncodeSaveAndSendEmail_inUkrainian() {
+        // Arrange
+        Patient patient = new Patient();
+        patient.setEmail(EMAIL);
+        patient.setName("Олена");
+        patient.setLanguage("uk");
+        when(patientRepository.findByEmail(EMAIL))
+                .thenReturn(Optional.of(patient));
+
+        try (MockedStatic<PasswordUtil> pwMock = mockStatic(PasswordUtil.class)) {
+            pwMock.when(() -> PasswordUtil.generatePassword(PasswordUtil.Alphabet.CYRILLIC))
+                    .thenReturn("Аб1г-Де2ж-Зи3к-Лм4н");
+            pwMock.when(() -> PasswordUtil.encryptPassword("Аб1г-Де2ж-Зи3к-Лм4н"))
+                    .thenReturn("encryptedUKR");
+
+            // Act
+            patientService.resetPasswordAndNotify(EMAIL);
+
+            // Assert save
+            assertEquals("encryptedUKR", patient.getPassword());
+            verify(patientRepository).save(patient);
+
+            // Assert email params
+            ArgumentCaptor<String> subjCap = ArgumentCaptor.forClass(String.class);
+            ArgumentCaptor<String> bodyCap = ArgumentCaptor.forClass(String.class);
+            verify(emailService).sendSimpleMessage(
+                    eq(EMAIL),
+                    subjCap.capture(),
+                    bodyCap.capture());
+
+            assertEquals("Lumina — Ваш новий пароль", subjCap.getValue());
+            String body = bodyCap.getValue();
+            assertTrue(body.contains("Привіт, Олена!"));
+            assertTrue(body.contains("Ваш новий пароль:"));
+            assertTrue(body.contains("    Аб1г-Де2ж-Зи3к-Лм4н"));
+        }
+    }
+
+    @Test
+    void resetPasswordAndNotify_shouldThrow_whenPatientNotFound() {
+        // Arrange
+        when(patientRepository.findByEmail(EMAIL))
+                .thenReturn(Optional.empty());
+
+        // Act & Assert
+        EntityNotFoundException ex = assertThrows(
+                EntityNotFoundException.class,
+                () -> patientService.resetPasswordAndNotify(EMAIL));
+        assertTrue(ex.getMessage().contains("No patient found with email: " + EMAIL));
+    }
 }
