@@ -40,7 +40,7 @@ public class JournalEntryController {
 
         JournalEntryOutputDTO savedEntry = journalEntryService.createEntry(dto, loggedInPatient);
 
-        logService.createLog(loggedInPatient.getId(), LogTypes.JOURNAL_CREATION,savedEntry.getId());
+        logService.createLog(loggedInPatient.getId(), LogTypes.JOURNAL_CREATION,savedEntry.getId(), "");
         return savedEntry;
     }
 

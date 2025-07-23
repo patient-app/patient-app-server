@@ -146,7 +146,7 @@ public class PatientController {
         Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
         loggedInPatient.setChatBotAvatar(putAvatarDTO.getChatBotAvatar());
         patientService.setField(loggedInPatient);
-        logService.createLog(loggedInPatient.getId(), LogTypes.CHATBOT_ICON_UPDATE, null);
+        logService.createLog(loggedInPatient.getId(), LogTypes.CHATBOT_ICON_UPDATE, null, "");
     }
 
     @GetMapping("patients/chat-bot-avatar")

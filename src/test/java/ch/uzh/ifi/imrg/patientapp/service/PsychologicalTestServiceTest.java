@@ -72,7 +72,7 @@ class PsychologicalTestServiceTest {
 
         when(psychologicalTestsAssignmentRepository.findByPatientIdAndTestName("123", "Test Name"))
                 .thenReturn(assignment);
-        doNothing().when(logService).createLog(anyString(), any(LogTypes.class), anyString());
+        doNothing().when(logService).createLog(anyString(), any(LogTypes.class), anyString(), eq(""));
         // Act
         service.createPsychologicalTest(patient, inputDTO);
 
@@ -120,7 +120,7 @@ class PsychologicalTestServiceTest {
         mockAssignment.setPatient(patient);
         when(psychologicalTestsAssignmentRepository.findByPatientIdAndTestName(any(), any()))
                 .thenReturn(mockAssignment);
-        doNothing().when(logService).createLog(anyString(), any(LogTypes.class), anyString());
+        doNothing().when(logService).createLog(anyString(), any(LogTypes.class), anyString(), eq(""));
 
         service.createPsychologicalTest(patient, inputDTO);
 

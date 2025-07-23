@@ -10,5 +10,4 @@ import java.util.List;
 @Repository
 public interface LogRepository extends JpaRepository<Log, String> {
     List<Log> findByPatientIdAndLogType(String patientId, LogTypes logType);
-    List<Log> findByPatientIdAndLogTypeAndUniqueIdentifier(String patientId, LogTypes logType, String uniqueIdentifier);
 }

@@ -138,7 +138,7 @@ public class ExerciseService {
         ExerciseStartOutputDTO outputDTO = new ExerciseStartOutputDTO();
         outputDTO.setExerciseExecutionId(exerciseCompletionInformation.getId());
 
-        logService.createLog(patient.getId(), LogTypes.EXERCISE_START,exerciseId);
+        logService.createLog(patient.getId(), LogTypes.EXERCISE_START,exerciseId,"" );
         return outputDTO;
     }
 
@@ -258,7 +258,7 @@ public class ExerciseService {
         exerciseCompletionInformation.setExerciseMoodAfter(toContainer(exerciseInformationInputDTO.getMoodsAfter()));
 
         exerciseInformationRepository.save(exerciseCompletionInformation);
-        logService.createLog(patient.getId(), LogTypes.EXERCISE_COMPLETION,exerciseId);
+        logService.createLog(patient.getId(), LogTypes.EXERCISE_COMPLETION,exerciseId, "");
 
     }
 
@@ -288,7 +288,7 @@ public class ExerciseService {
             exerciseCompletionInformation.getComponentAnswers().add(answer);
         }
         exerciseInformationRepository.save(exerciseCompletionInformation);
-        logService.createLog(patient.getId(), LogTypes.EXERCISE_UPDATE, exerciseId);
+        logService.createLog(patient.getId(), LogTypes.EXERCISE_UPDATE, exerciseId,"");
 
     }
 

@@ -59,7 +59,7 @@ public class DocumentController {
 
         MediaType mediaType = MediaType.parseMediaType(dto.getContentType());
 
-        logService.createLog(loggedInPatient.getId(), LogTypes.DOCUMENT_READ, documentId);
+        logService.createLog(loggedInPatient.getId(), LogTypes.DOCUMENT_READ, documentId, "");
         return ResponseEntity.ok().contentType(mediaType)
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + dto.getFilename() + "\"")
                 .body(dto.getData());

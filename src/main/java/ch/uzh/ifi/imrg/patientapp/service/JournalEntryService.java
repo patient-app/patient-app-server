@@ -157,7 +157,7 @@ public class JournalEntryService {
 
         decryptJournalDTO(outputDTO, key);
 
-        logService.createLog(patient.getId(), LogTypes.JOURNAL_UPDATE,entryId);
+        logService.createLog(patient.getId(), LogTypes.JOURNAL_UPDATE,entryId, "");
         return outputDTO;
 
     }
@@ -217,7 +217,6 @@ public class JournalEntryService {
 
         return result;
     }
-
     public CoachJournalEntryOutputDTO getOneEntryForCoach(String patientId, String entryId) {
         JournalEntry entry = journalEntryRepository.findByIdAndSharedWithTherapistTrue(entryId)
                 .orElseThrow(() -> new AccessDeniedException(
