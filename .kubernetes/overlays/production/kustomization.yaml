@@ -12,6 +12,10 @@ configMapGenerator:
       - DB_NAME=patient_app_production_db
       - DB_USERNAME=therapist-user
       - APP_COOKIE_DOMAIN=jonas-blum.ch
+      - MAIL_HOST=smtp.gmail.com
+      - MAIL_PORT=587
+      - MAIL_PROTOCOL=smtp
+      - MAIL_AUTH=true
 
 secretGenerator:
   - name: patient-app-backend-secret
