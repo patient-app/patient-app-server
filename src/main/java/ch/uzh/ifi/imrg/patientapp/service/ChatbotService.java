@@ -15,7 +15,9 @@ import ch.uzh.ifi.imrg.patientapp.rest.dto.output.ConversationSummaryOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.ChatbotMapper;
 import ch.uzh.ifi.imrg.patientapp.service.aiService.PromptBuilderService;
 import jakarta.transaction.Transactional;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,12 +45,12 @@ public class ChatbotService {
     public void createChatbot(String patientId, CreateChatbotDTO createChatbotDTO) {
         Patient patient = patientRepository.getPatientById(patientId);
         if (patient == null) {
-            throw new IllegalArgumentException("No patient found with this ID");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No patient found with ID: " + patientId);
         }
 
         List<ChatbotTemplate> existing = chatbotTemplateRepository.findByPatientId(patient.getId());
         if (!existing.isEmpty()) {
-            throw new IllegalStateException("Chatbot template already exists for this patient: ");
+            throw new ResponseStatusException(HttpStatus.CONFLICT,"Chatbot template already exists for this patient: ");
         }
 
         ChatbotTemplate chatbotTemplate = ChatbotMapper.INSTANCE.convertCreateChatbotDTOToChatbotTemplate(createChatbotDTO);
@@ -60,7 +62,7 @@ public class ChatbotService {
     public void updateChatbot(String patientId, UpdateChatbotDTO updateChatbotDTO) {
         Patient patient = patientRepository.getPatientById(patientId);
         if (patient == null) {
-            throw new IllegalArgumentException("No patient found with ID: " + patientId);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No patient found with ID: " + patientId);
         }
         ChatbotTemplate chatbotTemplate = chatbotTemplateRepository.findById(updateChatbotDTO.getId())
                 .orElseThrow(() -> new IllegalArgumentException("No chatbot configuration found for patient ID: " + patientId));
@@ -72,7 +74,7 @@ public class ChatbotService {
     public List<ChatbotConfigurationOutputDTO> getChatbotConfigurations(String patientId) {
         Patient patient = patientRepository.getPatientById(patientId);
         if (patient == null) {
-            throw new IllegalArgumentException("No patient found with ID: " + patientId);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No patient found with ID: " + patientId);
         }
         List<ChatbotTemplate> chatbotTemplates = chatbotTemplateRepository.findByPatientId(patient.getId());
         return ChatbotMapper.INSTANCE.chatbotTemplatesToChatbotConfigurationOutputDTOs(chatbotTemplates);
@@ -81,7 +83,7 @@ public class ChatbotService {
     public String getWelcomeMessage(String patientId) {
         Patient patient = patientRepository.getPatientById(patientId);
         if (patient == null) {
-            throw new IllegalArgumentException("No patient found with ID: " + patientId);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No patient found with ID: " + patientId);
         }
         List<ChatbotTemplate> chatbotTemplates = chatbotTemplateRepository.findByPatientId(patient.getId());
         if (chatbotTemplates.isEmpty()) {
@@ -93,12 +95,12 @@ public class ChatbotService {
     public ConversationSummaryOutputDTO getConversationSummary(String patientId, GetConversationSummaryInputDTO getConversationSummaryInputDTO) {
         Patient patient = patientRepository.getPatientById(patientId);
         if (patient == null) {
-            throw new IllegalArgumentException("No patient found with ID: " + patientId);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No patient found with ID: " + patientId);
         }
         List<GeneralConversation> conversations = conversationRepository.getConversationsSharedWithCoachByPatientId(patientId);
 
         if (conversations.isEmpty()) {
-            throw new IllegalArgumentException("No conversations found for this patient");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No conversations found for this patient");
         }
         authorizationService.checkConversationAccess(conversations.getFirst(), patient, "You do not have access to conversations, which are not yours.");
 

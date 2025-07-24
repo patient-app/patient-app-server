@@ -108,7 +108,6 @@ public class PsychologicalTestService {
                 .toList();
     }
 
-
     public List<PsychologicalTestOutputDTO> getPsychologicalTestResultsForCoach(String patientId, String psychologicalTestName) {
         return psychologicalTestRepository.findAllByPatientIdAndName(patientId, psychologicalTestName)
                 .stream()

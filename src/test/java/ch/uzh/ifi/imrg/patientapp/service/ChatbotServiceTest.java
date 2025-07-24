@@ -19,6 +19,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
@@ -95,8 +96,8 @@ public class ChatbotServiceTest {
         when(patientRepository.getPatientById(patientId)).thenReturn(null);
 
         // Act & Assert
-        IllegalArgumentException ex = assertThrows(
-                IllegalArgumentException.class,
+        ResponseStatusException ex = assertThrows(
+                ResponseStatusException.class,
                 () -> chatbotService.createChatbot(patientId, createChatbotDTO)
         );
         assertTrue(ex.getMessage().contains("No patient found"));
@@ -138,8 +139,8 @@ public class ChatbotServiceTest {
         when(patientRepository.getPatientById(patientId)).thenReturn(null);
 
         // Act & Assert
-        IllegalArgumentException ex = assertThrows(
-                IllegalArgumentException.class,
+        ResponseStatusException ex = assertThrows(
+                ResponseStatusException.class,
                 () -> chatbotService.updateChatbot(patientId, dto)
         );
         assertTrue(ex.getMessage().contains("No patient found"));
@@ -204,8 +205,8 @@ public class ChatbotServiceTest {
         when(patientRepository.getPatientById(patientId)).thenReturn(null);
 
         // Act & Assert
-        IllegalArgumentException ex = assertThrows(
-                IllegalArgumentException.class,
+        ResponseStatusException ex = assertThrows(
+                ResponseStatusException.class,
                 () -> chatbotService.getChatbotConfigurations(patientId)
         );
         assertTrue(ex.getMessage().contains("No patient found"));
@@ -230,8 +231,8 @@ public class ChatbotServiceTest {
         when(chatbotTemplateRepository.findByPatientId(patientId)).thenReturn(List.of(existingTemplate));
 
         // Act & Assert
-        IllegalStateException ex = assertThrows(
-                IllegalStateException.class,
+        ResponseStatusException ex = assertThrows(
+                ResponseStatusException.class,
                 () -> chatbotService.createChatbot(patientId, createChatbotDTO)
         );
 
@@ -249,8 +250,8 @@ public class ChatbotServiceTest {
         when(patientRepository.getPatientById(patientId)).thenReturn(null);
 
         // Act & Assert
-        IllegalArgumentException ex = assertThrows(
-                IllegalArgumentException.class,
+        ResponseStatusException ex = assertThrows(
+                ResponseStatusException.class,
                 () -> chatbotService.getWelcomeMessage(patientId)
         );
         assertTrue(ex.getMessage().contains("No patient found with ID: " + patientId));
@@ -313,8 +314,8 @@ public class ChatbotServiceTest {
         when(patientRepository.getPatientById(patientId)).thenReturn(null);
 
         // Act & Assert
-        IllegalArgumentException ex = assertThrows(
-                IllegalArgumentException.class,
+        ResponseStatusException ex = assertThrows(
+                ResponseStatusException.class,
                 () -> chatbotService.getConversationSummary(patientId, inputDTO)
         );
         assertTrue(ex.getMessage().contains("No patient found with ID: " + patientId));
@@ -334,8 +335,8 @@ public class ChatbotServiceTest {
         when(conversationRepository.getConversationsSharedWithCoachByPatientId(patientId)).thenReturn(List.of());
 
         // Act & Assert
-        IllegalArgumentException ex = assertThrows(
-                IllegalArgumentException.class,
+        ResponseStatusException ex = assertThrows(
+                ResponseStatusException.class,
                 () -> chatbotService.getConversationSummary(patientId, inputDTO)
         );
         assertTrue(ex.getMessage().contains("No conversations found"));
