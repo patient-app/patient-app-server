@@ -14,6 +14,7 @@ public class ExerciseComponentOutputDTO {
     private String userInput;
     private String fileName;
     private String fileType;
+    private String youtubeUrl;
     @Schema(type = "string", format = "byte", description = "File data encoded in Base64")
     private byte[] fileData;
     private Integer orderNumber;

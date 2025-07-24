@@ -1,6 +1,5 @@
 package ch.uzh.ifi.imrg.patientapp.service;
 
-
 import ch.uzh.ifi.imrg.patientapp.constant.LogTypes;
 import ch.uzh.ifi.imrg.patientapp.entity.ChatbotTemplate;
 import ch.uzh.ifi.imrg.patientapp.entity.Exercise.*;
@@ -13,7 +12,9 @@ import ch.uzh.ifi.imrg.patientapp.rest.mapper.ExerciseComponentMapper;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.ExerciseMapper;
 import ch.uzh.ifi.imrg.patientapp.service.aiService.PromptBuilderService;
 import jakarta.transaction.Transactional;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -50,7 +51,7 @@ public class ExerciseService {
     public List<ExercisesOverviewOutputDTO>getAllExercisesForCoach(String patientId){
         Patient patient = patientRepository.getPatientById(patientId);
         if (patient == null) {
-            throw new IllegalArgumentException("No patient found with ID: " + patientId);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No exercise found, create one first.");
         }
         List<Exercise> exercises = exerciseRepository.getExercisesByPatientId(patient.getId());
         return exerciseMapper.exercisesToExerciseOverviewOutputDTOs(exercises);
@@ -59,7 +60,7 @@ public class ExerciseService {
     public List<ExerciseComponentOverviewOutputDTO> getAllExercisesComponentsOfAnExerciseForCoach(String patientId, String exerciseId) {
         Exercise exercise = exerciseRepository.getExerciseById(exerciseId);
         if (exercise == null) {
-            throw new IllegalArgumentException("No exercise found with ID: " + exerciseId);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No exercise found, create one first.");
         }
         authorizationService.checkExerciseAccess(exercise, patientRepository.getPatientById(patientId), "Patient does not have access to this exercise");
         return ExerciseComponentMapper.INSTANCE.exerciseComponentsToExerciseComponentsOverviewOutputDTOs(exercise.getExerciseComponents());
@@ -77,7 +78,7 @@ public class ExerciseService {
     public List<ExecutionOverviewOutputDTO> getOneExercisesOverview(Patient patient, String exerciseId) {
         Exercise exercise = exerciseRepository.getExerciseById(exerciseId);
         if (exercise == null) {
-            throw new IllegalArgumentException("No exercise found with ID: " + exerciseId);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No exercise found, create one first.");
         }
         authorizationService.checkExerciseAccess(exercise, patient, "Patient does not have access to this exercise");
         List<ExerciseCompletionInformation> exerciseCompletionInformations = exerciseInformationRepository.getExerciseInformationByExerciseId(exercise.getId());
@@ -87,7 +88,7 @@ public class ExerciseService {
     public ExerciseOutputDTO getExerciseExecution(String exerciseId, Patient patient, String exerciseExecutionId) {
         Exercise exercise = exerciseRepository.getExerciseById(exerciseId);
         if (exercise == null) {
-            throw new IllegalArgumentException("No exercise found with ID: " + exerciseId);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No exercise found, create one first.");
         }
         authorizationService.checkExerciseAccess(exercise, patient, "Patient does not have access to this exercise");
 
@@ -111,7 +112,7 @@ public class ExerciseService {
 
         ChatbotTemplate chatbotTemplate = chatbotTemplateRepository.findByPatientId(patientId).stream()
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("No chatbot template found for patient with ID: " + patientId));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"No chatbot template found, create chatbot first. "));
 
         ExerciseConversation exerciseConversation = new ExerciseConversation();
         exerciseConversation.setPatient(patient);
@@ -127,7 +128,7 @@ public class ExerciseService {
     public ExerciseStartOutputDTO startExercise(String exerciseId, Patient patient) {
         Exercise exercise = exerciseRepository.getExerciseById(exerciseId);
         if (exercise == null) {
-            throw new IllegalArgumentException("No exercise found with ID: " + exerciseId);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No exercise found, create one first.");
         }
         authorizationService.checkExerciseAccess(exercise, patient, "Patient does not have access to this exercise");
 
@@ -145,7 +146,7 @@ public class ExerciseService {
     public void createExerciseComponent(String patientId, String exerciseId, ExerciseComponentInputDTO exerciseComponentInputDTO) {
         Exercise exercise = exerciseRepository.getExerciseById(exerciseId);
         if (exercise == null) {
-            throw new IllegalArgumentException("No exercise found with ID: " + exerciseId);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No exercise found, create one first.");
         }
         authorizationService.checkExerciseAccess(exercise, patientRepository.getPatientById(patientId), "Patient does not have access to this exercise");
         ExerciseComponent exerciseComponent = ExerciseComponentMapper.INSTANCE.exerciseComponentInputDTOToExerciseComponent(exerciseComponentInputDTO);
@@ -157,12 +158,12 @@ public class ExerciseService {
     public ExerciseChatbotOutputDTO getExerciseChatbot(String exerciseId, Patient patient) {
         Exercise exercise = exerciseRepository.getExerciseById(exerciseId);
         if (exercise == null) {
-            throw new IllegalArgumentException("No exercise found with ID: " + exerciseId);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No exercise found, create one first.");
         }
         authorizationService.checkExerciseAccess(exercise, patient, "Patient does not have access to this exercise");
         ExerciseConversation conversation = exercise.getExerciseConversation();
         if (conversation == null) {
-            throw new IllegalArgumentException("No conversation found for exercise with ID: " + exerciseId);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No conversation found, create one first.");
         }
         return exerciseMapper.exerciseConversationToExerciseChatbotOutputDTO(conversation);
     }
@@ -170,7 +171,7 @@ public class ExerciseService {
     public void updateExercise(String patientId, String exerciseId, ExerciseUpdateInputDTO exerciseUpdateInputDTO) {
         Exercise exercise = exerciseRepository.getExerciseById(exerciseId);
         if (exercise == null) {
-            throw new IllegalArgumentException("No exercise found with ID: " + exerciseId);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No exercise found, create one first.");
         }
         authorizationService.checkExerciseAccess(
                 exercise,
@@ -204,13 +205,13 @@ public class ExerciseService {
     public void updateExerciseComponent(String patientId, String exerciseId, String exerciseComponentId, ExerciseComponentUpdateInputDTO exerciseComponentUpdateInputDTO) {
         Exercise exercise = exerciseRepository.getExerciseById(exerciseId);
         if (exercise == null) {
-            throw new IllegalArgumentException("No exercise found with ID: " + exerciseId);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No exercise found, create one first.");
         }
         authorizationService.checkExerciseAccess(exercise, patientRepository.getPatientById(patientId), "Patient does not have access to this exercise");
 
         ExerciseComponent exerciseComponentFromRepository = exerciseComponentRepository.getExerciseComponentById(exerciseComponentId);
         if (exerciseComponentFromRepository == null) {
-            throw new IllegalArgumentException("No exercise component found with ID: " + exerciseComponentId);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No exercise found, create one first.");
         }
 
         ExerciseComponentMapper.INSTANCE.updateExerciseComponentFromExerciseComponentUpdateInputDTO(exerciseComponentUpdateInputDTO, exerciseComponentFromRepository);
@@ -220,10 +221,10 @@ public class ExerciseService {
     public void deleteExercise(String patientId, String exerciseId) {
         Exercise exercise = exerciseRepository.getExerciseById(exerciseId);
         if (exercise == null) {
-            throw new IllegalArgumentException("No exercise found with ID: " + exerciseId);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No exercise found, create one first.");
         }
         if (!exercise.getPatient().getId().equals(patientId)) {
-            throw new IllegalArgumentException("Patient does not have access to this exercise");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,"You do not have access to this exercise");
         }
         exerciseRepository.delete(exercise);
     }
@@ -231,13 +232,14 @@ public class ExerciseService {
     public void deleteExerciseComponent(String patientId, String exerciseId, String exerciseComponentId) {
         Exercise exercise = exerciseRepository.getExerciseById(exerciseId);
         if (exercise == null) {
-            throw new IllegalArgumentException("No exercise found with ID: " + exerciseId);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No exercise found, ask your coach to create one first.");
         }
         authorizationService.checkExerciseAccess(exercise, patientRepository.getPatientById(patientId), "Patient does not have access to this exercise");
 
         ExerciseComponent exerciseComponent = exerciseComponentRepository.getExerciseComponentById(exerciseComponentId);
         if (exerciseComponent == null) {
-            throw new IllegalArgumentException("No exercise component found with ID: " + exerciseComponentId);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No exercise component found, create one first.");
+
         }
         exercise.getExerciseComponents().remove(exerciseComponent);
         exerciseComponentRepository.delete(exerciseComponent);
@@ -246,7 +248,7 @@ public class ExerciseService {
     public void putExerciseFeedback(Patient patient, String exerciseId, ExerciseInformationInputDTO exerciseInformationInputDTO) {
         Exercise exercise = exerciseRepository.getExerciseById(exerciseId);
         if (exercise == null) {
-            throw new IllegalArgumentException("No exercise found with ID: " + exerciseId);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No exercise found, ask coach to create one first.");
         }
         authorizationService.checkExerciseAccess(exercise, patient, "Patient does not have access to this exercise");
         ExerciseCompletionInformation exerciseCompletionInformation = exerciseInformationRepository.getExerciseCompletionInformationById(exerciseInformationInputDTO.getExerciseExecutionId());
@@ -265,14 +267,15 @@ public class ExerciseService {
     public void setExerciseComponentResult(Patient patient, String exerciseId, ExerciseComponentResultInputDTO exerciseComponentResultInputDTO, String exerciseComponentId) throws Exception {
         Exercise exercise = exerciseRepository.getExerciseById(exerciseId);
         if (exercise == null) {
-            throw new IllegalArgumentException("No exercise found with ID: " + exerciseId);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No exercise found, ask your coach to create one first.");
         }
         authorizationService.checkExerciseAccess(exercise, patient, "Patient does not have access to this exercise");
 
         Optional <ExerciseCompletionInformation> optionalExerciseCompletionInformation =
                 exerciseInformationRepository.findById(exerciseComponentResultInputDTO.getExerciseExecutionId());
         if (!optionalExerciseCompletionInformation.isPresent()) {
-            throw new Exception("No exercise completion information found with this ID.");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No exercise completion found, create one first.");
+
         }
         ExerciseCompletionInformation exerciseCompletionInformation = optionalExerciseCompletionInformation.get();
         Optional<ExerciseComponentAnswer> optional = exerciseCompletionInformation.getComponentAnswerById(exerciseComponentId);
@@ -295,13 +298,14 @@ public class ExerciseService {
     public void setExerciseCompletionName(Patient patient, String exerciseId, ExerciseCompletionNameInputDTO exerciseCompletionNameInputDTO) {
         Exercise exercise = exerciseRepository.getExerciseById(exerciseId);
         if (exercise == null) {
-            throw new IllegalArgumentException("No exercise found with ID: " + exerciseId);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No exercise found, ask your coach to create one first.");
         }
         authorizationService.checkExerciseAccess(exercise, patient, "Patient does not have access to this exercise");
 
         ExerciseCompletionInformation exerciseCompletionInformation = exerciseInformationRepository.getExerciseCompletionInformationById(exerciseCompletionNameInputDTO.getExerciseExecutionId());
         if (exerciseCompletionInformation == null) {
-            throw new IllegalArgumentException("No exercise completion information found with ID: " + exerciseCompletionNameInputDTO.getExerciseExecutionId());
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No exercise completion found with ID: " + exerciseCompletionNameInputDTO.getExerciseExecutionId());
+
         }
         exerciseCompletionInformation.setExecutionTitle(exerciseCompletionNameInputDTO.getExecutionTitle());
         exerciseInformationRepository.save(exerciseCompletionInformation);
@@ -311,7 +315,7 @@ public class ExerciseService {
     public List<ExerciseInformationOutputDTO> getExerciseInformation(String patientId, String exerciseId) {
         Exercise exercise = exerciseRepository.getExerciseById(exerciseId);
         if (exercise == null) {
-            throw new IllegalArgumentException("No exercise found with ID: " + exerciseId);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No exercise found, aks your coach to create one first.");
         }
         authorizationService.checkExerciseAccess(exercise, patientRepository.getPatientById(patientId), "Patient does not have access to this exercise");
         List<ExerciseCompletionInformation> exerciseCompletionInformations = exerciseInformationRepository.getExerciseInformationByExerciseId(exercise.getId());
