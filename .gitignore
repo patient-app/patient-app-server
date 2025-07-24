@@ -40,3 +40,5 @@ out/
 .DS_Store
 
 src/main/resources/application-dev.properties
+
+compose.server.yaml
