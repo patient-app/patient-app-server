@@ -44,6 +44,8 @@ jobs:
           JWT_SECRET_KEY_PRODUCTION: ${{ secrets.JWT_SECRET_KEY_PRODUCTION }}
           CHATGPT_API_KEY: ${{ secrets.CHATGPT_API_KEY }}
           LOCAL_AI_API_KEY: ${{secrets.LOCAL_AI_API_KEY}}
+          MAIL_USERNAME: ${{secrets.MAIL_USERNAME}}
+          MAIL_PASSWORD: ${{secrets.MAIL_PASSWORD}}
 
         run: |
           if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
@@ -53,6 +55,8 @@ jobs:
             echo "JWT_SECRET_KEY=$JWT_SECRET_KEY_MAIN" >> .kubernetes/overlays/main/env.secrets
             echo "CHATGPT_API_KEY=$CHATGPT_API_KEY" >> .kubernetes/overlays/main/env.secrets
             echo "LOCAL_AI_API_KEY=$LOCAL_AI_API_KEY" >> .kubernetes/overlays/main/env.secrets
+            echo "MAIL_USERNAME=$MAIL_USERNAME" >> .kubernetes/overlays/main/env.secrets
+            echo "MAIL_PASSWORD=$MAIL_PASSWORD" >> .kubernetes/overlays/main/env.secrets
 
             kubectl apply -k .kubernetes/overlays/main
             kubectl rollout restart deployment/patient-app-backend -n patient-app-main
@@ -64,6 +68,8 @@ jobs:
             echo "JWT_SECRET_KEY=$JWT_SECRET_KEY_PRODUCTION" >> .kubernetes/overlays/production/env.secrets
             echo "CHATGPT_API_KEY=$CHATGPT_API_KEY" >> .kubernetes/overlays/production/env.secrets
             echo "LOCAL_AI_API_KEY=$LOCAL_AI_API_KEY" >> .kubernetes/overlays/production/env.secrets
+            echo "MAIL_USERNAME=$MAIL_USERNAME" >> .kubernetes/overlays/production/env.secrets
+            echo "MAIL_PASSWORD=$MAIL_PASSWORD" >> .kubernetes/overlays/production/env.secrets
             
 
             kubectl apply -k .kubernetes/overlays/production
