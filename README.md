@@ -9,7 +9,7 @@
 5. Visit <http://localhost:5050> in your browser to check if the database is running (email: <admin@admin.com>, password: admin)
 6. On <http://localhost:5050> connect to DB -> right click "Servers" -> "Register Server" -> "name" = `patient-app-postgres`, "Host name/address" = `patient-app-postgres`, "Port" = `5432`, "Username" = `patient-app-user`, "Password" = `patient-app-password`, and "Save Password?" = `Yes`
 7. `./gradlew bootRun`
-8. Visit <http://localhost:8080/client-backend> -> it should say: "The application is running."
+8. Visit <http://localhost:8080> -> it should say: "The application is running."
 
 ## Environment Variables
 
