@@ -158,7 +158,7 @@ public class ExerciseService {
     public ExerciseChatbotOutputDTO getExerciseChatbot(String exerciseId, Patient patient) {
         Exercise exercise = exerciseRepository.getExerciseById(exerciseId);
         if (exercise == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No exercise found, create one first.");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No exercise found, ask coach to create one.");
         }
         authorizationService.checkExerciseAccess(exercise, patient, "Patient does not have access to this exercise");
         ExerciseConversation conversation = exercise.getExerciseConversation();
@@ -232,7 +232,7 @@ public class ExerciseService {
     public void deleteExerciseComponent(String patientId, String exerciseId, String exerciseComponentId) {
         Exercise exercise = exerciseRepository.getExerciseById(exerciseId);
         if (exercise == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No exercise found, ask your coach to create one first.");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No exercise found, ask your coach to create one.");
         }
         authorizationService.checkExerciseAccess(exercise, patientRepository.getPatientById(patientId), "Patient does not have access to this exercise");
 
@@ -267,7 +267,7 @@ public class ExerciseService {
     public void setExerciseComponentResult(Patient patient, String exerciseId, ExerciseComponentResultInputDTO exerciseComponentResultInputDTO, String exerciseComponentId) throws Exception {
         Exercise exercise = exerciseRepository.getExerciseById(exerciseId);
         if (exercise == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No exercise found, ask your coach to create one first.");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No exercise found, ask your coach to create one.");
         }
         authorizationService.checkExerciseAccess(exercise, patient, "Patient does not have access to this exercise");
 
@@ -298,13 +298,13 @@ public class ExerciseService {
     public void setExerciseCompletionName(Patient patient, String exerciseId, ExerciseCompletionNameInputDTO exerciseCompletionNameInputDTO) {
         Exercise exercise = exerciseRepository.getExerciseById(exerciseId);
         if (exercise == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No exercise found, ask your coach to create one first.");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No exercise found, ask your coach to create one.");
         }
         authorizationService.checkExerciseAccess(exercise, patient, "Patient does not have access to this exercise");
 
         ExerciseCompletionInformation exerciseCompletionInformation = exerciseInformationRepository.getExerciseCompletionInformationById(exerciseCompletionNameInputDTO.getExerciseExecutionId());
         if (exerciseCompletionInformation == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No exercise completion found with ID: " + exerciseCompletionNameInputDTO.getExerciseExecutionId());
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No exercise completion found");
 
         }
         exerciseCompletionInformation.setExecutionTitle(exerciseCompletionNameInputDTO.getExecutionTitle());
@@ -315,7 +315,7 @@ public class ExerciseService {
     public List<ExerciseInformationOutputDTO> getExerciseInformation(String patientId, String exerciseId) {
         Exercise exercise = exerciseRepository.getExerciseById(exerciseId);
         if (exercise == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No exercise found, aks your coach to create one first.");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No exercise found, ask your coach to create one first.");
         }
         authorizationService.checkExerciseAccess(exercise, patientRepository.getPatientById(patientId), "Patient does not have access to this exercise");
         List<ExerciseCompletionInformation> exerciseCompletionInformations = exerciseInformationRepository.getExerciseInformationByExerciseId(exercise.getId());
