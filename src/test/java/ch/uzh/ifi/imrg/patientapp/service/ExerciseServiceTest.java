@@ -10,11 +10,14 @@ import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.*;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.*;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.ExerciseMapper;
 import ch.uzh.ifi.imrg.patientapp.service.aiService.PromptBuilderService;
+import org.jsoup.HttpStatusException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -23,6 +26,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import static ch.qos.logback.core.util.AggregationType.NOT_FOUND;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -147,12 +151,12 @@ class ExerciseServiceTest {
         when(patientRepository.getPatientById(patientId)).thenReturn(null);
 
         // Act + Assert
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        ResponseStatusException exception = assertThrows(
+                ResponseStatusException.class,
                 () -> exerciseService.getAllExercisesForCoach(patientId)
         );
 
-        assertEquals("No patient found with ID: " + patientId, exception.getMessage());
+        assertEquals("404 NOT_FOUND \"No exercise found, create one first.\"", exception.getMessage());
         verify(patientRepository).getPatientById(patientId);
         verifyNoMoreInteractions(patientRepository, exerciseRepository, exerciseMapper);
     }
@@ -192,12 +196,12 @@ class ExerciseServiceTest {
         when(exerciseRepository.getExerciseById(exerciseId)).thenReturn(null);
 
         // Act + Assert
-        IllegalArgumentException ex = assertThrows(
-                IllegalArgumentException.class,
+        ResponseStatusException ex = assertThrows(
+                ResponseStatusException.class,
                 () -> exerciseService.updateExercise(patientId, exerciseId, inputDTO)
         );
 
-        assertEquals("No exercise found with ID: " + exerciseId, ex.getMessage());
+        assertEquals("404 NOT_FOUND \"No exercise found, create one first.\"", ex.getMessage());
         verify(exerciseRepository).getExerciseById(exerciseId);
         verifyNoMoreInteractions(exerciseRepository);
         verifyNoInteractions(exerciseMapper);
@@ -271,12 +275,12 @@ class ExerciseServiceTest {
         when(exerciseRepository.getExerciseById(exerciseId)).thenReturn(null);
 
         // Act + Assert
-        IllegalArgumentException ex = assertThrows(
-                IllegalArgumentException.class,
+        ResponseStatusException ex = assertThrows(
+                ResponseStatusException.class,
                 () -> exerciseService.deleteExercise(patientId, exerciseId)
         );
 
-        assertEquals("No exercise found with ID: " + exerciseId, ex.getMessage());
+        assertEquals("404 NOT_FOUND \"No exercise found, create one first.\"", ex.getMessage());
         verify(exerciseRepository).getExerciseById(exerciseId);
         verifyNoMoreInteractions(exerciseRepository);
     }
@@ -296,12 +300,12 @@ class ExerciseServiceTest {
         when(exerciseRepository.getExerciseById(exerciseId)).thenReturn(exercise);
 
         // Act + Assert
-        IllegalArgumentException ex = assertThrows(
-                IllegalArgumentException.class,
+        ResponseStatusException ex = assertThrows(
+                ResponseStatusException.class,
                 () -> exerciseService.deleteExercise(patientId, exerciseId)
         );
 
-        assertEquals("Patient does not have access to this exercise", ex.getMessage());
+        assertEquals("403 FORBIDDEN \"You do not have access to this exercise\"", ex.getMessage());
         verify(exerciseRepository).getExerciseById(exerciseId);
         verifyNoMoreInteractions(exerciseRepository);
     }
@@ -317,10 +321,10 @@ class ExerciseServiceTest {
         when(exerciseRepository.getExerciseById(exerciseId)).thenReturn(null);
 
         // Act + Assert
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () ->
                 exerciseService.putExerciseFeedback(patient, exerciseId, inputDTO)
         );
-        assertEquals("No exercise found with ID: " + exerciseId, ex.getMessage());
+        assertEquals("404 NOT_FOUND \"No exercise found, ask coach to create one first.\"", ex.getMessage());
 
         verify(exerciseRepository).getExerciseById(exerciseId);
         verifyNoMoreInteractions(exerciseRepository, exerciseMapper, exerciseInformationRepository);
@@ -401,10 +405,10 @@ class ExerciseServiceTest {
         when(exerciseRepository.getExerciseById(exerciseId)).thenReturn(null);
 
         // Act & Assert
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () ->
                 exerciseService.getExerciseInformation(patientId, exerciseId)
         );
-        assertEquals("No exercise found with ID: " + exerciseId, ex.getMessage());
+        assertEquals("404 NOT_FOUND \"No exercise found, ask your coach to create one first.\"", ex.getMessage());
 
         verify(exerciseRepository).getExerciseById(exerciseId);
         verifyNoMoreInteractions(exerciseRepository, exerciseInformationRepository, exerciseMapper);
@@ -453,11 +457,11 @@ class ExerciseServiceTest {
         when(exerciseRepository.getExerciseById(exerciseId)).thenReturn(null);
 
         // Act + Assert
-        IllegalArgumentException ex = assertThrows(
-                IllegalArgumentException.class,
+        ResponseStatusException ex = assertThrows(
+                ResponseStatusException.class,
                 () -> exerciseService.getExerciseChatbot(exerciseId,patient)
         );
-        assertEquals("No exercise found with ID: " + exerciseId, ex.getMessage());
+        assertEquals("404 NOT_FOUND \"No exercise found, ask coach to create one.\"", ex.getMessage());
 
         verify(exerciseRepository).getExerciseById(exerciseId);
         verifyNoInteractions(exerciseMapper);
@@ -474,11 +478,11 @@ class ExerciseServiceTest {
         when(exerciseRepository.getExerciseById(exerciseId)).thenReturn(exercise);
 
         // Act + Assert
-        IllegalArgumentException ex = assertThrows(
-                IllegalArgumentException.class,
+        ResponseStatusException ex = assertThrows(
+                ResponseStatusException.class,
                 () -> exerciseService.getExerciseChatbot(exerciseId,patient)
         );
-        assertEquals("No conversation found for exercise with ID: " + exerciseId, ex.getMessage());
+        assertEquals("404 NOT_FOUND \"No conversation found, create one first.\"", ex.getMessage());
 
         verify(exerciseRepository).getExerciseById(exerciseId);
         verifyNoInteractions(exerciseMapper);
@@ -515,11 +519,11 @@ class ExerciseServiceTest {
         when(exerciseRepository.getExerciseById(exerciseId)).thenReturn(null);
 
         // Act + Assert
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () ->
                 exerciseService.getAllExercisesComponentsOfAnExerciseForCoach(patientId, exerciseId)
         );
 
-        assertEquals("No exercise found with ID: " + exerciseId, ex.getMessage());
+        assertEquals("404 NOT_FOUND \"No exercise found, create one first.\"", ex.getMessage());
         verify(exerciseRepository).getExerciseById(exerciseId);
         verifyNoMoreInteractions(exerciseRepository, patientRepository, authorizationService);
     }
@@ -639,11 +643,11 @@ class ExerciseServiceTest {
         when(exerciseRepository.getExerciseById(exerciseId)).thenReturn(null);
 
         // Act & Assert
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () ->
                 exerciseService.getOneExercisesOverview(patient, exerciseId)
         );
 
-        assertEquals("No exercise found with ID: " + exerciseId, ex.getMessage());
+        assertEquals("404 NOT_FOUND \"No exercise found, create one first.\"", ex.getMessage());
         verify(exerciseRepository).getExerciseById(exerciseId);
         verifyNoMoreInteractions(exerciseRepository, exerciseInformationRepository);
     }
@@ -719,10 +723,10 @@ class ExerciseServiceTest {
         when(exerciseRepository.getExerciseById(exerciseId)).thenReturn(null);
 
         // Act + Assert
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
                 () -> exerciseService.getExerciseExecution(exerciseId, patient, executionId));
 
-        assertEquals("No exercise found with ID: " + exerciseId, ex.getMessage());
+        assertEquals("404 NOT_FOUND \"No exercise found, create one first.\"", ex.getMessage());
 
         verify(exerciseRepository).getExerciseById(exerciseId);
         verifyNoMoreInteractions(exerciseRepository);
@@ -840,10 +844,10 @@ class ExerciseServiceTest {
         when(exerciseRepository.getExerciseById(exerciseId)).thenReturn(null);
 
         // Act & Assert
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () ->
                 exerciseService.startExercise(exerciseId, patient)
         );
-        assertEquals("No exercise found with ID: " + exerciseId, ex.getMessage());
+        assertEquals("404 NOT_FOUND \"No exercise found, create one first.\"", ex.getMessage());
         verify(exerciseRepository).getExerciseById(exerciseId);
         verifyNoMoreInteractions(exerciseRepository, exerciseInformationRepository, authorizationService);
     }
@@ -899,11 +903,11 @@ class ExerciseServiceTest {
         when(exerciseRepository.getExerciseById(exerciseId)).thenReturn(null);
 
         // Act & Assert
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () ->
                 exerciseService.createExerciseComponent(patientId, exerciseId, inputDTO)
         );
 
-        assertEquals("No exercise found with ID: " + exerciseId, ex.getMessage());
+        assertEquals("404 NOT_FOUND \"No exercise found, create one first.\"", ex.getMessage());
         verify(exerciseRepository).getExerciseById(exerciseId);
         verifyNoMoreInteractions(exerciseRepository, patientRepository, authorizationService);
     }
@@ -1078,12 +1082,12 @@ class ExerciseServiceTest {
         String exerciseId = "missing-exercise";
         when(exerciseRepository.getExerciseById(exerciseId)).thenReturn(null);
 
-        IllegalArgumentException ex = assertThrows(
-                IllegalArgumentException.class,
+        ResponseStatusException ex = assertThrows(
+                ResponseStatusException.class,
                 () -> exerciseService.updateExerciseComponent("p1", exerciseId, "c1", new ExerciseComponentUpdateInputDTO())
         );
 
-        assertEquals("No exercise found with ID: " + exerciseId, ex.getMessage());
+        assertEquals("404 NOT_FOUND \"No exercise found, create one first.\"", ex.getMessage());
         verifyNoInteractions(patientRepository, exerciseComponentRepository);
     }
 
@@ -1136,11 +1140,11 @@ class ExerciseServiceTest {
         when(exerciseComponentRepository.getExerciseComponentById(componentId)).thenReturn(null);
 
         // Act + Assert
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () ->
                 exerciseService.updateExerciseComponent(patientId, exerciseId, componentId, new ExerciseComponentUpdateInputDTO())
         );
 
-        assertEquals("No exercise component found with ID: " + componentId, ex.getMessage());
+        assertEquals("404 NOT_FOUND \"No exercise found, create one first.\"", ex.getMessage());
 
         verify(exerciseRepository).getExerciseById(exerciseId);
         verify(patientRepository).getPatientById(patientId);
@@ -1191,11 +1195,11 @@ class ExerciseServiceTest {
         when(exerciseRepository.getExerciseById(exerciseId)).thenReturn(null);
 
         // Act + Assert
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () ->
                 exerciseService.deleteExerciseComponent("p1", exerciseId, "c1")
         );
 
-        assertEquals("No exercise found with ID: " + exerciseId, ex.getMessage());
+        assertEquals("404 NOT_FOUND \"No exercise found, ask your coach to create one.\"", ex.getMessage());
         verify(exerciseRepository).getExerciseById(exerciseId);
         verifyNoMoreInteractions(exerciseRepository);
     }
@@ -1220,11 +1224,11 @@ class ExerciseServiceTest {
         when(exerciseComponentRepository.getExerciseComponentById(componentId)).thenReturn(null);
 
         // Act + Assert
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () ->
                 exerciseService.deleteExerciseComponent(patientId, exerciseId, componentId)
         );
 
-        assertEquals("No exercise component found with ID: " + componentId, ex.getMessage());
+        assertEquals("404 NOT_FOUND \"No exercise component found, create one first.\"", ex.getMessage());
 
         verify(exerciseRepository).getExerciseById(exerciseId);
         verify(patientRepository).getPatientById(patientId);
@@ -1394,10 +1398,10 @@ class ExerciseServiceTest {
         when(exerciseRepository.getExerciseById(exerciseId)).thenReturn(null);
 
         // Act + Assert
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () ->
                 exerciseService.setExerciseComponentResult(new Patient(), exerciseId, dto, "comp1"));
 
-        assertEquals("No exercise found with ID: " + exerciseId, ex.getMessage());
+        assertEquals("404 NOT_FOUND \"No exercise found, ask your coach to create one.\"", ex.getMessage());
     }
 
     @Test
@@ -1424,7 +1428,7 @@ class ExerciseServiceTest {
         Exception ex = assertThrows(Exception.class, () ->
                 exerciseService.setExerciseComponentResult(patient, exerciseId, dto, "comp1"));
 
-        assertEquals("No exercise completion information found with this ID.", ex.getMessage());
+        assertEquals("404 NOT_FOUND \"No exercise completion found, create one first.\"", ex.getMessage());
     }
 
     @Test
@@ -1471,11 +1475,11 @@ class ExerciseServiceTest {
         when(exerciseRepository.getExerciseById(exerciseId)).thenReturn(null);
 
         // Act + Assert
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () ->
                 exerciseService.setExerciseCompletionName(new Patient(), exerciseId, inputDTO)
         );
 
-        assertEquals("No exercise found with ID: " + exerciseId, ex.getMessage());
+        assertEquals("404 NOT_FOUND \"No exercise found, ask your coach to create one.\"", ex.getMessage());
     }
 
     @Test
@@ -1500,11 +1504,11 @@ class ExerciseServiceTest {
         when(exerciseInformationRepository.getExerciseCompletionInformationById(execId)).thenReturn(null);
 
         // Act + Assert
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () ->
                 exerciseService.setExerciseCompletionName(patient, exerciseId, inputDTO)
         );
 
-        assertEquals("No exercise completion information found with ID: " + execId, ex.getMessage());
+        assertEquals("404 NOT_FOUND \"No exercise completion found\"", ex.getMessage());
     }
 
     @Test

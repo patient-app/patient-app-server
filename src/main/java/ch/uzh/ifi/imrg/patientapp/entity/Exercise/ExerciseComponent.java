@@ -48,6 +48,8 @@ public class ExerciseComponent {
     @Column()
     private Integer orderNumber;
 
+    private String youtubeUrl;
+
     @ManyToOne
     @JoinColumn(name = "exercise_id", referencedColumnName = "id")
     private Exercise exercise;
