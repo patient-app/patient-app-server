@@ -329,4 +329,38 @@ public class PromptBuilderServiceTest {
         assertTrue(ex.getMessage().contains("This is some malformed response"));
     }
 
+    @Test
+    void getJournalSystemPrompt_shouldContainAllInputs() {
+        ChatbotTemplate template = new ChatbotTemplate();
+        template.setChatbotRole("therapist");
+        template.setChatbotTone("empathetic");
+
+        String title = "My Day";
+        String content = "Today I felt overwhelmed by work.";
+
+        String result = promptBuilderService.getJournalSystemPrompt(template, title, content);
+
+        assertTrue(result.contains("therapist"));
+        assertTrue(result.contains("empathetic"));
+        assertTrue(result.contains("My Day"));
+        assertTrue(result.contains("Today I felt overwhelmed by work."));
+        assertTrue(result.length() < 1000); // sanity check for length
+    }
+
+    @Test
+    void getDocumentSystemPrompt_shouldContainAllInputs() {
+        ChatbotTemplate template = new ChatbotTemplate();
+        template.setChatbotRole("coach");
+        template.setChatbotTone("supportive");
+
+        String document = "This is a patient summary with important information.";
+
+        String result = promptBuilderService.getDocumentSystemPrompt(template, document);
+
+        assertTrue(result.contains("coach"));
+        assertTrue(result.contains("supportive"));
+        assertTrue(result.contains(document));
+        assertTrue(result.length() < 1000); // sanity check for length
+    }
+
 }

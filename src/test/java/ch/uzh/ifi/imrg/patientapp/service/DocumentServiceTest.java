@@ -10,6 +10,10 @@ import java.util.HexFormat;
 import java.util.List;
 import java.util.Optional;
 
+import ch.uzh.ifi.imrg.patientapp.entity.Document.DocumentConversation;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.output.document.DocumentChatbotOutputDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.mapper.DocumentMapper;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,6 +45,9 @@ public class DocumentServiceTest {
         private PatientRepository patientRepository;
         @Mock
         private PatientDocumentRepository patientDocumentRepository;
+
+        @Mock
+        private DocumentMapper documentMapper;
 
         @Mock
         private PromptBuilderService promptBuilderService;
@@ -269,4 +276,67 @@ public class DocumentServiceTest {
                 verify(spySvc).removeDocumentForPatient("p1", "d1");
                 verify(spySvc).removeDocumentForPatient("p1", "d2");
         }
+
+        @Test
+        void getDocumentChatbot_shouldReturnDTO_whenConversationExists() {
+                // Arrange
+                Patient patient = new Patient();
+                patient.setId("p1");
+
+                String documentId = "doc123";
+                PatientDocumentId pk = new PatientDocumentId("p1", "doc123");
+
+                DocumentConversation conversation = new DocumentConversation();
+                PatientDocument patientDocument = new PatientDocument();
+                patientDocument.setConversation(conversation);
+
+                when(patientDocumentRepository.findById(pk)).thenReturn(Optional.of(patientDocument));
+
+                DocumentChatbotOutputDTO expectedDTO = new DocumentChatbotOutputDTO();
+                when(documentMapper.documentConversationToExcerciseChatbotOutputDTO(conversation)).thenReturn(expectedDTO);
+
+                // Act
+                DocumentChatbotOutputDTO result = service.getDocumentChatbot(patient, documentId);
+
+                // Assert
+                assertSame(expectedDTO, result);
+        }
+
+        @Test
+        void getDocumentChatbot_shouldThrowEntityNotFound_whenPatientDocumentMissing() {
+                // Arrange
+                Patient patient = new Patient();
+                patient.setId("p1");
+                String documentId = "doc123";
+
+                when(patientDocumentRepository.findById(new PatientDocumentId("p1", "doc123")))
+                        .thenReturn(Optional.empty());
+
+                // Act + Assert
+                EntityNotFoundException ex = assertThrows(EntityNotFoundException.class,
+                        () -> service.getDocumentChatbot(patient, documentId));
+
+                assertTrue(ex.getMessage().contains("No PatientDocument for patient=p1 and document=doc123"));
+        }
+
+        @Test
+        void getDocumentChatbot_shouldThrowIllegalArgument_whenConversationIsNull() {
+                // Arrange
+                Patient patient = new Patient();
+                patient.setId("p1");
+                String documentId = "doc123";
+
+                PatientDocument patientDocument = new PatientDocument();
+                patientDocument.setConversation(null); // explicitly null
+
+                when(patientDocumentRepository.findById(new PatientDocumentId("p1", "doc123")))
+                        .thenReturn(Optional.of(patientDocument));
+
+                // Act + Assert
+                IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                        () -> service.getDocumentChatbot(patient, documentId));
+
+                assertEquals("No conversation found for exercise with ID: doc123", ex.getMessage());
+        }
+
 }

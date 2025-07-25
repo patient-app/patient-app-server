@@ -11,15 +11,13 @@ import java.util.*;
 import ch.uzh.ifi.imrg.patientapp.constant.LogTypes;
 import ch.uzh.ifi.imrg.patientapp.entity.ChatbotTemplate;
 import ch.uzh.ifi.imrg.patientapp.entity.JournalEntry;
+import ch.uzh.ifi.imrg.patientapp.entity.JournalEntryConversation;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.repository.ChatbotTemplateRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.JournalEntryRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.PatientRepository;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.JournalEntryRequestDTO;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.output.CoachGetAllJournalEntriesDTO;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.output.CoachJournalEntryOutputDTO;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.output.GetAllJournalEntriesDTO;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.output.JournalEntryOutputDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.output.*;
 import ch.uzh.ifi.imrg.patientapp.service.aiService.PromptBuilderService;
 import ch.uzh.ifi.imrg.patientapp.utils.CryptographyUtil;
 import org.junit.jupiter.api.BeforeEach;
@@ -114,6 +112,7 @@ public class JournalEntryServiceTest {
             assertFalse(out.isAiAccessAllowed());
         }
     }
+
 
     @Test
     void getAllTags_decryptsTags() {
@@ -244,6 +243,86 @@ public class JournalEntryServiceTest {
     }
 
     @Test
+    void getEntry_shouldThrowNotFound_whenPatientMismatch() {
+        // Arrange
+        String entryId = "entry-456";
+
+        Patient callingPatient = new Patient();
+        callingPatient.setId("caller-id");
+
+        Patient actualOwner = new Patient();
+        actualOwner.setId("owner-id");
+
+        JournalEntry entry = new JournalEntry();
+        entry.setId(entryId);
+        entry.setPatient(actualOwner);
+
+        when(repo.findById(entryId)).thenReturn(Optional.of(entry));
+
+        // Act + Assert
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> service.getEntry(callingPatient, entryId));
+
+        assertEquals(404, ex.getStatusCode().value());
+        assertEquals("Entry not found for that patient", ex.getReason());
+    }
+
+
+    @Test
+    void updateJournalEntry_shouldThrowNotFound_whenPatientMismatch() {
+        // Arrange
+        String entryId = "entry-123";
+        JournalEntryRequestDTO dto = new JournalEntryRequestDTO();
+
+        Patient caller = new Patient();
+        caller.setId("caller-id");
+
+        Patient entryOwner = new Patient();
+        entryOwner.setId("owner-id");
+
+        JournalEntry entry = new JournalEntry();
+        entry.setId(entryId);
+        entry.setPatient(entryOwner);
+
+        when(repo.findById(entryId)).thenReturn(Optional.of(entry));
+
+        // Act + Assert
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> service.updateJournalEntry(caller, entryId, dto));
+
+        assertEquals(404, ex.getStatusCode().value());
+        assertEquals("Entry not found for this patient", ex.getReason());
+
+        verify(repo, never()).saveAndFlush(any());
+    }
+
+    @Test
+    void deleteEntry_shouldThrowNotFound_whenPatientMismatch() {
+        // Given
+        Patient callingPatient = new Patient();
+        callingPatient.setId("caller-id");
+
+        Patient actualOwner = new Patient();
+        actualOwner.setId("owner-id");
+
+        JournalEntry entry = new JournalEntry();
+        entry.setId("entry-1");
+        entry.setPatient(actualOwner);
+
+        when(repo.findById("entry-1"))
+                .thenReturn(Optional.of(entry));
+
+        // When + Then
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () ->
+                service.deleteEntry(callingPatient, "entry-1"));
+
+        assertEquals(404, exception.getStatusCode().value());
+        assertEquals("Entry not found for this patient", exception.getReason());
+
+        verify(repo, never()).delete(any());
+    }
+
+    @Test
     void deleteEntry_existing_deletes() {
         JournalEntry entry = new JournalEntry();
         entry.setId("e5");
@@ -368,5 +447,87 @@ public class JournalEntryServiceTest {
         ResponseStatusException ex = assertThrows(ResponseStatusException.class,
                 () -> service.getOneEntryForCoach("p1", "e3"));
         assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
+    }
+/*
+    @Test
+    void getJournalChatbot_shouldReturnOutputDTO_whenValid() {
+        // Arrange
+        String entryId = "entry123";
+        Patient patient = new Patient();
+        patient.setId("p1");
+
+        JournalEntryConversation conversation = new JournalEntryConversation();
+        JournalEntry entry = new JournalEntry();
+        entry.setId(entryId);
+        entry.setPatient(patient);
+        entry.setJournalEntryConversation(conversation);
+
+        when(repo.findById(entryId)).thenReturn(Optional.of(entry));
+
+        JournalChatbotOutputDTO expected = new JournalChatbotOutputDTO();
+        expected.setName("name");
+
+        // Use the real mapper unless you're overriding it with a mock singleton
+        JournalChatbotOutputDTO result = service.getJournalChatbot(patient, entryId);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals("name", result.getName());
+    }*/
+
+    @Test
+    void getJournalChatbot_shouldThrowNotFound_whenEntryMissing() {
+        String entryId = "missing";
+        Patient patient = new Patient();
+        patient.setId("p1");
+
+        when(repo.findById(entryId)).thenReturn(Optional.empty());
+
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> service.getJournalChatbot(patient, entryId));
+
+        assertEquals(404, ex.getStatusCode().value());
+        assertTrue(ex.getReason().contains("Journal Entry not found"));
+    }
+
+    @Test
+    void getJournalChatbot_shouldThrowNotFound_whenPatientMismatch() {
+        String entryId = "entry123";
+        Patient caller = new Patient();
+        caller.setId("wrong-patient");
+
+        Patient owner = new Patient();
+        owner.setId("correct-patient");
+
+        JournalEntry entry = new JournalEntry();
+        entry.setId(entryId);
+        entry.setPatient(owner);
+
+        when(repo.findById(entryId)).thenReturn(Optional.of(entry));
+
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> service.getJournalChatbot(caller, entryId));
+
+        assertEquals(404, ex.getStatusCode().value());
+        assertTrue(ex.getReason().contains("Entry not found for that patient"));
+    }
+
+    @Test
+    void getJournalChatbot_shouldThrowIllegalArgument_whenNoConversation() {
+        String entryId = "entry123";
+        Patient patient = new Patient();
+        patient.setId("p1");
+
+        JournalEntry entry = new JournalEntry();
+        entry.setId(entryId);
+        entry.setPatient(patient);
+        entry.setJournalEntryConversation(null); // <-- no conversation
+
+        when(repo.findById(entryId)).thenReturn(Optional.of(entry));
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> service.getJournalChatbot(patient, entryId));
+
+        assertEquals("No conversation found for exercise with ID: entry123", ex.getMessage());
     }
 }
