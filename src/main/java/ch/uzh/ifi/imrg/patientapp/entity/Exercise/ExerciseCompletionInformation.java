@@ -45,5 +45,4 @@ public class ExerciseCompletionInformation {
                 .filter(answer -> componentId.equals(answer.getExerciseComponentId()))
                 .findFirst();
     }
-
 }
