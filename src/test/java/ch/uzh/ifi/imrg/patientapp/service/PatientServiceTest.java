@@ -40,7 +40,10 @@ public class PatientServiceTest {
     HttpServletResponse response;
 
     @Mock
-    LogService logService;
+    DocumentService documentService;
+
+    @Mock
+    private LogService logService;
 
     @Mock
     private EmailService emailService;
@@ -452,5 +455,34 @@ public class PatientServiceTest {
                 () -> patientService.updateCoachEmail(patientId, "any@coach.com"));
         assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode(), "Should return 404 when patient is missing");
         assertTrue(ex.getReason().contains("Patient not found"), "Exception reason should mention 'Patient not found'");
+    }
+
+    @Test
+    void removePatient_shouldDeletePatient_whenExists() {
+        String patientId = "p1";
+
+        when(patientRepository.existsById(patientId)).thenReturn(true);
+
+        // Act
+        patientService.removePatient(patientId);
+
+        // Assert
+        verify(documentService).removeAllDocumentsForPatient(patientId);
+        verify(patientRepository).deleteById(patientId);
+    }
+
+    @Test
+    void removePatient_shouldThrowException_whenPatientNotFound() {
+        String patientId = "nonexistent";
+
+        when(patientRepository.existsById(patientId)).thenReturn(false);
+
+        EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () ->
+                patientService.removePatient(patientId));
+
+        assertEquals("Patient nonexistent not found", ex.getMessage());
+
+        verify(documentService, never()).removeAllDocumentsForPatient(any());
+        verify(patientRepository, never()).deleteById(any());
     }
 }
