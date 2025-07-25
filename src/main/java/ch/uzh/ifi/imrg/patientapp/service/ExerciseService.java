@@ -97,6 +97,16 @@ public class ExerciseService {
         ExerciseOutputDTO exerciseOutputDTO = exerciseMapper.exerciseToExerciseOutputDTO(exercise);
         ExerciseCompletionInformation exerciseCompletionInformation = exerciseInformationRepository.getExerciseCompletionInformationById(exerciseExecutionId);
         exerciseInformationRepository.save(exerciseCompletionInformation);
+        if (exerciseCompletionInformation == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No exercise execution found, create one first.");
+        }
+        exerciseOutputDTO.getExerciseComponents().forEach(component -> {
+            ExerciseComponentAnswer answer = exerciseCompletionInformation.getComponentAnswerById(component.getId())
+                    .orElse(null);
+            if (answer != null) {
+                component.setUserInput(answer.getUserInput());
+            }
+        });
         return exerciseOutputDTO;
     }
 
