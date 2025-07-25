@@ -17,6 +17,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -133,6 +135,8 @@ public class ExerciseService {
         authorizationService.checkExerciseAccess(exercise, patient, "Patient does not have access to this exercise");
 
         ExerciseCompletionInformation exerciseCompletionInformation = new ExerciseCompletionInformation();
+        exerciseCompletionInformation.setExecutionTitle(Instant.now());
+        exerciseCompletionInformation.setStartTime(Instant.now());
         exerciseCompletionInformation.setExercise(exercise);
         exerciseInformationRepository.save(exerciseCompletionInformation);
 

@@ -22,7 +22,7 @@ public class ExerciseCompletionInformation {
     @Column(name = "created_at", updatable = false)
     private Instant startTime;
     private Instant endTime;
-    private String executionTitle;
+    private Instant executionTitle;
     private String feedback;
 
 
