@@ -1,14 +1,11 @@
 package ch.uzh.ifi.imrg.patientapp.controller;
 
+import ch.uzh.ifi.imrg.patientapp.constant.ChatBotAvatar;
+import ch.uzh.ifi.imrg.patientapp.constant.LogTypes;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.input.ChangePasswordDTO;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreatePatientDTO;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.input.LoginPatientDTO;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutLanguageDTO;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutNameDTO;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutOnboardedDTO;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.input.ResetPasswordDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.*;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PatientOutputDTO;
+import ch.uzh.ifi.imrg.patientapp.service.LogService;
 import ch.uzh.ifi.imrg.patientapp.service.PatientService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,6 +32,12 @@ import static org.mockito.Mockito.*;
 public class PatientControllerTest {
     @Mock
     private PatientService patientService;
+
+    @Mock
+    private HttpServletRequest request;
+    @Mock
+    private LogService logService;
+
     @InjectMocks
     private PatientController patientController;
 
@@ -293,5 +296,38 @@ public class PatientControllerTest {
                 () -> patientController.resetPassword(dto));
         assertTrue(ex.getMessage().contains(dto.getEmail()));
     }
+
+    @Test
+    void setAvatar_shouldUpdateAvatarAndLogChange() {
+        PutAvatarDTO dto = new PutAvatarDTO();
+        dto.setChatBotAvatar(ChatBotAvatar.ANIMALISTIC);
+
+        Patient patient = new Patient();
+        patient.setId("p1");
+
+        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
+
+        patientController.setAvatar(dto, request);
+
+        assertEquals(ChatBotAvatar.ANIMALISTIC, patient.getChatBotAvatar());
+        verify(patientService).setField(patient);
+        verify(logService).createLog("p1", LogTypes.CHATBOT_ICON_UPDATE, null, "");
+    }
+
+    @Test
+    void getAvatar_shouldReturnMappedDTO() {
+        Patient patient = new Patient();
+        patient.setId("p1");
+        patient.setEmail("alice@example.com");
+
+        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
+
+        PatientOutputDTO dto = patientController.getAvatar(request);
+
+        assertNotNull(dto);
+        assertEquals("p1", dto.getId());
+        assertEquals("alice@example.com", dto.getEmail());
+    }
+
 
 }

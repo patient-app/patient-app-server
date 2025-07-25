@@ -89,6 +89,23 @@ class CoachPatientControllerTest {
         }
 
         @Test
+        void registerPatient_shouldReturnBadRequest_whenCoachAccessKeyMismatch() throws Exception {
+                // prepare input DTO with a mismatching coachAccessKey
+                CreatePatientDTO input = new CreatePatientDTO();
+                input.setEmail("alice@example.com");
+                input.setPassword("Password1");
+                input.setCoachAccessKey("wrong-key"); // Does not match the header
+
+                // perform the request with mismatching coach key
+                mockMvc.perform(post("/coach/patients/register")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .header("X-Coach-Key", "correct-key")
+                                .content(objectMapper.writeValueAsString(input)))
+                        .andExpect(status().isBadRequest());
+        }
+
+
+        @Test
         void deletePatient_shouldReturnNoContent() throws Exception {
                 String patientId = "p1";
 
