@@ -15,7 +15,7 @@ public interface ExerciseMapper {
     List<ExercisesOverviewOutputDTO> exercisesToExerciseOverviewOutputDTOs(List<Exercise> exercises);
     Exercise exerciseInputDTOToExercise(ExerciseInputDTO exerciseInputDTO);
 
-    @Mapping(target = "exerciseExecutionId", ignore = true)
+    @Mapping(target = "exerciseExecutionId", source = "id")
     ExerciseOutputDTO exerciseToExerciseOutputDTO(Exercise exercise);
     List <ExerciseInformationOutputDTO> exerciseInformationsToExerciseInformationOutputDTOs(List<ExerciseCompletionInformation> exerciseInformations);
 
