@@ -695,6 +695,11 @@ class ExerciseServiceTest {
         completionInfo.setId(executionId);
 
         ExerciseOutputDTO expectedDTO = new ExerciseOutputDTO();
+        expectedDTO.setExerciseComponents(new ArrayList<>());
+
+        ExerciseComponentOutputDTO component = new ExerciseComponentOutputDTO();
+        component.setId("comp1");
+        expectedDTO.getExerciseComponents().add(component);
 
         when(exerciseRepository.getExerciseById(exerciseId)).thenReturn(exercise);
         doNothing().when(authorizationService).checkExerciseAccess(eq(exercise), eq(patient), anyString());
@@ -1446,10 +1451,11 @@ class ExerciseServiceTest {
 
         ExerciseCompletionInformation completionInfo = new ExerciseCompletionInformation();
         completionInfo.setId(execId);
+        Instant title = Instant.now();
 
         ExerciseCompletionNameInputDTO inputDTO = new ExerciseCompletionNameInputDTO();
         inputDTO.setExerciseExecutionId(execId);
-        inputDTO.setExecutionTitle("New Title");
+        inputDTO.setExecutionTitle(title);
 
         when(exerciseRepository.getExerciseById(exerciseId)).thenReturn(exercise);
         doNothing().when(authorizationService).checkExerciseAccess(eq(exercise), eq(patient), anyString());
@@ -1459,7 +1465,7 @@ class ExerciseServiceTest {
         exerciseService.setExerciseCompletionName(patient, exerciseId, inputDTO);
 
         // Assert
-        assertEquals("New Title", completionInfo.getExecutionTitle());
+        assertEquals(title, completionInfo.getExecutionTitle());
         verify(exerciseRepository).getExerciseById(exerciseId);
         verify(authorizationService).checkExerciseAccess(eq(exercise), eq(patient), anyString());
         verify(exerciseInformationRepository).getExerciseCompletionInformationById(execId);
@@ -1497,7 +1503,7 @@ class ExerciseServiceTest {
 
         ExerciseCompletionNameInputDTO inputDTO = new ExerciseCompletionNameInputDTO();
         inputDTO.setExerciseExecutionId(execId);
-        inputDTO.setExecutionTitle("Some title");
+        inputDTO.setExecutionTitle(Instant.now());
 
         when(exerciseRepository.getExerciseById(exerciseId)).thenReturn(exercise);
         doNothing().when(authorizationService).checkExerciseAccess(eq(exercise), eq(patient), anyString());
