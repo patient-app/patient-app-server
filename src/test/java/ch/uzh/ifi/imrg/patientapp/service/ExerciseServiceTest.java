@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
@@ -88,6 +89,27 @@ class ExerciseServiceTest {
         verify(exerciseRepository).getExercisesByPatientId("p123");
         verify(exerciseMapper).exercisesToExerciseOverviewOutputDTOs(exercises);
     }
+
+    @Test
+    void getExercisesOverview_returnsEmptyList_whenNoExercisesFound() {
+        // Arrange
+        Patient patient = new Patient();
+        patient.setId("p1");
+
+        when(exerciseRepository.getExercisesByPatientId(patient.getId())).thenReturn(Collections.emptyList());
+
+        // Act
+        List<ExercisesOverviewOutputDTO> result = exerciseService.getExercisesOverview(patient);
+
+        // Assert
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+
+        // Verify that no authorization or mapping happened
+        verify(authorizationService, never()).checkExerciseAccess(any(), any(), anyString());
+        verify(exerciseMapper, never()).exercisesToExerciseOverviewOutputDTOs(any());
+    }
+
 
 
     @Test
@@ -695,6 +717,11 @@ class ExerciseServiceTest {
         completionInfo.setId(executionId);
 
         ExerciseOutputDTO expectedDTO = new ExerciseOutputDTO();
+        expectedDTO.setExerciseComponents(new ArrayList<>());
+
+        ExerciseComponentOutputDTO component = new ExerciseComponentOutputDTO();
+        component.setId("comp1");
+        expectedDTO.getExerciseComponents().add(component);
 
         when(exerciseRepository.getExerciseById(exerciseId)).thenReturn(exercise);
         doNothing().when(authorizationService).checkExerciseAccess(eq(exercise), eq(patient), anyString());
@@ -763,6 +790,82 @@ class ExerciseServiceTest {
         verify(authorizationService).checkExerciseAccess(eq(exercise), eq(patient), anyString());
         verifyNoInteractions(exerciseMapper, exerciseInformationRepository);
     }
+
+    @Test
+    void getExerciseExecution_throwsException_whenCompletionInformationIsNull() {
+        // Arrange
+        String exerciseId = "e123";
+        String executionId = "exec456";
+        Patient patient = new Patient();
+        patient.setId("p1");
+
+        Exercise exercise = new Exercise();
+        exercise.setId(exerciseId);
+        exercise.setPatient(patient);
+
+        ExerciseOutputDTO mappedDTO = new ExerciseOutputDTO();
+        mappedDTO.setExerciseComponents(new ArrayList<>());
+
+        when(exerciseRepository.getExerciseById(exerciseId)).thenReturn(exercise);
+        doNothing().when(authorizationService).checkExerciseAccess(eq(exercise), eq(patient), anyString());
+        when(exerciseMapper.exerciseToExerciseOutputDTO(exercise)).thenReturn(mappedDTO);
+        when(exerciseInformationRepository.getExerciseCompletionInformationById(executionId)).thenReturn(null);
+
+        // Act + Assert
+        ResponseStatusException exception = assertThrows(
+                ResponseStatusException.class,
+                () -> exerciseService.getExerciseExecution(exerciseId, patient, executionId)
+        );
+
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
+        assertTrue(exception.getReason().contains("No exercise execution found"));
+    }
+
+    @Test
+    void getExerciseExecution_setsUserInput_whenAnswerExists() {
+        // Arrange
+        String exerciseId = "e123";
+        String executionId = "exec456";
+        String componentId = "comp1";
+
+        Patient patient = new Patient();
+        patient.setId("p1");
+
+        Exercise exercise = new Exercise();
+        exercise.setId(exerciseId);
+        exercise.setPatient(patient);
+
+        ExerciseComponentOutputDTO componentDTO = new ExerciseComponentOutputDTO();
+        componentDTO.setId(componentId);
+        List<ExerciseComponentOutputDTO> componentList = new ArrayList<>();
+        componentList.add(componentDTO);
+
+        ExerciseOutputDTO mappedDTO = new ExerciseOutputDTO();
+        mappedDTO.setExerciseComponents(componentList);
+
+        ExerciseComponentAnswer answer = new ExerciseComponentAnswer();
+        answer.setExerciseComponentId(componentId);
+        answer.setUserInput("Test input");
+
+        ExerciseCompletionInformation completionInfo = Mockito.spy(new ExerciseCompletionInformation());
+        completionInfo.setId(executionId);
+        List<ExerciseComponentAnswer> answerList = new ArrayList<>();
+        answerList.add(answer);
+        completionInfo.setComponentAnswers(answerList);
+
+        when(exerciseRepository.getExerciseById(exerciseId)).thenReturn(exercise);
+        doNothing().when(authorizationService).checkExerciseAccess(eq(exercise), eq(patient), anyString());
+        when(exerciseMapper.exerciseToExerciseOutputDTO(exercise)).thenReturn(mappedDTO);
+        when(exerciseInformationRepository.getExerciseCompletionInformationById(executionId)).thenReturn(completionInfo);
+
+        // Act
+        ExerciseOutputDTO result = exerciseService.getExerciseExecution(exerciseId, patient, executionId);
+
+        // Assert
+        assertEquals("Test input", result.getExerciseComponents().get(0).getUserInput());
+    }
+
+
 
     @Test
     void createExercise_setsExerciseInComponents_whenComponentsPresent() {
@@ -1446,10 +1549,11 @@ class ExerciseServiceTest {
 
         ExerciseCompletionInformation completionInfo = new ExerciseCompletionInformation();
         completionInfo.setId(execId);
+        Instant title = Instant.now();
 
         ExerciseCompletionNameInputDTO inputDTO = new ExerciseCompletionNameInputDTO();
         inputDTO.setExerciseExecutionId(execId);
-        inputDTO.setExecutionTitle("New Title");
+        inputDTO.setExecutionTitle(title);
 
         when(exerciseRepository.getExerciseById(exerciseId)).thenReturn(exercise);
         doNothing().when(authorizationService).checkExerciseAccess(eq(exercise), eq(patient), anyString());
@@ -1459,7 +1563,7 @@ class ExerciseServiceTest {
         exerciseService.setExerciseCompletionName(patient, exerciseId, inputDTO);
 
         // Assert
-        assertEquals("New Title", completionInfo.getExecutionTitle());
+        assertEquals(title, completionInfo.getExecutionTitle());
         verify(exerciseRepository).getExerciseById(exerciseId);
         verify(authorizationService).checkExerciseAccess(eq(exercise), eq(patient), anyString());
         verify(exerciseInformationRepository).getExerciseCompletionInformationById(execId);
@@ -1497,7 +1601,7 @@ class ExerciseServiceTest {
 
         ExerciseCompletionNameInputDTO inputDTO = new ExerciseCompletionNameInputDTO();
         inputDTO.setExerciseExecutionId(execId);
-        inputDTO.setExecutionTitle("Some title");
+        inputDTO.setExecutionTitle(Instant.now());
 
         when(exerciseRepository.getExerciseById(exerciseId)).thenReturn(exercise);
         doNothing().when(authorizationService).checkExerciseAccess(eq(exercise), eq(patient), anyString());
