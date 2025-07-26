@@ -71,7 +71,7 @@ public class JournalEntryService {
         JournalEntryConversation conversation = new JournalEntryConversation();
         conversation.setPatient(loggedInPatient);
         conversation.setSystemPrompt(
-                promptBuilderService.getJournalSystemPrompt(chatbotTemplate, dto.getTitle(), dto.getContent()));
+                promptBuilderService.getJournalSystemPrompt(chatbotTemplate, dto.getTitle(), dto.getContent(), loggedInPatient));
         conversation.setConversationName("journal-chatbot");
 
         newEntry.setJournalEntryConversation(conversation);

@@ -1,6 +1,7 @@
 package ch.uzh.ifi.imrg.patientapp.service.aiService;
 
 import ch.uzh.ifi.imrg.patientapp.entity.ChatbotTemplate;
+import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -19,46 +20,58 @@ public class PromptBuilderService {
         this.chatGPTService = chatGPTService;
     }
 
-    public String getSystemPrompt(ChatbotTemplate chatbotTemplate) {
-
+    public String getSystemPrompt(ChatbotTemplate chatbotTemplate, Patient patient) {
+        String language = extractLanguage(patient);
         String context = chatbotTemplate.getChatbotContext();
         if (context == null || context.trim().isEmpty()) {
             context = "No additional context provided.";
         }
 
         return String.format(
-                "Act as a %s, who cares about the other person. Your tone should be %s. You will interact with a human, that needs someone to talk to. You can be a friend, a family member, a therapist, or anyone else. You can ask questions, give advice, or just listen. Remember, you are not a therapist, but a friend. Please keep your own responses to the person short. No longer than 200 characters.\nAdditional Context:\n%s",
+                "Act as a %s, who cares about the other person. Your tone should be %s. You will interact with a human called %s, that needs someone to talk to. You can be a friend, a family member, a therapist, or anyone else. You can ask questions, give advice, or just listen. Remember, you are not a therapist, but a friend. Please keep your own responses to the person short and in %s. No longer than 200 characters.\nAdditional Context:\n%s",
                 chatbotTemplate.getChatbotRole(),
                 chatbotTemplate.getChatbotTone(),
+                patient.getName(),
+                language,
                 context);
 
     }
 
-    public String getSystemPrompt(ChatbotTemplate chatbotTemplate, String context) {
+    public String getSystemPrompt(ChatbotTemplate chatbotTemplate, String context, Patient patient) {
+        String language = extractLanguage(patient);
         return String.format(
-                "Act as a %s, who cares about the other person. Your tone should be %s. You will interact with a human, that needs someone to talk to. You should help the person to understand this exercise: %s When answering questions about the exercise only use the description from before. It is really important to stick to this description. Please keep your own responses to the person short. No longer than 400 characters.",
+                "Act as a %s, who cares about the other person. Your tone should be %s. You will interact with a human called %s, that needs someone to talk to. You should help the person to understand this exercise: %s When answering questions about the exercise only use the description from before. It is really important to stick to this description. Please keep your own responses to the person short and in %s. No longer than 400 characters.",
                 chatbotTemplate.getChatbotRole(),
                 chatbotTemplate.getChatbotTone(),
+                patient.getName(),
+                language,
                 context);
 
     }
 
-    public String getJournalSystemPrompt(ChatbotTemplate chatbotTemplate, String journalTitle, String journalContent) {
+    public String getJournalSystemPrompt(ChatbotTemplate chatbotTemplate, String journalTitle, String journalContent, Patient patient) {
+        String language = extractLanguage(patient);
+
         return String.format(
-                "Act as a %s, who cares about the other person. Your tone should be %s. You will interact with a human, that needs someone to talk to. You should help the person to reflect on her/his journal entry (%s): %s. When answering questions about the journal mostly use the content from the journal. It is really important to stick to this journal. Please keep your own responses to the person short. No longer than 400 characters.",
+                "Act as a %s, who cares about the other person. Your tone should be %s. You will interact with a human called %s, that needs someone to talk to. You should help the person to reflect on her/his journal entry (%s): %s. When answering questions about the journal mostly use the content from the journal. It is really important to stick to this journal. Please keep your own responses to the person short and in %s. No longer than 400 characters.",
                 chatbotTemplate.getChatbotRole(),
                 chatbotTemplate.getChatbotTone(),
+                patient.getName(),
                 journalTitle,
-                journalContent);
+                journalContent,
+                language);
 
     }
 
-    public String getDocumentSystemPrompt(ChatbotTemplate chatbotTemplate, String documentContext) {
+    public String getDocumentSystemPrompt(ChatbotTemplate chatbotTemplate, String documentContext, Patient patient) {
+        String language = extractLanguage(patient);
         return String.format(
-                "Act as a %s, who cares about the other person. Your tone should be %s. You will interact with a human, that needs someone to talk to. You should help the person to understand this document: %s When answering questions about the document only use the content from the document. It is really important to stick to this document. Please keep your own responses to the person short. No longer than 400 characters.",
+                "Act as a %s, who cares about the other person. Your tone should be %s. You will interact with a human called %s, that needs someone to talk to. You should help the person to understand this document: %s When answering questions about the document only use the content from the document. It is really important to stick to this document. Please keep your own responses to the person short and in %s. No longer than 400 characters.",
                 chatbotTemplate.getChatbotRole(),
                 chatbotTemplate.getChatbotTone(),
-                documentContext);
+                patient.getName(),
+                documentContext,
+                language);
     }
 
     public String getResponse(List<Map<String, String>> priorMessages, String message, String systemPrompt) {
@@ -166,6 +179,18 @@ public class PromptBuilderService {
             throw new IllegalStateException("No <think> closing tag found in response:\n" + rawAnswer);
         }
         return answer;
+    }
+    public String extractLanguage(Patient patient) {
+        String patientLanguage = patient.getLanguage();
+        String language;
+        if(patientLanguage.equals("uk")) {
+            language = "ukrainian";
+        } else if (patientLanguage.equals("de")) {
+            language = "german";
+        }else {
+            language = "english";
+        }
+    return  language;
     }
 
 }

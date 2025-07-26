@@ -128,7 +128,7 @@ class ExerciseServiceTest {
         when(patientRepository.getPatientById(patientId)).thenReturn(patient);
         when(chatbotTemplateRepository.findByPatientId(patientId))
                 .thenReturn(List.of(new ChatbotTemplate()));
-        when(promptBuilderService.getSystemPrompt(any(ChatbotTemplate.class), nullable(String.class)))
+        when(promptBuilderService.getSystemPrompt(any(ChatbotTemplate.class), nullable(String.class), any(Patient.class)))
                 .thenReturn("dummy system prompt");
         when(exerciseConversationRepository.save(any()))
                 .thenAnswer(invocation -> invocation.getArgument(0));
@@ -891,7 +891,7 @@ class ExerciseServiceTest {
         when(exerciseMapper.exerciseInputDTOToExercise(inputDTO)).thenReturn(exercise);
         when(patientRepository.getPatientById(patientId)).thenReturn(patient);
         when(chatbotTemplateRepository.findByPatientId(patientId)).thenReturn(List.of(chatbotTemplate));
-        when(promptBuilderService.getSystemPrompt(chatbotTemplate, inputDTO.getExerciseExplanation())).thenReturn("prompt");
+        when(promptBuilderService.getSystemPrompt(chatbotTemplate, inputDTO.getExerciseExplanation(),patient)).thenReturn("prompt");
         when(exerciseConversationRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         // Act

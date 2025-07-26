@@ -84,11 +84,11 @@ public class DocumentService {
 
         if (result.isHumanReadable()) {
             patientDocument.getConversation().setSystemPrompt(
-                    promptBuilderService.getDocumentSystemPrompt(patient.getChatbotTemplate(), result.getText()));
+                    promptBuilderService.getDocumentSystemPrompt(patient.getChatbotTemplate(), result.getText(), patient));
         } else {
             patientDocument.getConversation().setSystemPrompt(
                     promptBuilderService.getDocumentSystemPrompt(patient.getChatbotTemplate(),
-                            "The document does not have readable text"));
+                            "The document does not have readable text", patient));
         }
 
         patientDocument.getConversation()

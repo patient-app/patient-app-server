@@ -23,7 +23,7 @@ public class ChatGPTService {
         String content = "content";
         // Prepare the request bodyRequest
         Map<String, Object> bodyRequest = new HashMap<>();
-        bodyRequest.put("model", "Qwen/Qwen3-1.7B");
+        bodyRequest.put("model", "gemma3:12b");
         bodyRequest.put("messages", messages);
         //bodyRequest.put("max_tokens", 170);
         bodyRequest.put("temperature", 0);

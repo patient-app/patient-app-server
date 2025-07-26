@@ -64,7 +64,7 @@ public class ConversationServiceTest {
                 when(chatbotTemplateRepository.findByPatientId("p1"))
                                 .thenReturn(List.of(template));
 
-                when(promptBuilderService.getSystemPrompt(any(ChatbotTemplate.class)))
+                when(promptBuilderService.getSystemPrompt(any(ChatbotTemplate.class), eq(patient)))
                                 .thenReturn("dummy system prompt");
 
                 when(conversationRepository.save(any(GeneralConversation.class)))
@@ -301,7 +301,7 @@ public class ConversationServiceTest {
                                 .thenReturn(List.of(template));
 
                 String expectedPrompt = "builtPrompt";
-                when(promptBuilderService.getJournalSystemPrompt(template, "title1", "content1"))
+                when(promptBuilderService.getJournalSystemPrompt(template, "title1", "content1",patient))
                                 .thenReturn(expectedPrompt);
 
                 // Act
@@ -312,7 +312,7 @@ public class ConversationServiceTest {
                 assertEquals(expectedPrompt, conversation.getSystemPrompt());
                 verify(conversationRepository).findById(conversationId);
                 verify(chatbotTemplateRepository).findByPatientId("p1");
-                verify(promptBuilderService).getJournalSystemPrompt(template, "title1", "content1");
+                verify(promptBuilderService).getJournalSystemPrompt(template, "title1", "content1",patient);
                 verify(conversationRepository).save(conversation);
         }
 

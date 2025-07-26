@@ -87,7 +87,7 @@ public class JournalEntryServiceTest {
         when(promptBuilderService.getJournalSystemPrompt(
                 eq(template),
                 eq("Title"),
-                eq("Content")))
+                eq("Content"),eq(patient)))
                 .thenReturn("<<SYSTEM PROMPT>>");
 
         try (MockedStatic<CryptographyUtil> crypto = mockStatic(CryptographyUtil.class)) {
