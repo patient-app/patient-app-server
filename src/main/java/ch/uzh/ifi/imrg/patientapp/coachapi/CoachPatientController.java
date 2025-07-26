@@ -9,7 +9,7 @@ import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreatePatientDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.UpdateCoachEmailDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PatientOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.PatientMapper;
-import ch.uzh.ifi.imrg.patientapp.service.PatientRepository;
+import ch.uzh.ifi.imrg.patientapp.service.PatientService;
 import ch.uzh.ifi.imrg.patientapp.utils.JwtUtil;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,10 +19,10 @@ import jakarta.validation.Valid;
 @RestController
 public class CoachPatientController {
 
-    private final PatientRepository patientRepository;
+    private final PatientService patientService;
 
-    CoachPatientController(PatientRepository patientRepository) {
-        this.patientRepository = patientRepository;
+    CoachPatientController(PatientService patientService) {
+        this.patientService = patientService;
     }
 
     @PostMapping("/coach/patients/register")
@@ -41,7 +41,7 @@ public class CoachPatientController {
         }
 
         Patient patient = PatientMapper.INSTANCE.convertCreatePatientDTOToEntity(patientInputDTO);
-        Patient createdPatient = patientRepository.registerPatient(patient, httpServletRequest, httpServletResponse);
+        Patient createdPatient = patientService.registerPatient(patient, httpServletRequest, httpServletResponse);
 
         // TODO remove this whe refractoring registration:
         JwtUtil.removeJwtCookie(httpServletResponse);
@@ -52,13 +52,13 @@ public class CoachPatientController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @SecurityRequirement(name = "X-Coach-Key")
     public void deletePatient(@PathVariable String patientId) {
-        patientRepository.removePatient(patientId);
+        patientService.removePatient(patientId);
     }
 
     @PutMapping("/coach/patients/{patientId}/coach-email")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @SecurityRequirement(name = "X-Coach-Key")
     public void setCoachEmail(@RequestBody UpdateCoachEmailDTO dto, @PathVariable String patientId) {
-        patientRepository.updateCoachEmail(patientId, dto.getCoachEmail());
+        patientService.updateCoachEmail(patientId, dto.getCoachEmail());
     }
 }

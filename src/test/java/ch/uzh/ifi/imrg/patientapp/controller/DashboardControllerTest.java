@@ -4,7 +4,7 @@ import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestsOverviewOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.ExercisesOverviewOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.service.ExerciseService;
-import ch.uzh.ifi.imrg.patientapp.service.PatientRepository;
+import ch.uzh.ifi.imrg.patientapp.service.PatientService;
 import ch.uzh.ifi.imrg.patientapp.service.PsychologicalTestService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,7 +22,7 @@ import static org.mockito.Mockito.*;
 public class DashboardControllerTest {
 
     @Mock
-    private PatientRepository patientRepository;
+    private PatientService patientService;
 
     @Mock
     private ExerciseService exerciseService;
@@ -44,7 +44,7 @@ public class DashboardControllerTest {
         ExercisesOverviewOutputDTO e2 = new ExercisesOverviewOutputDTO();
         List<ExercisesOverviewOutputDTO> expected = List.of(e1, e2);
 
-        when(patientRepository.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
+        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
         when(exerciseService.getExercisesForDashboard(patient)).thenReturn(expected);
 
         // Act
@@ -52,9 +52,9 @@ public class DashboardControllerTest {
 
         // Assert
         assertEquals(expected, result);
-        verify(patientRepository).getCurrentlyLoggedInPatient(request);
+        verify(patientService).getCurrentlyLoggedInPatient(request);
         verify(exerciseService).getExercisesForDashboard(patient);
-        verifyNoMoreInteractions(patientRepository, exerciseService);
+        verifyNoMoreInteractions(patientService, exerciseService);
     }
 
     @Test
@@ -65,7 +65,7 @@ public class DashboardControllerTest {
         PsychologicalTestsOverviewOutputDTO t2 = new PsychologicalTestsOverviewOutputDTO();
         List<PsychologicalTestsOverviewOutputDTO> expected = List.of(t1, t2);
 
-        when(patientRepository.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
+        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
         when(psychologicalTestService.getPsychologicalTestsForDashboard(patient)).thenReturn(expected);
 
         // Act
@@ -73,8 +73,8 @@ public class DashboardControllerTest {
 
         // Assert
         assertEquals(expected, result);
-        verify(patientRepository).getCurrentlyLoggedInPatient(request);
+        verify(patientService).getCurrentlyLoggedInPatient(request);
         verify(psychologicalTestService).getPsychologicalTestsForDashboard(patient);
-        verifyNoMoreInteractions(patientRepository, psychologicalTestService);
+        verifyNoMoreInteractions(patientService, psychologicalTestService);
     }
 }

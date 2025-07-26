@@ -24,7 +24,7 @@ import java.util.UUID;
 
 @Service
 @Transactional
-public class PatientRepository {
+public class PatientService {
 
     private final ch.uzh.ifi.imrg.patientapp.repository.PatientRepository patientRepository;
     private final DocumentService documentService;
@@ -32,8 +32,8 @@ public class PatientRepository {
     private final EmailService emailService;
 
     @Autowired
-    public PatientRepository(
-            @Qualifier("patientRepository") ch.uzh.ifi.imrg.patientapp.repository.PatientRepository patientRepository,
+    public PatientService(
+            @Qualifier("patientService") ch.uzh.ifi.imrg.patientapp.repository.PatientRepository patientRepository,
             DocumentService documentService, LogService logService, EmailService emailService) {
         this.patientRepository = patientRepository;
         this.documentService = documentService;
@@ -203,5 +203,4 @@ public class PatientRepository {
         patient.setCoachEmail(coachEmail);
         patientRepository.save(patient);
     }
-
 }

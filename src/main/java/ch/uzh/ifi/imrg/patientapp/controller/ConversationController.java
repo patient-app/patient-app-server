@@ -26,16 +26,16 @@ import java.util.List;
 
 @RestController
 public class ConversationController {
-        private final PatientRepository patientRepository;
+        private final PatientService patientService;
         private final ConversationService conversationService;
         private final MessageService messageService;
         private final ChatbotService chatbotService;
         private final LogService logService;
 
-        ConversationController(PatientRepository patientRepository,
+        ConversationController(PatientService patientService,
                                ConversationService conversationService,
                                MessageService messageService, ChatbotService chatbotService, LogService logService) {
-                this.patientRepository = patientRepository;
+                this.patientService = patientService;
                 this.conversationService = conversationService;
                 this.messageService = messageService;
                 this.chatbotService = chatbotService;
@@ -45,10 +45,10 @@ public class ConversationController {
         @PostMapping("/patients/conversations")
         @ResponseStatus(HttpStatus.CREATED)
         public CreateConversationOutputDTO createConversation(HttpServletRequest httpServletRequest) {
-                Patient loggedInPatient = patientRepository.getCurrentlyLoggedInPatient(httpServletRequest);
+                Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
                 GeneralConversation createdConversation = conversationService.createConversation(loggedInPatient);
                 // add the conversation to the patient
-                patientRepository.addConversationToPatient(loggedInPatient, createdConversation);
+                patientService.addConversationToPatient(loggedInPatient, createdConversation);
                 return new CreateConversationOutputDTO(createdConversation.getId(),
                                 chatbotService.getWelcomeMessage(loggedInPatient.getId()),
                                 loggedInPatient.getChatBotAvatar());
@@ -58,7 +58,7 @@ public class ConversationController {
         @ResponseStatus(HttpStatus.OK)
         public void updateSharing(@RequestBody PutSharingDTO putSharingDTO, @PathVariable String conversationId,
                         HttpServletRequest httpServletRequest) {
-                Patient loggedInPatient = patientRepository.getCurrentlyLoggedInPatient(httpServletRequest);
+                Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
                 conversationService.updateSharing(putSharingDTO, conversationId, loggedInPatient);
         }
 
@@ -67,14 +67,14 @@ public class ConversationController {
         public void postConversationName(@RequestBody PutConversationNameDTO putConversationNameDTO,
                         @PathVariable String conversationId,
                         HttpServletRequest httpServletRequest) {
-                Patient loggedInPatient = patientRepository.getCurrentlyLoggedInPatient(httpServletRequest);
+                Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
                 conversationService.setConversationName(putConversationNameDTO, conversationId, loggedInPatient);
         }
 
         @GetMapping("/patients/conversations")
         @ResponseStatus(HttpStatus.OK)
         public List<NameConversationOutputDTO> getConversationNames(HttpServletRequest httpServletRequest) {
-                Patient loggedInPatient = patientRepository.getCurrentlyLoggedInPatient(httpServletRequest);
+                Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
                 List<GeneralConversation> conversationList = conversationService
                                 .getAllConversationsFromPatient(loggedInPatient);
                 return ConversationMapper.INSTANCE.convertEntityListToNameConversationOutputDTOList(conversationList);
@@ -85,7 +85,7 @@ public class ConversationController {
         public MessageOutputDTO sendMessage(HttpServletRequest httpServletRequest,
                         @RequestBody CreateMessageDTO createMessageDTO,
                         @PathVariable String conversationId) {
-                Patient loggedInPatient = patientRepository.getCurrentlyLoggedInPatient(httpServletRequest);
+                Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
                 Message answeredMessage = messageService.generateAnswer(loggedInPatient, conversationId,
                                 createMessageDTO.getMessage());
                 logService.createLog(loggedInPatient.getId(), LogTypes.GENERAL_CONVERSATION_MESSAGE_CREATION, conversationId,"");
@@ -96,7 +96,7 @@ public class ConversationController {
         @ResponseStatus(HttpStatus.OK)
         public CompleteConversationOutputDTO getAllMessages(HttpServletRequest httpServletRequest,
                         @PathVariable String conversationId) {
-                Patient loggedInPatient = patientRepository.getCurrentlyLoggedInPatient(httpServletRequest);
+                Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
                 Conversation completeConversation = conversationService.getAllMessagesFromConversation(
                                 conversationId,
                                 loggedInPatient);
@@ -125,7 +125,7 @@ public class ConversationController {
         @ResponseStatus(HttpStatus.OK)
         public void deleteChat(HttpServletRequest httpServletRequest,
                         @PathVariable String conversationId) {
-                Patient loggedInPatient = patientRepository.getCurrentlyLoggedInPatient(httpServletRequest);
+                Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
                 conversationService.deleteConversation(conversationId, loggedInPatient);
 
         }

@@ -21,7 +21,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 
 @ActiveProfiles("test")
 @DataJpaTest
-public class PatientRepositoryCascadeTest {
+public class PatientServiceCascadeTest {
 
     @Autowired
     private TestEntityManager entityManager;

@@ -30,7 +30,7 @@ import ch.uzh.ifi.imrg.patientapp.rest.dto.output.document.DocumentDownloadDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.document.DocumentOverviewDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.DocumentMapper;
 import ch.uzh.ifi.imrg.patientapp.service.DocumentService;
-import ch.uzh.ifi.imrg.patientapp.service.PatientRepository;
+import ch.uzh.ifi.imrg.patientapp.service.PatientService;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -51,7 +51,7 @@ class DocumentControllerTest {
         @Mock
         private DocumentMapper documentMapper;
         @Mock
-        private PatientRepository patientRepository;
+        private PatientService patientService;
         @Mock
         private LogService logService;
 
@@ -78,7 +78,7 @@ class DocumentControllerTest {
                 mockPatient.setId("p123");
 
                 // any(HttpServletRequest) covers both endpoints
-                when(patientRepository.getCurrentlyLoggedInPatient(any(HttpServletRequest.class)))
+                when(patientService.getCurrentlyLoggedInPatient(any(HttpServletRequest.class)))
                                 .thenReturn(mockPatient);
         }
 

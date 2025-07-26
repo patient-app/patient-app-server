@@ -27,7 +27,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class PatientRepositoryTest {
+public class PatientServiceTest {
     @Mock
     ch.uzh.ifi.imrg.patientapp.repository.PatientRepository patientRepository;
 
@@ -47,7 +47,7 @@ public class PatientRepositoryTest {
     private EmailService emailService;
 
     @InjectMocks
-    PatientRepository patientRepository;
+    PatientService patientService;
 
     private static final String EMAIL = "test@example.com";
 
@@ -57,9 +57,9 @@ public class PatientRepositoryTest {
         patient.setEmail(EMAIL);
         try (MockedStatic<JwtUtil> jwtMock = mockStatic(JwtUtil.class)) {
             jwtMock.when(() -> JwtUtil.validateJWTAndExtractEmail(request)).thenReturn(EMAIL);
-            when(patientRepository.getPatientByEmail(EMAIL)).thenReturn(patient);
+            when(patientService.getPatientByEmail(EMAIL)).thenReturn(patient);
 
-            Patient result = patientRepository.getCurrentlyLoggedInPatient(request);
+            Patient result = patientService.getCurrentlyLoggedInPatient(request);
             assertEquals(patient, result);
         }
     }
@@ -68,10 +68,10 @@ public class PatientRepositoryTest {
     void getCurrentlyLoggedInPatient_shouldThrow_whenPatientNotFound() {
         try (MockedStatic<JwtUtil> jwtMock = mockStatic(JwtUtil.class)) {
             jwtMock.when(() -> JwtUtil.validateJWTAndExtractEmail(request)).thenReturn(EMAIL);
-            when(patientRepository.getPatientByEmail(EMAIL)).thenReturn(null);
+            when(patientService.getPatientByEmail(EMAIL)).thenReturn(null);
 
             assertThrows(ResponseStatusException.class,
-                    () -> patientRepository.getCurrentlyLoggedInPatient(request));
+                    () -> patientService.getCurrentlyLoggedInPatient(request));
         }
     }
 
@@ -82,9 +82,9 @@ public class PatientRepositoryTest {
         GeneralConversation conversation = new GeneralConversation();
 
         Patient saved = new Patient();
-        when(patientRepository.save(patient)).thenReturn(saved);
+        when(patientService.save(patient)).thenReturn(saved);
 
-        Patient result = patientRepository.addConversationToPatient(patient, conversation);
+        Patient result = patientService.addConversationToPatient(patient, conversation);
         assertTrue(patient.getConversations().contains(conversation));
         assertEquals(conversation, result.getConversations().get(0));
     }
@@ -105,7 +105,7 @@ public class PatientRepositoryTest {
         mockPatient.setEmail(email);
         mockPatient.setPassword(encryptedPassword);
 
-        when(patientRepository.getPatientByEmail(email)).thenReturn(mockPatient);
+        when(patientService.getPatientByEmail(email)).thenReturn(mockPatient);
         try (MockedStatic<PasswordUtil> mockedPasswordUtil = mockStatic(PasswordUtil.class);
                 MockedStatic<JwtUtil> mockedJwtUtil = mockStatic(JwtUtil.class)) {
 
@@ -114,13 +114,13 @@ public class PatientRepositoryTest {
             mockedJwtUtil.when(() -> JwtUtil.addJwtCookie(any(), any(), eq(jwt))).then(invocation -> null);
 
             // Act
-            Patient result = patientRepository.loginPatient(loginDTO, mock(HttpServletRequest.class),
+            Patient result = patientService.loginPatient(loginDTO, mock(HttpServletRequest.class),
                     mock(HttpServletResponse.class));
 
             // Assert
             assertNotNull(result);
             assertEquals(email, result.getEmail());
-            verify(patientRepository).getPatientByEmail(email);
+            verify(patientService).getPatientByEmail(email);
             mockedPasswordUtil.verify(() -> PasswordUtil.checkPassword(password, encryptedPassword));
             mockedJwtUtil.verify(() -> JwtUtil.createJWT(email));
         }
@@ -132,8 +132,8 @@ public class PatientRepositoryTest {
         patient.setEmail(EMAIL);
         patient.setPassword("plain");
 
-        when(patientRepository.existsByEmail(EMAIL)).thenReturn(false);
-        when(patientRepository.save(any())).thenReturn(patient);
+        when(patientService.existsByEmail(EMAIL)).thenReturn(false);
+        when(patientService.save(any())).thenReturn(patient);
 
         try (MockedStatic<PasswordUtil> pwMock = mockStatic(PasswordUtil.class);
                 MockedStatic<CryptographyUtil> cryptoMock = mockStatic(CryptographyUtil.class);
@@ -144,7 +144,7 @@ public class PatientRepositoryTest {
             cryptoMock.when(() -> CryptographyUtil.encrypt("key")).thenReturn("encrypted-key");
             jwtMock.when(() -> JwtUtil.createJWT(EMAIL)).thenReturn("jwt");
 
-            Patient result = patientRepository.registerPatient(patient, request, response);
+            Patient result = patientService.registerPatient(patient, request, response);
             assertEquals("hashed", result.getPassword());
             assertEquals("encrypted-key", result.getPrivateKey());
 
@@ -158,9 +158,9 @@ public class PatientRepositoryTest {
         patient.setEmail(EMAIL);
         patient.setPassword("abc");
 
-        when(patientRepository.existsByEmail(EMAIL)).thenReturn(true);
+        when(patientService.existsByEmail(EMAIL)).thenReturn(true);
 
-        assertThrows(Error.class, () -> patientRepository.registerPatient(patient, request, response));
+        assertThrows(Error.class, () -> patientService.registerPatient(patient, request, response));
     }
 
     @Test
@@ -173,7 +173,7 @@ public class PatientRepositoryTest {
         patient.setEmail(EMAIL);
         patient.setPassword("hashed");
 
-        when(patientRepository.getPatientByEmail(EMAIL)).thenReturn(patient);
+        when(patientService.getPatientByEmail(EMAIL)).thenReturn(patient);
 
         try (MockedStatic<PasswordUtil> pwMock = mockStatic(PasswordUtil.class);
                 MockedStatic<JwtUtil> jwtMock = mockStatic(JwtUtil.class)) {
@@ -181,7 +181,7 @@ public class PatientRepositoryTest {
             pwMock.when(() -> PasswordUtil.checkPassword("abc", "hashed")).thenReturn(true);
             jwtMock.when(() -> JwtUtil.createJWT(EMAIL)).thenReturn("jwt");
 
-            Patient result = patientRepository.loginPatient(loginDto, request, response);
+            Patient result = patientService.loginPatient(loginDto, request, response);
             assertEquals(patient, result);
 
             jwtMock.verify(() -> JwtUtil.addJwtCookie(response, request, "jwt"));
@@ -198,12 +198,12 @@ public class PatientRepositoryTest {
         patient.setEmail(EMAIL);
         patient.setPassword("hashed");
 
-        when(patientRepository.getPatientByEmail(EMAIL)).thenReturn(patient);
+        when(patientService.getPatientByEmail(EMAIL)).thenReturn(patient);
 
         try (MockedStatic<PasswordUtil> pwMock = mockStatic(PasswordUtil.class)) {
             pwMock.when(() -> PasswordUtil.checkPassword("abc", "hashed")).thenReturn(false);
 
-            assertThrows(Error.class, () -> patientRepository.loginPatient(loginDto, request, response));
+            assertThrows(Error.class, () -> patientService.loginPatient(loginDto, request, response));
         }
     }
 
@@ -213,7 +213,7 @@ public class PatientRepositoryTest {
         patient.setPassword("validPassword"); // Only set password, no email
 
         assertThrows(Error.class,
-                () -> patientRepository.registerPatient(patient, mock(HttpServletRequest.class),
+                () -> patientService.registerPatient(patient, mock(HttpServletRequest.class),
                         mock(HttpServletResponse.class)),
                 "Creating patient failed because no email was specified");
     }
@@ -224,7 +224,7 @@ public class PatientRepositoryTest {
         patient.setEmail("test@example.com"); // Only set email, no password
 
         assertThrows(Error.class,
-                () -> patientRepository.registerPatient(patient, mock(HttpServletRequest.class),
+                () -> patientService.registerPatient(patient, mock(HttpServletRequest.class),
                         mock(HttpServletResponse.class)),
                 "Creating patient failed because no password was specified");
     }
@@ -237,9 +237,9 @@ public class PatientRepositoryTest {
         String uuid = UUID.randomUUID().toString(); // String ID
         patient.setId(uuid);
 
-        when(patientRepository.existsById(uuid)).thenReturn(true);
+        when(patientService.existsById(uuid)).thenReturn(true);
 
-        Error thrown = assertThrows(Error.class, () -> patientRepository.registerPatient(patient,
+        Error thrown = assertThrows(Error.class, () -> patientService.registerPatient(patient,
                 mock(HttpServletRequest.class), mock(HttpServletResponse.class)));
         System.out.println("Actual error message: " + thrown.getMessage());
 
@@ -249,7 +249,7 @@ public class PatientRepositoryTest {
     @Test
     void logoutPatient_shouldRemoveJwtCookie() {
         try (MockedStatic<JwtUtil> jwtMock = mockStatic(JwtUtil.class)) {
-            patientRepository.logoutPatient(response);
+            patientService.logoutPatient(response);
             jwtMock.verify(() -> JwtUtil.removeJwtCookie(response));
         }
     }
@@ -261,10 +261,10 @@ public class PatientRepositoryTest {
         // optionally set some fields on the patient
 
         // Act
-        patientRepository.setField(patient);
+        patientService.setField(patient);
 
         // Assert
-        verify(patientRepository, times(1)).save(patient);
+        verify(patientService, times(1)).save(patient);
     }
 
     @Test
@@ -276,10 +276,10 @@ public class PatientRepositoryTest {
         loginDTO.setEmail(email);
         loginDTO.setPassword(password);
 
-        when(patientRepository.getPatientByEmail(email)).thenReturn(null);
+        when(patientService.getPatientByEmail(email)).thenReturn(null);
 
         // Act + Assert
-        Error error = assertThrows(Error.class, () -> patientRepository.loginPatient(loginDTO, request, response));
+        Error error = assertThrows(Error.class, () -> patientService.loginPatient(loginDTO, request, response));
 
         // Verify exception message
         assert (error.getMessage().contains("No client with email: " + email + " exists"));
@@ -299,12 +299,12 @@ public class PatientRepositoryTest {
             pwMock.when(() -> PasswordUtil.encryptPassword("newPwd")).thenReturn("newHash");
 
             // Act
-            patientRepository.changePassword(patient, dto);
+            patientService.changePassword(patient, dto);
 
             // Assert
             pwMock.verify(() -> PasswordUtil.encryptPassword("newPwd"));
             ArgumentCaptor<Patient> captor = ArgumentCaptor.forClass(Patient.class);
-            verify(patientRepository).save(captor.capture());
+            verify(patientService).save(captor.capture());
             assertEquals("newHash", captor.getValue().getPassword());
         }
     }
@@ -322,7 +322,7 @@ public class PatientRepositoryTest {
             pwMock.when(() -> PasswordUtil.checkPassword("wrongOld", "storedHash")).thenReturn(false);
 
             ResponseStatusException ex = assertThrows(ResponseStatusException.class,
-                    () -> patientRepository.changePassword(patient, dto));
+                    () -> patientService.changePassword(patient, dto));
             assertEquals(HttpStatus.FORBIDDEN, ex.getStatusCode());
             assertTrue(ex.getReason().contains("Old password is incorrect"));
         }
@@ -335,7 +335,7 @@ public class PatientRepositoryTest {
         patient.setEmail(EMAIL);
         patient.setName("Alice");
         patient.setLanguage("en");
-        when(patientRepository.findByEmail(EMAIL))
+        when(patientService.findByEmail(EMAIL))
                 .thenReturn(Optional.of(patient));
 
         // Stub the static PasswordUtil calls
@@ -346,11 +346,11 @@ public class PatientRepositoryTest {
                     .thenReturn("encrypted");
 
             // Act
-            patientRepository.resetPasswordAndNotify(EMAIL);
+            patientService.resetPasswordAndNotify(EMAIL);
 
             // Assert: password was set & saved
             assertEquals("encrypted", patient.getPassword());
-            verify(patientRepository).save(patient);
+            verify(patientService).save(patient);
 
             // Assert: emailService.sendSimpleMessage(...) called with correct args
             ArgumentCaptor<String> toCap = ArgumentCaptor.forClass(String.class);
@@ -377,7 +377,7 @@ public class PatientRepositoryTest {
         patient.setEmail(EMAIL);
         patient.setName("Олена");
         patient.setLanguage("uk");
-        when(patientRepository.findByEmail(EMAIL))
+        when(patientService.findByEmail(EMAIL))
                 .thenReturn(Optional.of(patient));
 
         try (MockedStatic<PasswordUtil> pwMock = mockStatic(PasswordUtil.class)) {
@@ -387,11 +387,11 @@ public class PatientRepositoryTest {
                     .thenReturn("encryptedUKR");
 
             // Act
-            patientRepository.resetPasswordAndNotify(EMAIL);
+            patientService.resetPasswordAndNotify(EMAIL);
 
             // Assert save
             assertEquals("encryptedUKR", patient.getPassword());
-            verify(patientRepository).save(patient);
+            verify(patientService).save(patient);
 
             // Assert email params
             ArgumentCaptor<String> subjCap = ArgumentCaptor.forClass(String.class);
@@ -412,13 +412,13 @@ public class PatientRepositoryTest {
     @Test
     void resetPasswordAndNotify_shouldThrow_whenPatientNotFound() {
         // Arrange
-        when(patientRepository.findByEmail(EMAIL))
+        when(patientService.findByEmail(EMAIL))
                 .thenReturn(Optional.empty());
 
         // Act & Assert
         EntityNotFoundException ex = assertThrows(
                 EntityNotFoundException.class,
-                () -> patientRepository.resetPasswordAndNotify(EMAIL));
+                () -> patientService.resetPasswordAndNotify(EMAIL));
         assertTrue(ex.getMessage().contains("No patient found with email: " + EMAIL));
     }
 
@@ -431,26 +431,26 @@ public class PatientRepositoryTest {
         patient.setId(patientId);
         patient.setCoachEmail("old@lumina.com");
 
-        when(patientRepository.getPatientById(patientId)).thenReturn(patient);
+        when(patientService.getPatientById(patientId)).thenReturn(patient);
 
         // Act
-        patientRepository.updateCoachEmail(patientId, newCoachEmail);
+        patientService.updateCoachEmail(patientId, newCoachEmail);
 
         // Assert
         assertEquals(newCoachEmail, patient.getCoachEmail(), "Coach email should be updated on the entity");
-        verify(patientRepository).save(patient);
+        verify(patientService).save(patient);
     }
 
     @Test
     void updateCoachEmail_shouldThrowNotFound_whenPatientDoesNotExist() {
         // Arrange
         String patientId = "unknown";
-        when(patientRepository.getPatientById(patientId)).thenReturn(null);
+        when(patientService.getPatientById(patientId)).thenReturn(null);
 
         // Act & Assert
         ResponseStatusException ex = assertThrows(
                 ResponseStatusException.class,
-                () -> patientRepository.updateCoachEmail(patientId, "any@coach.com"));
+                () -> patientService.updateCoachEmail(patientId, "any@coach.com"));
         assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode(), "Should return 404 when patient is missing");
         assertTrue(ex.getReason().contains("Patient not found"), "Exception reason should mention 'Patient not found'");
     }
@@ -459,28 +459,28 @@ public class PatientRepositoryTest {
     void removePatient_shouldDeletePatient_whenExists() {
         String patientId = "p1";
 
-        when(patientRepository.existsById(patientId)).thenReturn(true);
+        when(patientService.existsById(patientId)).thenReturn(true);
 
         // Act
-        patientRepository.removePatient(patientId);
+        patientService.removePatient(patientId);
 
         // Assert
         verify(documentService).removeAllDocumentsForPatient(patientId);
-        verify(patientRepository).deleteById(patientId);
+        verify(patientService).deleteById(patientId);
     }
 
     @Test
     void removePatient_shouldThrowException_whenPatientNotFound() {
         String patientId = "nonexistent";
 
-        when(patientRepository.existsById(patientId)).thenReturn(false);
+        when(patientService.existsById(patientId)).thenReturn(false);
 
         EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () ->
-                patientRepository.removePatient(patientId));
+                patientService.removePatient(patientId));
 
         assertEquals("Patient nonexistent not found", ex.getMessage());
 
         verify(documentService, never()).removeAllDocumentsForPatient(any());
-        verify(patientRepository, never()).deleteById(any());
+        verify(patientService, never()).deleteById(any());
     }
 }

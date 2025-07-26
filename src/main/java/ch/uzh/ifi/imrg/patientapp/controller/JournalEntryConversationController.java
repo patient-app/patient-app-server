@@ -24,21 +24,21 @@ import ch.uzh.ifi.imrg.patientapp.rest.mapper.ConversationMapper;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.MessageMapper;
 import ch.uzh.ifi.imrg.patientapp.service.ConversationService;
 import ch.uzh.ifi.imrg.patientapp.service.MessageService;
-import ch.uzh.ifi.imrg.patientapp.service.PatientRepository;
+import ch.uzh.ifi.imrg.patientapp.service.PatientService;
 import ch.uzh.ifi.imrg.patientapp.utils.CryptographyUtil;
 import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 public class JournalEntryConversationController {
 
-        private final PatientRepository patientRepository;
+        private final PatientService patientService;
         private final MessageService messageService;
         private final ConversationService conversationService;
         private final LogService logService;
 
-        public JournalEntryConversationController(PatientRepository patientRepository, MessageService messageService,
+        public JournalEntryConversationController(PatientService patientService, MessageService messageService,
                                                   ConversationService conversationService, LogService logService) {
-                this.patientRepository = patientRepository;
+                this.patientService = patientService;
                 this.messageService = messageService;
                 this.conversationService = conversationService;
                 this.logService = logService;
@@ -49,7 +49,7 @@ public class JournalEntryConversationController {
         public MessageOutputDTO sendMessage(HttpServletRequest httpServletRequest,
                         @RequestBody CreateJournalMessageDTO createJournalMessageDTO,
                         @PathVariable String conversationId) {
-                Patient loggedInPatient = patientRepository.getCurrentlyLoggedInPatient(httpServletRequest);
+                Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
 
                 conversationService.updateJournalConversationSystemPrompt(loggedInPatient, conversationId,
                                 createJournalMessageDTO.getJournalEntryTitle(),
@@ -65,7 +65,7 @@ public class JournalEntryConversationController {
         @ResponseStatus(HttpStatus.OK)
         public JournalConversationOutputDTO getAllMessages(HttpServletRequest httpServletRequest,
                         @PathVariable String conversationId) {
-                Patient loggedInPatient = patientRepository.getCurrentlyLoggedInPatient(httpServletRequest);
+                Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
                 Conversation completeConversation = conversationService.getAllMessagesFromConversation(
                                 conversationId,
                                 loggedInPatient);
@@ -90,7 +90,7 @@ public class JournalEntryConversationController {
         @ResponseStatus(HttpStatus.OK)
         public void deleteJournalChat(HttpServletRequest httpServletRequest,
                         @PathVariable String conversationId) {
-                Patient loggedInPatient = patientRepository.getCurrentlyLoggedInPatient(httpServletRequest);
+                Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
                 conversationService.deleteAllMessagesFromConversation(conversationId, loggedInPatient);
         }
 

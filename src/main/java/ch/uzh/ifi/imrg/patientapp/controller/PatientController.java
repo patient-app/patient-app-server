@@ -17,7 +17,7 @@ import ch.uzh.ifi.imrg.patientapp.rest.dto.input.LoginPatientDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutAvatarDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PatientOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.PatientMapper;
-import ch.uzh.ifi.imrg.patientapp.service.PatientRepository;
+import ch.uzh.ifi.imrg.patientapp.service.PatientService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -28,18 +28,18 @@ import java.io.IOException;
 @RestController
 public class PatientController {
 
-    private final PatientRepository patientRepository;
+    private final PatientService patientService;
     private final LogService logService;
 
-    public PatientController(PatientRepository patientRepository, LogService logService) {
-        this.patientRepository = patientRepository;
+    public PatientController(PatientService patientService, LogService logService) {
+        this.patientService = patientService;
         this.logService = logService;
     }
 
     @GetMapping("/patients/me")
     @ResponseStatus(HttpStatus.OK)
     public PatientOutputDTO getCurrentlyLoggedInPatient(HttpServletRequest httpServletRequest) {
-        Patient loggedInPatient = patientRepository.getCurrentlyLoggedInPatient(httpServletRequest);
+        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
         return PatientMapper.INSTANCE.convertEntityToPatientOutputDTO(loggedInPatient);
     }
 
@@ -54,7 +54,7 @@ public class PatientController {
             patientInputDTO.setCoachAccessKey("randomString");
         }
         Patient patient = PatientMapper.INSTANCE.convertCreatePatientDTOToEntity(patientInputDTO);
-        Patient createdPatient = patientRepository.registerPatient(patient, httpServletRequest, httpServletResponse);
+        Patient createdPatient = patientService.registerPatient(patient, httpServletRequest, httpServletResponse);
         return PatientMapper.INSTANCE.convertEntityToPatientOutputDTO(createdPatient);
     }
 
@@ -64,7 +64,7 @@ public class PatientController {
             @RequestBody LoginPatientDTO loginPatientDTO,
             HttpServletRequest httpServletRequest,
             HttpServletResponse httpServletResponse) {
-        Patient loggedInPatient = patientRepository.loginPatient(loginPatientDTO, httpServletRequest,
+        Patient loggedInPatient = patientService.loginPatient(loginPatientDTO, httpServletRequest,
                 httpServletResponse);
         return PatientMapper.INSTANCE.convertEntityToPatientOutputDTO(loggedInPatient);
     }
@@ -72,7 +72,7 @@ public class PatientController {
     @PostMapping("/patients/logout")
     @ResponseStatus(HttpStatus.OK)
     public void logoutTherapist(HttpServletResponse httpServletResponse) {
-        patientRepository.logoutPatient(httpServletResponse);
+        patientService.logoutPatient(httpServletResponse);
     }
 
     @PutMapping("patients/language")
@@ -80,15 +80,15 @@ public class PatientController {
     public void setLanguage(@RequestBody PutLanguageDTO putLanguageDTO, HttpServletRequest httpServletRequest)
             throws IOException {
 
-        Patient loggedInPatient = patientRepository.getCurrentlyLoggedInPatient(httpServletRequest);
+        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
         loggedInPatient.setLanguage(putLanguageDTO.getLanguage());
-        patientRepository.setField(loggedInPatient);
+        patientService.setField(loggedInPatient);
     }
 
     @GetMapping("patients/language")
     @ResponseStatus(HttpStatus.OK)
     public PatientOutputDTO getLanguage(HttpServletRequest httpServletRequest) {
-        Patient loggedInPatient = patientRepository.getCurrentlyLoggedInPatient(httpServletRequest);
+        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
         return PatientMapper.INSTANCE.convertEntityToPatientOutputDTO(loggedInPatient);
     }
 
@@ -97,10 +97,10 @@ public class PatientController {
     public void setOnboarded(@RequestBody PutOnboardedDTO putOnboardedDTO, HttpServletRequest httpServletRequest)
             throws IOException {
 
-        Patient loggedInPatient = patientRepository.getCurrentlyLoggedInPatient(httpServletRequest);
+        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
         if (!loggedInPatient.isOnboarded()) {
             loggedInPatient.setOnboarded(putOnboardedDTO.isOnboarded());
-            patientRepository.setField(loggedInPatient);
+            patientService.setField(loggedInPatient);
         }
 
     }
@@ -108,7 +108,7 @@ public class PatientController {
     @GetMapping("patients/onboarded")
     @ResponseStatus(HttpStatus.OK)
     public PatientOutputDTO getOnboarded(HttpServletRequest httpServletRequest) {
-        Patient loggedInPatient = patientRepository.getCurrentlyLoggedInPatient(httpServletRequest);
+        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
         return PatientMapper.INSTANCE.convertEntityToPatientOutputDTO(loggedInPatient);
     }
 
@@ -117,15 +117,15 @@ public class PatientController {
     public void setName(@RequestBody PutNameDTO putNameDTO, HttpServletRequest httpServletRequest)
             throws IOException {
 
-        Patient loggedInPatient = patientRepository.getCurrentlyLoggedInPatient(httpServletRequest);
+        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
         loggedInPatient.setName(putNameDTO.getName());
-        patientRepository.setField(loggedInPatient);
+        patientService.setField(loggedInPatient);
     }
 
     @GetMapping("patients/name")
     @ResponseStatus(HttpStatus.OK)
     public PatientOutputDTO getName(HttpServletRequest httpServletRequest) {
-        Patient loggedInPatient = patientRepository.getCurrentlyLoggedInPatient(httpServletRequest);
+        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
         return PatientMapper.INSTANCE.convertEntityToPatientOutputDTO(loggedInPatient);
     }
 
@@ -133,8 +133,8 @@ public class PatientController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void changePassword(@Valid @RequestBody ChangePasswordDTO changePasswordDTO,
             HttpServletRequest httpServletRequest) {
-        Patient loggedInPatient = patientRepository.getCurrentlyLoggedInPatient(httpServletRequest);
-        patientRepository.changePassword(loggedInPatient, changePasswordDTO);
+        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
+        patientService.changePassword(loggedInPatient, changePasswordDTO);
 
     }
 
@@ -143,22 +143,22 @@ public class PatientController {
     public void setAvatar(
             @Valid @RequestBody PutAvatarDTO putAvatarDTO, HttpServletRequest httpServletRequest) {
 
-        Patient loggedInPatient = patientRepository.getCurrentlyLoggedInPatient(httpServletRequest);
+        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
         loggedInPatient.setChatBotAvatar(putAvatarDTO.getChatBotAvatar());
-        patientRepository.setField(loggedInPatient);
+        patientService.setField(loggedInPatient);
         logService.createLog(loggedInPatient.getId(), LogTypes.CHATBOT_ICON_UPDATE, null, "");
     }
 
     @GetMapping("patients/chat-bot-avatar")
     @ResponseStatus(HttpStatus.OK)
     public PatientOutputDTO getAvatar(HttpServletRequest httpServletRequest) {
-        Patient loggedInPatient = patientRepository.getCurrentlyLoggedInPatient(httpServletRequest);
+        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
         return PatientMapper.INSTANCE.convertEntityToPatientOutputDTO(loggedInPatient);
     }
 
     @PostMapping("/patients/reset-password")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void resetPassword(@Valid @RequestBody ResetPasswordDTO dto) {
-        patientRepository.resetPasswordAndNotify(dto.getEmail());
+        patientService.resetPasswordAndNotify(dto.getEmail());
     }
 }

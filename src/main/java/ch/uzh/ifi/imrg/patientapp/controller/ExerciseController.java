@@ -7,7 +7,7 @@ import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseComponentResul
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseInformationInputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.*;
 import ch.uzh.ifi.imrg.patientapp.service.ExerciseService;
-import ch.uzh.ifi.imrg.patientapp.service.PatientRepository;
+import ch.uzh.ifi.imrg.patientapp.service.PatientService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -16,25 +16,25 @@ import java.util.List;
 
 @RestController
 public class ExerciseController {
-    private final PatientRepository patientRepository;
+    private final PatientService patientService;
     private final ExerciseService exerciseService;
 
-    ExerciseController(PatientRepository patientRepository, ExerciseService exerciseService) {
-        this.patientRepository = patientRepository;
+    ExerciseController(PatientService patientService, ExerciseService exerciseService) {
+        this.patientService = patientService;
         this.exerciseService = exerciseService;
     }
 
     @GetMapping("/patients/exercises")
     @ResponseStatus(HttpStatus.OK)
     public List<ExercisesOverviewOutputDTO> getExerciseOverview(HttpServletRequest httpServletRequest){
-        Patient loggedInPatient = patientRepository.getCurrentlyLoggedInPatient(httpServletRequest);
+        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
         return exerciseService.getExercisesOverview(loggedInPatient);
     }
     @GetMapping("/patients/exercises/{exerciseId}")
     @ResponseStatus(HttpStatus.OK)
     public List<ExecutionOverviewOutputDTO> getOneExerciseOverview(HttpServletRequest httpServletRequest,
                                                                   @PathVariable String exerciseId){
-        Patient loggedInPatient = patientRepository.getCurrentlyLoggedInPatient(httpServletRequest);
+        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
         return exerciseService.getOneExercisesOverview(loggedInPatient, exerciseId);
     }
 
@@ -43,7 +43,7 @@ public class ExerciseController {
     public ExerciseOutputDTO getExerciseExecution(HttpServletRequest httpServletRequest,
                                                   @PathVariable String exerciseId,
                                                   @PathVariable String exerciseExecutionId){
-        Patient loggedInPatient = patientRepository.getCurrentlyLoggedInPatient(httpServletRequest);
+        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
         return exerciseService.getExerciseExecution(exerciseId, loggedInPatient, exerciseExecutionId);
     }
 
@@ -51,7 +51,7 @@ public class ExerciseController {
     @ResponseStatus(HttpStatus.OK)
     public ExerciseStartOutputDTO startExercise(HttpServletRequest httpServletRequest,
                                          @PathVariable String exerciseId){
-        Patient loggedInPatient = patientRepository.getCurrentlyLoggedInPatient(httpServletRequest);
+        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
         return exerciseService.startExercise(exerciseId, loggedInPatient);
     }
 
@@ -60,7 +60,7 @@ public class ExerciseController {
     public void postExerciseFeedback(HttpServletRequest httpServletRequest,
             @PathVariable String exerciseId,
             @RequestBody ExerciseInformationInputDTO exerciseInformationInputDTO) {
-        Patient loggedInPatient = patientRepository.getCurrentlyLoggedInPatient(httpServletRequest);
+        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
         exerciseService.putExerciseFeedback(loggedInPatient, exerciseId, exerciseInformationInputDTO);
     }
 
@@ -69,7 +69,7 @@ public class ExerciseController {
     public void postExerciseCompletionName(HttpServletRequest httpServletRequest,
                                      @PathVariable String exerciseId,
                                      @RequestBody ExerciseCompletionNameInputDTO exerciseCompletionNameInputDTO) {
-        Patient loggedInPatient = patientRepository.getCurrentlyLoggedInPatient(httpServletRequest);
+        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
         exerciseService.setExerciseCompletionName(loggedInPatient, exerciseId, exerciseCompletionNameInputDTO);
     }
 
@@ -78,7 +78,7 @@ public class ExerciseController {
     public void putExerciseCompletionName(HttpServletRequest httpServletRequest,
                                      @PathVariable String exerciseId,
                                      @RequestBody ExerciseCompletionNameInputDTO exerciseCompletionNameInputDTO) {
-        Patient loggedInPatient = patientRepository.getCurrentlyLoggedInPatient(httpServletRequest);
+        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
         exerciseService.setExerciseCompletionName(loggedInPatient, exerciseId,  exerciseCompletionNameInputDTO);
     }
 
@@ -90,7 +90,7 @@ public class ExerciseController {
                                             @PathVariable String exerciseId,
                                             @PathVariable String exerciseComponentId,
                                             @RequestBody ExerciseComponentResultInputDTO exerciseComponentResultInputDTO) throws Exception {
-        Patient loggedInPatient = patientRepository.getCurrentlyLoggedInPatient(httpServletRequest);
+        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
         exerciseService.setExerciseComponentResult(loggedInPatient, exerciseId, exerciseComponentResultInputDTO, exerciseComponentId);
     }
 
@@ -100,14 +100,14 @@ public class ExerciseController {
                                             @PathVariable String exerciseId,
                                             @PathVariable String exerciseComponentId,
                                             @RequestBody ExerciseComponentResultInputDTO exerciseComponentResultInputDTO) throws Exception {
-        Patient loggedInPatient = patientRepository.getCurrentlyLoggedInPatient(httpServletRequest);
+        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
         exerciseService.setExerciseComponentResult(loggedInPatient, exerciseId, exerciseComponentResultInputDTO, exerciseComponentId);
     }
     @GetMapping("/patients/exercises/{exerciseId}/chatbot")
     @ResponseStatus(HttpStatus.OK)
     public ExerciseChatbotOutputDTO getExerciseChatbot(HttpServletRequest httpServletRequest,
                                                        @PathVariable String exerciseId){
-        Patient loggedInPatient = patientRepository.getCurrentlyLoggedInPatient(httpServletRequest);
+        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
         return exerciseService.getExerciseChatbot(exerciseId, loggedInPatient);
     }
 }

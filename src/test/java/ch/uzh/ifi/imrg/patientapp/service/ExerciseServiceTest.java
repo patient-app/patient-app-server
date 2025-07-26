@@ -10,7 +10,6 @@ import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.*;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.*;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.ExerciseMapper;
 import ch.uzh.ifi.imrg.patientapp.service.aiService.PromptBuilderService;
-import org.jsoup.HttpStatusException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -27,7 +26,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static ch.qos.logback.core.util.AggregationType.NOT_FOUND;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -41,7 +39,7 @@ class ExerciseServiceTest {
     private ExerciseRepository exerciseRepository;
 
     @Mock
-    private PatientRepository patientRepository;
+    private PatientService patientService;
 
     @Mock
     private ExerciseComponentRepository exerciseComponentRepository;
@@ -125,7 +123,7 @@ class ExerciseServiceTest {
         exercise.setExerciseComponents(null); // key difference here
 
         when(exerciseMapper.exerciseInputDTOToExercise(inputDTO)).thenReturn(exercise);
-        when(patientRepository.getPatientById(patientId)).thenReturn(patient);
+        when(patientService.getPatientById(patientId)).thenReturn(patient);
         when(chatbotTemplateRepository.findByPatientId(patientId))
                 .thenReturn(List.of(new ChatbotTemplate()));
         when(promptBuilderService.getSystemPrompt(any(ChatbotTemplate.class), nullable(String.class)))
@@ -151,7 +149,7 @@ class ExerciseServiceTest {
         List<Exercise> exerciseList = List.of(new Exercise());
         List<ExercisesOverviewOutputDTO> dtoList = List.of(new ExercisesOverviewOutputDTO());
 
-        when(patientRepository.getPatientById(patientId)).thenReturn(patient);
+        when(patientService.getPatientById(patientId)).thenReturn(patient);
         when(exerciseRepository.getExercisesByPatientId(patientId)).thenReturn(exerciseList);
         when(exerciseMapper.exercisesToExerciseOverviewOutputDTOs(exerciseList)).thenReturn(dtoList);
 
@@ -160,17 +158,17 @@ class ExerciseServiceTest {
 
         // Assert
         assertEquals(dtoList, result);
-        verify(patientRepository).getPatientById(patientId);
+        verify(patientService).getPatientById(patientId);
         verify(exerciseRepository).getExercisesByPatientId(patientId);
         verify(exerciseMapper).exercisesToExerciseOverviewOutputDTOs(exerciseList);
-        verifyNoMoreInteractions(patientRepository, exerciseRepository, exerciseMapper);
+        verifyNoMoreInteractions(patientService, exerciseRepository, exerciseMapper);
     }
 
     @Test
     void getAllExercisesForCoach_throwsException_whenPatientNotFound() {
         // Arrange
         String patientId = "nonexistent";
-        when(patientRepository.getPatientById(patientId)).thenReturn(null);
+        when(patientService.getPatientById(patientId)).thenReturn(null);
 
         // Act + Assert
         ResponseStatusException exception = assertThrows(
@@ -179,8 +177,8 @@ class ExerciseServiceTest {
         );
 
         assertEquals("404 NOT_FOUND \"No exercise found, create one first.\"", exception.getMessage());
-        verify(patientRepository).getPatientById(patientId);
-        verifyNoMoreInteractions(patientRepository, exerciseRepository, exerciseMapper);
+        verify(patientService).getPatientById(patientId);
+        verifyNoMoreInteractions(patientService, exerciseRepository, exerciseMapper);
     }
 
     @Test
@@ -244,7 +242,7 @@ class ExerciseServiceTest {
         existingExercise.setPatient(differentPatient);
 
         when(exerciseRepository.getExerciseById(exerciseId)).thenReturn(existingExercise);
-        when(patientRepository.getPatientById(patientId)).thenReturn(differentPatient); // you can also return a different one
+        when(patientService.getPatientById(patientId)).thenReturn(differentPatient); // you can also return a different one
 
         doThrow(new IllegalArgumentException("Patient does not have access to this exercise"))
                 .when(authorizationService)
@@ -259,7 +257,7 @@ class ExerciseServiceTest {
         assertEquals("Patient does not have access to this exercise", ex.getMessage());
 
         verify(exerciseRepository).getExerciseById(exerciseId);
-        verify(patientRepository).getPatientById(patientId);
+        verify(patientService).getPatientById(patientId);
         verify(authorizationService).checkExerciseAccess(eq(existingExercise), eq(differentPatient), anyString());
         verifyNoMoreInteractions(exerciseRepository, exerciseMapper);
     }
@@ -453,7 +451,7 @@ class ExerciseServiceTest {
         exercise.setPatient(actualPatient);
 
         when(exerciseRepository.getExerciseById(exerciseId)).thenReturn(exercise);
-        when(patientRepository.getPatientById(patientId)).thenReturn(requestedPatient);
+        when(patientService.getPatientById(patientId)).thenReturn(requestedPatient);
 
         doThrow(new IllegalArgumentException("Patient does not have access to this exercise"))
                 .when(authorizationService).checkExerciseAccess(eq(exercise), eq(requestedPatient), anyString());
@@ -465,7 +463,7 @@ class ExerciseServiceTest {
         assertEquals("Patient does not have access to this exercise", ex.getMessage());
 
         verify(exerciseRepository).getExerciseById(exerciseId);
-        verify(patientRepository).getPatientById(patientId);
+        verify(patientService).getPatientById(patientId);
         verify(authorizationService).checkExerciseAccess(eq(exercise), eq(requestedPatient), anyString());
         verifyNoMoreInteractions(exerciseRepository, exerciseInformationRepository, exerciseMapper);
     }
@@ -547,7 +545,7 @@ class ExerciseServiceTest {
 
         assertEquals("404 NOT_FOUND \"No exercise found, create one first.\"", ex.getMessage());
         verify(exerciseRepository).getExerciseById(exerciseId);
-        verifyNoMoreInteractions(exerciseRepository, patientRepository, authorizationService);
+        verifyNoMoreInteractions(exerciseRepository, patientService, authorizationService);
     }
 
     @Test
@@ -564,7 +562,7 @@ class ExerciseServiceTest {
         requestingPatient.setId(patientId);
 
         when(exerciseRepository.getExerciseById(exerciseId)).thenReturn(exercise);
-        when(patientRepository.getPatientById(patientId)).thenReturn(requestingPatient);
+        when(patientService.getPatientById(patientId)).thenReturn(requestingPatient);
         doThrow(new IllegalArgumentException("Patient does not have access to this exercise"))
                 .when(authorizationService).checkExerciseAccess(eq(exercise), eq(requestingPatient), anyString());
 
@@ -576,9 +574,9 @@ class ExerciseServiceTest {
         assertEquals("Patient does not have access to this exercise", ex.getMessage());
 
         verify(exerciseRepository).getExerciseById(exerciseId);
-        verify(patientRepository).getPatientById(patientId);
+        verify(patientService).getPatientById(patientId);
         verify(authorizationService).checkExerciseAccess(eq(exercise), eq(requestingPatient), anyString());
-        verifyNoMoreInteractions(exerciseRepository, patientRepository, authorizationService);
+        verifyNoMoreInteractions(exerciseRepository, patientService, authorizationService);
     }
 
 
@@ -605,7 +603,7 @@ class ExerciseServiceTest {
         exercise.setExerciseComponents(components);
 
         when(exerciseRepository.getExerciseById(exerciseId)).thenReturn(exercise);
-        when(patientRepository.getPatientById(patientId)).thenReturn(patient);
+        when(patientService.getPatientById(patientId)).thenReturn(patient);
         doNothing().when(authorizationService).checkExerciseAccess(eq(exercise), eq(patient), anyString());
 
         // Act
@@ -616,7 +614,7 @@ class ExerciseServiceTest {
         assertNotNull(result.get(0));
         assertNotNull(result.get(1));
         verify(exerciseRepository).getExerciseById(exerciseId);
-        verify(patientRepository).getPatientById(patientId);
+        verify(patientService).getPatientById(patientId);
         verify(authorizationService).checkExerciseAccess(eq(exercise), eq(patient), anyString());
     }
     @Test
@@ -889,7 +887,7 @@ class ExerciseServiceTest {
         ChatbotTemplate chatbotTemplate = new ChatbotTemplate();
 
         when(exerciseMapper.exerciseInputDTOToExercise(inputDTO)).thenReturn(exercise);
-        when(patientRepository.getPatientById(patientId)).thenReturn(patient);
+        when(patientService.getPatientById(patientId)).thenReturn(patient);
         when(chatbotTemplateRepository.findByPatientId(patientId)).thenReturn(List.of(chatbotTemplate));
         when(promptBuilderService.getSystemPrompt(chatbotTemplate, inputDTO.getExerciseExplanation())).thenReturn("prompt");
         when(exerciseConversationRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
@@ -975,7 +973,7 @@ class ExerciseServiceTest {
         inputDTO.setFileName("FileName");
 
         when(exerciseRepository.getExerciseById(exerciseId)).thenReturn(exercise);
-        when(patientRepository.getPatientById(patientId)).thenReturn(patient);
+        when(patientService.getPatientById(patientId)).thenReturn(patient);
         doNothing().when(authorizationService)
                 .checkExerciseAccess(exercise, patient, "Patient does not have access to this exercise");
 
@@ -990,7 +988,7 @@ class ExerciseServiceTest {
         assertSame(exercise, created.getExercise());
 
         verify(exerciseRepository).getExerciseById(exerciseId);
-        verify(patientRepository).getPatientById(patientId);
+        verify(patientService).getPatientById(patientId);
         verify(authorizationService).checkExerciseAccess(exercise, patient, "Patient does not have access to this exercise");
         verify(exerciseRepository).save(exercise);
     }
@@ -1012,7 +1010,7 @@ class ExerciseServiceTest {
 
         assertEquals("404 NOT_FOUND \"No exercise found, create one first.\"", ex.getMessage());
         verify(exerciseRepository).getExerciseById(exerciseId);
-        verifyNoMoreInteractions(exerciseRepository, patientRepository, authorizationService);
+        verifyNoMoreInteractions(exerciseRepository, patientService, authorizationService);
     }
 
     @Test
@@ -1030,7 +1028,7 @@ class ExerciseServiceTest {
         exercise.setExerciseComponents(new ArrayList<>());
 
         when(exerciseRepository.getExerciseById(exerciseId)).thenReturn(exercise);
-        when(patientRepository.getPatientById(patientId)).thenReturn(actualPatient);
+        when(patientService.getPatientById(patientId)).thenReturn(actualPatient);
 
         doThrow(new IllegalArgumentException("Patient does not have access to this exercise"))
                 .when(authorizationService).checkExerciseAccess(exercise, actualPatient, "Patient does not have access to this exercise");
@@ -1042,7 +1040,7 @@ class ExerciseServiceTest {
 
         assertEquals("Patient does not have access to this exercise", ex.getMessage());
         verify(exerciseRepository).getExerciseById(exerciseId);
-        verify(patientRepository).getPatientById(patientId);
+        verify(patientService).getPatientById(patientId);
         verify(authorizationService).checkExerciseAccess(exercise, actualPatient, "Patient does not have access to this exercise");
         verifyNoMoreInteractions(exerciseRepository);
     }
@@ -1170,7 +1168,7 @@ class ExerciseServiceTest {
         updateDTO.setFileName("Updated Text");
 
         when(exerciseRepository.getExerciseById(exerciseId)).thenReturn(exercise);
-        when(patientRepository.getPatientById(patientId)).thenReturn(patient);
+        when(patientService.getPatientById(patientId)).thenReturn(patient);
         when(exerciseComponentRepository.getExerciseComponentById(componentId)).thenReturn(component);
 
         exerciseService.updateExerciseComponent(patientId, exerciseId, componentId, updateDTO);
@@ -1191,7 +1189,7 @@ class ExerciseServiceTest {
         );
 
         assertEquals("404 NOT_FOUND \"No exercise found, create one first.\"", ex.getMessage());
-        verifyNoInteractions(patientRepository, exerciseComponentRepository);
+        verifyNoInteractions(patientService, exerciseComponentRepository);
     }
 
     @Test
@@ -1207,7 +1205,7 @@ class ExerciseServiceTest {
         exercise.setPatient(patient);
 
         when(exerciseRepository.getExerciseById(exerciseId)).thenReturn(exercise);
-        when(patientRepository.getPatientById(patientId)).thenReturn(patient);
+        when(patientService.getPatientById(patientId)).thenReturn(patient);
 
         doThrow(new IllegalArgumentException("Patient does not have access to this exercise"))
                 .when(authorizationService)
@@ -1238,7 +1236,7 @@ class ExerciseServiceTest {
         exercise.setPatient(patient);
 
         when(exerciseRepository.getExerciseById(exerciseId)).thenReturn(exercise);
-        when(patientRepository.getPatientById(patientId)).thenReturn(patient);
+        when(patientService.getPatientById(patientId)).thenReturn(patient);
         doNothing().when(authorizationService).checkExerciseAccess(eq(exercise), eq(patient), anyString());
         when(exerciseComponentRepository.getExerciseComponentById(componentId)).thenReturn(null);
 
@@ -1250,10 +1248,10 @@ class ExerciseServiceTest {
         assertEquals("404 NOT_FOUND \"No exercise found, create one first.\"", ex.getMessage());
 
         verify(exerciseRepository).getExerciseById(exerciseId);
-        verify(patientRepository).getPatientById(patientId);
+        verify(patientService).getPatientById(patientId);
         verify(authorizationService).checkExerciseAccess(eq(exercise), eq(patient), anyString());
         verify(exerciseComponentRepository).getExerciseComponentById(componentId);
-        verifyNoMoreInteractions(exerciseRepository, patientRepository, authorizationService, exerciseComponentRepository);
+        verifyNoMoreInteractions(exerciseRepository, patientService, authorizationService, exerciseComponentRepository);
     }
     @Test
     void deleteExerciseComponent_deletesSuccessfully_whenValid() {
@@ -1274,7 +1272,7 @@ class ExerciseServiceTest {
         exercise.setExerciseComponents(new ArrayList<>(List.of(component)));
 
         when(exerciseRepository.getExerciseById(exerciseId)).thenReturn(exercise);
-        when(patientRepository.getPatientById(patientId)).thenReturn(patient);
+        when(patientService.getPatientById(patientId)).thenReturn(patient);
         when(exerciseComponentRepository.getExerciseComponentById(componentId)).thenReturn(component);
         doNothing().when(authorizationService).checkExerciseAccess(eq(exercise), eq(patient), anyString());
 
@@ -1284,11 +1282,11 @@ class ExerciseServiceTest {
         // Assert
         assertFalse(exercise.getExerciseComponents().contains(component));
         verify(exerciseRepository).getExerciseById(exerciseId);
-        verify(patientRepository).getPatientById(patientId);
+        verify(patientService).getPatientById(patientId);
         verify(authorizationService).checkExerciseAccess(eq(exercise), eq(patient), anyString());
         verify(exerciseComponentRepository).getExerciseComponentById(componentId);
         verify(exerciseComponentRepository).delete(component);
-        verifyNoMoreInteractions(exerciseRepository, patientRepository, authorizationService, exerciseComponentRepository);
+        verifyNoMoreInteractions(exerciseRepository, patientService, authorizationService, exerciseComponentRepository);
     }
 
     @Test
@@ -1322,7 +1320,7 @@ class ExerciseServiceTest {
         exercise.setPatient(patient);
 
         when(exerciseRepository.getExerciseById(exerciseId)).thenReturn(exercise);
-        when(patientRepository.getPatientById(patientId)).thenReturn(patient);
+        when(patientService.getPatientById(patientId)).thenReturn(patient);
         doNothing().when(authorizationService).checkExerciseAccess(eq(exercise), eq(patient), anyString());
         when(exerciseComponentRepository.getExerciseComponentById(componentId)).thenReturn(null);
 
@@ -1334,10 +1332,10 @@ class ExerciseServiceTest {
         assertEquals("404 NOT_FOUND \"No exercise component found, create one first.\"", ex.getMessage());
 
         verify(exerciseRepository).getExerciseById(exerciseId);
-        verify(patientRepository).getPatientById(patientId);
+        verify(patientService).getPatientById(patientId);
         verify(authorizationService).checkExerciseAccess(eq(exercise), eq(patient), anyString());
         verify(exerciseComponentRepository).getExerciseComponentById(componentId);
-        verifyNoMoreInteractions(exerciseRepository, patientRepository, exerciseComponentRepository, authorizationService);
+        verifyNoMoreInteractions(exerciseRepository, patientService, exerciseComponentRepository, authorizationService);
     }
 
     @Test

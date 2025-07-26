@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 public class ExerciseService {
     private final ExerciseRepository exerciseRepository;
     private final ExerciseComponentRepository exerciseComponentRepository;
-    private final PatientRepository patientRepository;
+    private final PatientService patientService;
     private final ExerciseInformationRepository exerciseInformationRepository;
     private final ExerciseConversationRepository exerciseConversationRepository;
     private final PromptBuilderService promptBuilderService;
@@ -35,10 +35,10 @@ public class ExerciseService {
     private final ExerciseMapper exerciseMapper;
     private final LogService logService;
 
-    public ExerciseService(ExerciseRepository exerciseRepository, ExerciseComponentRepository exerciseComponentRepository, PatientRepository patientRepository, ExerciseInformationRepository exerciseInformationRepository, ExerciseConversationRepository exerciseConversationRepository, PromptBuilderService promptBuilderService, AuthorizationService authorizationService, ChatbotTemplateRepository chatbotTemplateRepository, ExerciseMapper exerciseMapper, LogService logService) {
+    public ExerciseService(ExerciseRepository exerciseRepository, ExerciseComponentRepository exerciseComponentRepository, PatientService patientService, ExerciseInformationRepository exerciseInformationRepository, ExerciseConversationRepository exerciseConversationRepository, PromptBuilderService promptBuilderService, AuthorizationService authorizationService, ChatbotTemplateRepository chatbotTemplateRepository, ExerciseMapper exerciseMapper, LogService logService) {
         this.exerciseRepository = exerciseRepository;
         this.exerciseComponentRepository = exerciseComponentRepository;
-        this.patientRepository = patientRepository;
+        this.patientService = patientService;
         this.exerciseInformationRepository = exerciseInformationRepository;
         this.exerciseConversationRepository = exerciseConversationRepository;
         this.promptBuilderService = promptBuilderService;
@@ -49,7 +49,7 @@ public class ExerciseService {
     }
 
     public List<ExercisesOverviewOutputDTO>getAllExercisesForCoach(String patientId){
-        Patient patient = patientRepository.getPatientById(patientId);
+        Patient patient = patientService.getPatientById(patientId);
         if (patient == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No exercise found, create one first.");
         }
@@ -62,7 +62,7 @@ public class ExerciseService {
         if (exercise == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No exercise found, create one first.");
         }
-        authorizationService.checkExerciseAccess(exercise, patientRepository.getPatientById(patientId), "Patient does not have access to this exercise");
+        authorizationService.checkExerciseAccess(exercise, patientService.getPatientById(patientId), "Patient does not have access to this exercise");
         return ExerciseComponentMapper.INSTANCE.exerciseComponentsToExerciseComponentsOverviewOutputDTOs(exercise.getExerciseComponents());
     }
 
@@ -110,7 +110,7 @@ public class ExerciseService {
 
     public void createExercise(String patientId, ExerciseInputDTO exerciseInputDTO){
         Exercise exercise = exerciseMapper.exerciseInputDTOToExercise(exerciseInputDTO);
-        Patient patient = patientRepository.getPatientById(patientId);
+        Patient patient = patientService.getPatientById(patientId);
         exercise.setPatient(patient);
 
         //manually set the exercise in the exercise elements
@@ -160,7 +160,7 @@ public class ExerciseService {
         if (exercise == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No exercise found, create one first.");
         }
-        authorizationService.checkExerciseAccess(exercise, patientRepository.getPatientById(patientId), "Patient does not have access to this exercise");
+        authorizationService.checkExerciseAccess(exercise, patientService.getPatientById(patientId), "Patient does not have access to this exercise");
         ExerciseComponent exerciseComponent = ExerciseComponentMapper.INSTANCE.exerciseComponentInputDTOToExerciseComponent(exerciseComponentInputDTO);
         exerciseComponent.setExercise(exercise);
         exercise.getExerciseComponents().add(exerciseComponent);
@@ -187,7 +187,7 @@ public class ExerciseService {
         }
         authorizationService.checkExerciseAccess(
                 exercise,
-                patientRepository.getPatientById(patientId),
+                patientService.getPatientById(patientId),
                 "Patient does not have access to this exercise"
         );
 
@@ -219,7 +219,7 @@ public class ExerciseService {
         if (exercise == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No exercise found, create one first.");
         }
-        authorizationService.checkExerciseAccess(exercise, patientRepository.getPatientById(patientId), "Patient does not have access to this exercise");
+        authorizationService.checkExerciseAccess(exercise, patientService.getPatientById(patientId), "Patient does not have access to this exercise");
 
         ExerciseComponent exerciseComponentFromRepository = exerciseComponentRepository.getExerciseComponentById(exerciseComponentId);
         if (exerciseComponentFromRepository == null) {
@@ -246,7 +246,7 @@ public class ExerciseService {
         if (exercise == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No exercise found, ask your coach to create one.");
         }
-        authorizationService.checkExerciseAccess(exercise, patientRepository.getPatientById(patientId), "Patient does not have access to this exercise");
+        authorizationService.checkExerciseAccess(exercise, patientService.getPatientById(patientId), "Patient does not have access to this exercise");
 
         ExerciseComponent exerciseComponent = exerciseComponentRepository.getExerciseComponentById(exerciseComponentId);
         if (exerciseComponent == null) {
@@ -329,7 +329,7 @@ public class ExerciseService {
         if (exercise == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No exercise found, ask your coach to create one first.");
         }
-        authorizationService.checkExerciseAccess(exercise, patientRepository.getPatientById(patientId), "Patient does not have access to this exercise");
+        authorizationService.checkExerciseAccess(exercise, patientService.getPatientById(patientId), "Patient does not have access to this exercise");
         List<ExerciseCompletionInformation> exerciseCompletionInformations = exerciseInformationRepository.getExerciseInformationByExerciseId(exercise.getId());
         return exerciseMapper.exerciseInformationsToExerciseInformationOutputDTOs(exerciseCompletionInformations);
     }

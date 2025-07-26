@@ -10,7 +10,7 @@ import ch.uzh.ifi.imrg.patientapp.rest.mapper.MessageMapper;
 import ch.uzh.ifi.imrg.patientapp.service.ConversationService;
 import ch.uzh.ifi.imrg.patientapp.service.LogService;
 import ch.uzh.ifi.imrg.patientapp.service.MessageService;
-import ch.uzh.ifi.imrg.patientapp.service.PatientRepository;
+import ch.uzh.ifi.imrg.patientapp.service.PatientService;
 import ch.uzh.ifi.imrg.patientapp.utils.CryptographyUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -20,14 +20,14 @@ import java.util.ArrayList;
 
 @RestController
 public class ExerciseConversationController {
-        private final PatientRepository patientRepository;
+        private final PatientService patientService;
         private final MessageService messageService;
         private final ConversationService conversationService;
         private final LogService logService;
 
-        public ExerciseConversationController(PatientRepository patientRepository, MessageService messageService,
+        public ExerciseConversationController(PatientService patientService, MessageService messageService,
                                               ConversationService conversationService, LogService logService) {
-                this.patientRepository = patientRepository;
+                this.patientService = patientService;
                 this.messageService = messageService;
                 this.conversationService = conversationService;
                 this.logService = logService;
@@ -38,7 +38,7 @@ public class ExerciseConversationController {
         public MessageOutputDTO sendMessage(HttpServletRequest httpServletRequest,
                         @RequestBody CreateMessageDTO createMessageDTO,
                         @PathVariable String conversationId) {
-                Patient loggedInPatient = patientRepository.getCurrentlyLoggedInPatient(httpServletRequest);
+                Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
                 Message answeredMessage = messageService.generateAnswer(loggedInPatient, conversationId,
                                 createMessageDTO.getMessage());
                 logService.createLog(loggedInPatient.getId(), LogTypes.EXERCISE_CONVERSATION_MESSAGE_CREATION, conversationId, "");
@@ -49,7 +49,7 @@ public class ExerciseConversationController {
         @ResponseStatus(HttpStatus.OK)
         public CompleteExerciseConversationOutputDTO getAllMessages(HttpServletRequest httpServletRequest,
                         @PathVariable String conversationId) {
-                Patient loggedInPatient = patientRepository.getCurrentlyLoggedInPatient(httpServletRequest);
+                Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
                 Conversation completeConversation = conversationService.getAllMessagesFromConversation(
                                 conversationId,
                                 loggedInPatient);
@@ -75,7 +75,7 @@ public class ExerciseConversationController {
         @ResponseStatus(HttpStatus.OK)
         public void deleteExerciseChat(HttpServletRequest httpServletRequest,
                         @PathVariable String conversationId) {
-                Patient loggedInPatient = patientRepository.getCurrentlyLoggedInPatient(httpServletRequest);
+                Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
                 conversationService.deleteAllMessagesFromConversation(conversationId, loggedInPatient);
         }
 }

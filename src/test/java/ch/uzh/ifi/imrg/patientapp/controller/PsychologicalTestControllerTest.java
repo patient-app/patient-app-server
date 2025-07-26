@@ -5,7 +5,7 @@ import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PsychologicalTestInputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestNameAndPatientIdOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestOutputDTO;
-import ch.uzh.ifi.imrg.patientapp.service.PatientRepository;
+import ch.uzh.ifi.imrg.patientapp.service.PatientService;
 import ch.uzh.ifi.imrg.patientapp.service.PsychologicalTestService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Test;
@@ -22,7 +22,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class PsychologicalTestControllerTest {
     @Mock
-    private PatientRepository patientRepository;
+    private PatientService patientService;
 
     @Mock
     private PsychologicalTestService psychologicalTestService;
@@ -39,15 +39,15 @@ public class PsychologicalTestControllerTest {
         PsychologicalTestInputDTO inputDTO = new PsychologicalTestInputDTO();
         Patient patient = new Patient();
 
-        when(patientRepository.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
+        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
 
         // Act
         controller.createPsychologicalTest(request, inputDTO);
 
         // Assert
-        verify(patientRepository).getCurrentlyLoggedInPatient(request);
+        verify(patientService).getCurrentlyLoggedInPatient(request);
         verify(psychologicalTestService).createPsychologicalTest(patient, inputDTO);
-        verifyNoMoreInteractions(patientRepository, psychologicalTestService);
+        verifyNoMoreInteractions(patientService, psychologicalTestService);
     }
 
     @Test
@@ -60,7 +60,7 @@ public class PsychologicalTestControllerTest {
                 new PsychologicalTestNameAndPatientIdOutputDTO("Test B", "patient123")
         );
 
-        when(patientRepository.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
+        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
         when(psychologicalTestService.getAllTestNamesForPatient(patient, patient.getId())).thenReturn(expectedList);
 
         // Act
@@ -68,9 +68,9 @@ public class PsychologicalTestControllerTest {
 
         // Assert
         assertEquals(expectedList, result);
-        verify(patientRepository).getCurrentlyLoggedInPatient(request);
+        verify(patientService).getCurrentlyLoggedInPatient(request);
         verify(psychologicalTestService).getAllTestNamesForPatient(patient, patient.getId());
-        verifyNoMoreInteractions(patientRepository, psychologicalTestService);
+        verifyNoMoreInteractions(patientService, psychologicalTestService);
     }
 
     @Test
@@ -81,7 +81,7 @@ public class PsychologicalTestControllerTest {
         Patient loggedInPatient = new Patient();
         List<PsychologicalTestOutputDTO> expectedResults = List.of(new PsychologicalTestOutputDTO("DepressionTest"));
 
-        when(patientRepository.getCurrentlyLoggedInPatient(request)).thenReturn(loggedInPatient);
+        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(loggedInPatient);
         when(psychologicalTestService.getPsychologicalTestResults(loggedInPatient, patientId, testName))
                 .thenReturn(expectedResults);
 
@@ -90,9 +90,9 @@ public class PsychologicalTestControllerTest {
                 controller.getPsychologicalTestResults(request, patientId, testName);
 
         // Assert
-        verify(patientRepository).getCurrentlyLoggedInPatient(request);
+        verify(patientService).getCurrentlyLoggedInPatient(request);
         verify(psychologicalTestService).getPsychologicalTestResults(loggedInPatient, patientId, testName);
-        verifyNoMoreInteractions(patientRepository, psychologicalTestService);
+        verifyNoMoreInteractions(patientService, psychologicalTestService);
 
         assertEquals(expectedResults, result);
     }

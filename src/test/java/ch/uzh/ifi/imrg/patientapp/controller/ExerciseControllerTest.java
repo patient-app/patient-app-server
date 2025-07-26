@@ -6,7 +6,7 @@ import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseComponentResul
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.ExerciseInformationInputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.*;
 import ch.uzh.ifi.imrg.patientapp.service.ExerciseService;
-import ch.uzh.ifi.imrg.patientapp.service.PatientRepository;
+import ch.uzh.ifi.imrg.patientapp.service.PatientService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Test;
@@ -23,7 +23,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class ExerciseControllerTest {
     @Mock
-    private PatientRepository patientRepository;
+    private PatientService patientService;
 
     @Mock
     private ExerciseService exerciseService;
@@ -45,7 +45,7 @@ class ExerciseControllerTest {
         List<ExercisesOverviewOutputDTO> expected = List.of(dto1, dto2);
 
         /* --- stubbing --- */
-        when(patientRepository.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
+        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
         when(exerciseService.getExercisesOverview(patient)).thenReturn(expected);
 
         /* --- invoke controller method --- */
@@ -53,9 +53,9 @@ class ExerciseControllerTest {
 
         /* --- assertions & verifications --- */
         assertEquals(expected, result);
-        verify(patientRepository).getCurrentlyLoggedInPatient(request);
+        verify(patientService).getCurrentlyLoggedInPatient(request);
         verify(exerciseService).getExercisesOverview(patient);
-        verifyNoMoreInteractions(patientRepository, exerciseService);
+        verifyNoMoreInteractions(patientService, exerciseService);
     }
 
 
@@ -69,15 +69,15 @@ class ExerciseControllerTest {
         Patient mockPatient = new Patient();
         mockPatient.setId("p123");
 
-        when(patientRepository.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
+        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
 
         // Act
         exerciseController.postExerciseFeedback(request, exerciseId, inputDTO);
 
         // Assert
-        verify(patientRepository).getCurrentlyLoggedInPatient(request);
+        verify(patientService).getCurrentlyLoggedInPatient(request);
         verify(exerciseService).putExerciseFeedback(mockPatient, exerciseId, inputDTO);
-        verifyNoMoreInteractions(patientRepository, exerciseService);
+        verifyNoMoreInteractions(patientService, exerciseService);
     }
 
     @Test
@@ -91,7 +91,7 @@ class ExerciseControllerTest {
 
         ExerciseChatbotOutputDTO expectedDTO = new ExerciseChatbotOutputDTO();
 
-        when(patientRepository.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
+        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
         when(exerciseService.getExerciseChatbot(exerciseId, mockPatient)).thenReturn(expectedDTO);
 
         // Act
@@ -99,9 +99,9 @@ class ExerciseControllerTest {
 
         // Assert
         assertEquals(expectedDTO, result);
-        verify(patientRepository).getCurrentlyLoggedInPatient(request);
+        verify(patientService).getCurrentlyLoggedInPatient(request);
         verify(exerciseService).getExerciseChatbot(exerciseId, mockPatient);
-        verifyNoMoreInteractions(patientRepository, exerciseService);
+        verifyNoMoreInteractions(patientService, exerciseService);
     }
 
     @Test
@@ -117,7 +117,7 @@ class ExerciseControllerTest {
         ExecutionOverviewOutputDTO dto2 = new ExecutionOverviewOutputDTO();
         List<ExecutionOverviewOutputDTO> expectedList = List.of(dto1, dto2);
 
-        when(patientRepository.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
+        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
         when(exerciseService.getOneExercisesOverview(mockPatient, exerciseId)).thenReturn(expectedList);
 
         // Act
@@ -125,9 +125,9 @@ class ExerciseControllerTest {
 
         // Assert
         assertEquals(expectedList, result);
-        verify(patientRepository).getCurrentlyLoggedInPatient(request);
+        verify(patientService).getCurrentlyLoggedInPatient(request);
         verify(exerciseService).getOneExercisesOverview(mockPatient, exerciseId);
-        verifyNoMoreInteractions(patientRepository, exerciseService);
+        verifyNoMoreInteractions(patientService, exerciseService);
     }
 
 
@@ -143,7 +143,7 @@ class ExerciseControllerTest {
 
         ExerciseOutputDTO expectedDTO = new ExerciseOutputDTO();
 
-        when(patientRepository.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
+        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
         when(exerciseService.getExerciseExecution(exerciseId, mockPatient, exerciseExecutionId)).thenReturn(expectedDTO);
 
         // Act
@@ -151,9 +151,9 @@ class ExerciseControllerTest {
 
         // Assert
         assertEquals(expectedDTO, result);
-        verify(patientRepository).getCurrentlyLoggedInPatient(request);
+        verify(patientService).getCurrentlyLoggedInPatient(request);
         verify(exerciseService).getExerciseExecution(exerciseId, mockPatient, exerciseExecutionId);
-        verifyNoMoreInteractions(patientRepository, exerciseService);
+        verifyNoMoreInteractions(patientService, exerciseService);
     }
 
     @Test
@@ -167,7 +167,7 @@ class ExerciseControllerTest {
 
         ExerciseStartOutputDTO expectedDTO = new ExerciseStartOutputDTO();
 
-        when(patientRepository.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
+        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
         when(exerciseService.startExercise(exerciseId, mockPatient)).thenReturn(expectedDTO);
 
         // Act
@@ -175,9 +175,9 @@ class ExerciseControllerTest {
 
         // Assert
         assertEquals(expectedDTO, result);
-        verify(patientRepository).getCurrentlyLoggedInPatient(request);
+        verify(patientService).getCurrentlyLoggedInPatient(request);
         verify(exerciseService).startExercise(exerciseId, mockPatient);
-        verifyNoMoreInteractions(patientRepository, exerciseService);
+        verifyNoMoreInteractions(patientService, exerciseService);
     }
 
     @Test
@@ -190,15 +190,15 @@ class ExerciseControllerTest {
         Patient mockPatient = new Patient();
         mockPatient.setId("p123");
 
-        when(patientRepository.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
+        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
 
         // Act
         exerciseController.postExerciseCompletionName(request, exerciseId, inputDTO);
 
         // Assert
-        verify(patientRepository).getCurrentlyLoggedInPatient(request);
+        verify(patientService).getCurrentlyLoggedInPatient(request);
         verify(exerciseService).setExerciseCompletionName(mockPatient, exerciseId, inputDTO);
-        verifyNoMoreInteractions(patientRepository, exerciseService);
+        verifyNoMoreInteractions(patientService, exerciseService);
     }
 
     @Test
@@ -211,15 +211,15 @@ class ExerciseControllerTest {
         Patient mockPatient = new Patient();
         mockPatient.setId("p123");
 
-        when(patientRepository.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
+        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
 
         // Act
         exerciseController.putExerciseCompletionName(request, exerciseId, inputDTO);
 
         // Assert
-        verify(patientRepository).getCurrentlyLoggedInPatient(request);
+        verify(patientService).getCurrentlyLoggedInPatient(request);
         verify(exerciseService).setExerciseCompletionName(mockPatient, exerciseId, inputDTO);
-        verifyNoMoreInteractions(patientRepository, exerciseService);
+        verifyNoMoreInteractions(patientService, exerciseService);
     }
 
 
@@ -234,15 +234,15 @@ class ExerciseControllerTest {
         Patient mockPatient = new Patient();
         mockPatient.setId("p123");
 
-        when(patientRepository.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
+        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
 
         // Act
         exerciseController.postExerciseComponentResult(request, exerciseId, exerciseComponentId, inputDTO);
 
         // Assert
-        verify(patientRepository).getCurrentlyLoggedInPatient(request);
+        verify(patientService).getCurrentlyLoggedInPatient(request);
         verify(exerciseService).setExerciseComponentResult(mockPatient, exerciseId, inputDTO, exerciseComponentId);
-        verifyNoMoreInteractions(patientRepository, exerciseService);
+        verifyNoMoreInteractions(patientService, exerciseService);
     }
 
 
@@ -257,15 +257,15 @@ class ExerciseControllerTest {
         Patient mockPatient = new Patient();
         mockPatient.setId("p123");
 
-        when(patientRepository.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
+        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
 
         // Act
         exerciseController.putExerciseComponentResult(request, exerciseId, exerciseComponentId, inputDTO);
 
         // Assert
-        verify(patientRepository).getCurrentlyLoggedInPatient(request);
+        verify(patientService).getCurrentlyLoggedInPatient(request);
         verify(exerciseService).setExerciseComponentResult(mockPatient, exerciseId, inputDTO, exerciseComponentId);
-        verifyNoMoreInteractions(patientRepository, exerciseService);
+        verifyNoMoreInteractions(patientService, exerciseService);
     }
 
 
