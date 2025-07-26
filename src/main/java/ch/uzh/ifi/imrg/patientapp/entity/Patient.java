@@ -54,7 +54,7 @@ public class Patient implements Serializable {
     private boolean onboarded;
 
     @Column(nullable = false)
-    private boolean getNotifications;
+    private boolean getNotifications = true;
 
     @Column(name = "private_key", unique = true)
     private String privateKey;
