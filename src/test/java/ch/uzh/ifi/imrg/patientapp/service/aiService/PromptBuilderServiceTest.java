@@ -72,6 +72,7 @@ public class PromptBuilderServiceTest {
         template.setChatbotRole("friendly coach");
         template.setChatbotTone("encouraging");
         Patient patient = new Patient();
+        patient.setLanguage("en");
 
         // Act
         String result = promptBuilderService.getSystemPrompt(template, patient);
@@ -90,6 +91,7 @@ public class PromptBuilderServiceTest {
         template.setChatbotTone("warm");
         String context = "This exercise helps you reflect on gratitude.";
         Patient patient = new Patient();
+        patient.setLanguage("en");
 
         // Act
         String result = promptBuilderService.getSystemPrompt(template, context,patient);
@@ -337,11 +339,13 @@ public class PromptBuilderServiceTest {
         ChatbotTemplate template = new ChatbotTemplate();
         template.setChatbotRole("therapist");
         template.setChatbotTone("empathetic");
+        Patient patient = new Patient();
+        patient.setLanguage("en");
 
         String title = "My Day";
         String content = "Today I felt overwhelmed by work.";
 
-        String result = promptBuilderService.getJournalSystemPrompt(template, title, content, new Patient());
+        String result = promptBuilderService.getJournalSystemPrompt(template, title, content, patient);
 
         assertTrue(result.contains("therapist"));
         assertTrue(result.contains("empathetic"));
@@ -355,10 +359,11 @@ public class PromptBuilderServiceTest {
         ChatbotTemplate template = new ChatbotTemplate();
         template.setChatbotRole("coach");
         template.setChatbotTone("supportive");
-
+        Patient patient = new Patient();
+        patient.setLanguage("en");
         String document = "This is a patient summary with important information.";
 
-        String result = promptBuilderService.getDocumentSystemPrompt(template, document, new Patient());
+        String result = promptBuilderService.getDocumentSystemPrompt(template, document, patient);
 
         assertTrue(result.contains("coach"));
         assertTrue(result.contains("supportive"));
