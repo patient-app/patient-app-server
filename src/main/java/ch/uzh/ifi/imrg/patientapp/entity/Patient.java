@@ -86,4 +86,7 @@ public class Patient implements Serializable {
     @Column(name = "chat_bot_avatar", nullable = true)
     private ChatBotAvatar chatBotAvatar = ChatBotAvatar.NONE;
 
+    @OneToMany(mappedBy = "patient", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<NotificationSubscription> subscriptions = new ArrayList<>();
+
 }
