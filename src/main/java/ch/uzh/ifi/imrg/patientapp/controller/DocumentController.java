@@ -10,7 +10,7 @@ import ch.uzh.ifi.imrg.patientapp.rest.dto.output.document.DocumentDownloadDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.document.DocumentOverviewDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.DocumentMapper;
 import ch.uzh.ifi.imrg.patientapp.service.DocumentService;
-import ch.uzh.ifi.imrg.patientapp.service.PatientService;
+import ch.uzh.ifi.imrg.patientapp.service.PatientRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -34,13 +34,13 @@ public class DocumentController {
 
     private final DocumentService documentService;
     private final DocumentMapper documentMapper;
-    private final PatientService patientService;
+    private final PatientRepository patientRepository;
     private final LogService logService;
 
     @GetMapping("/patients/documents")
     @ResponseStatus(HttpStatus.OK)
     public List<DocumentOverviewDTO> list(HttpServletRequest httpServletRequest) {
-        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
+        Patient loggedInPatient = patientRepository.getCurrentlyLoggedInPatient(httpServletRequest);
 
         return documentService.listDocumentsForPatient(loggedInPatient.getId()).stream().map(documentMapper::toOverview)
                 .toList();
@@ -53,7 +53,7 @@ public class DocumentController {
 
     @GetMapping(path = "/patients/documents/{documentId}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<byte[]> download(@PathVariable String documentId, HttpServletRequest httpServletRequest) {
-        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
+        Patient loggedInPatient = patientRepository.getCurrentlyLoggedInPatient(httpServletRequest);
 
         DocumentDownloadDTO dto = documentService.fetchDocument(loggedInPatient.getId(), documentId);
 
@@ -68,7 +68,7 @@ public class DocumentController {
     @GetMapping("/patients/documents/{documentId}/chatbot")
     public DocumentChatbotOutputDTO getAllMessages(@PathVariable String documentId,
             HttpServletRequest httpServletRequest) {
-        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
+        Patient loggedInPatient = patientRepository.getCurrentlyLoggedInPatient(httpServletRequest);
 
         return documentService.getDocumentChatbot(loggedInPatient, documentId);
     }

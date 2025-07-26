@@ -38,7 +38,7 @@ import ch.uzh.ifi.imrg.patientapp.rest.dto.output.JournalConversationOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.MessageOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.service.ConversationService;
 import ch.uzh.ifi.imrg.patientapp.service.MessageService;
-import ch.uzh.ifi.imrg.patientapp.service.PatientService;
+import ch.uzh.ifi.imrg.patientapp.service.PatientRepository;
 import ch.uzh.ifi.imrg.patientapp.utils.CryptographyUtil;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -49,7 +49,7 @@ public class JournalEntryConversationControllerTest {
     private ObjectMapper objectMapper = new ObjectMapper();
 
     @Mock
-    private PatientService patientService;
+    private PatientRepository patientRepository;
     @Mock
     private MessageService messageService;
     @Mock
@@ -74,7 +74,7 @@ public class JournalEntryConversationControllerTest {
     void sendMessage_returnsMessageOutput() throws Exception {
         // Arrange
         Patient mockPatient = new Patient();
-        when(patientService.getCurrentlyLoggedInPatient(any())).thenReturn(mockPatient);
+        when(patientRepository.getCurrentlyLoggedInPatient(any())).thenReturn(mockPatient);
 
         CreateJournalMessageDTO reqDto = new CreateJournalMessageDTO();
         reqDto.setJournalEntryTitle("entryTitle");
@@ -123,7 +123,7 @@ public class JournalEntryConversationControllerTest {
 
         Patient patient = new Patient();
         patient.setPrivateKey("encKey");
-        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
+        when(patientRepository.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
 
         JournalEntryConversation conv = new JournalEntryConversation();
         conv.setId(conversationId);
@@ -164,16 +164,16 @@ public class JournalEntryConversationControllerTest {
             assertEquals("DecryptedRes", msgDto.getResponseMessage());
         }
 
-        verify(patientService).getCurrentlyLoggedInPatient(request);
+        verify(patientRepository).getCurrentlyLoggedInPatient(request);
         verify(conversationService).getAllMessagesFromConversation(conversationId, patient);
-        verifyNoMoreInteractions(patientService, conversationService);
+        verifyNoMoreInteractions(patientRepository, conversationService);
     }
 
     @Test
     void deleteJournalChat_returnsOk() throws Exception {
         // Arrange
         Patient mockPatient = new Patient();
-        when(patientService.getCurrentlyLoggedInPatient(any())).thenReturn(mockPatient);
+        when(patientRepository.getCurrentlyLoggedInPatient(any())).thenReturn(mockPatient);
         doNothing().when(conversationService)
                 .deleteAllMessagesFromConversation("conv2", mockPatient);
 

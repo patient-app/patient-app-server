@@ -29,7 +29,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreatePatientDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.UpdateCoachEmailDTO;
-import ch.uzh.ifi.imrg.patientapp.service.PatientService;
+import ch.uzh.ifi.imrg.patientapp.service.PatientRepository;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -41,7 +41,7 @@ class CoachPatientControllerTest {
         private ObjectMapper objectMapper;
 
         @Mock
-        private PatientService patientService;
+        private PatientRepository patientRepository;
 
         @InjectMocks
         private CoachPatientController controller;
@@ -73,7 +73,7 @@ class CoachPatientControllerTest {
                 saved.setPassword("Password1.");
                 saved.setCoachAccessKey("coach-key-123");
 
-                when(patientService.registerPatient(
+                when(patientRepository.registerPatient(
                                 any(Patient.class),
                                 any(HttpServletRequest.class),
                                 any(HttpServletResponse.class)))
@@ -109,12 +109,12 @@ class CoachPatientControllerTest {
         void deletePatient_shouldReturnNoContent() throws Exception {
                 String patientId = "p1";
 
-                doNothing().when(patientService).removePatient(patientId);
+                doNothing().when(patientRepository).removePatient(patientId);
 
                 mockMvc.perform(delete("/coach/patients/{patientId}", patientId))
                                 .andExpect(status().isNoContent());
 
-                verify(patientService).removePatient(patientId);
+                verify(patientRepository).removePatient(patientId);
         }
 
         @Test
@@ -126,7 +126,7 @@ class CoachPatientControllerTest {
                 dto.setCoachEmail("coach@example.com");
 
                 // stub service
-                doNothing().when(patientService).updateCoachEmail(patientId, dto.getCoachEmail());
+                doNothing().when(patientRepository).updateCoachEmail(patientId, dto.getCoachEmail());
 
                 // exercise endpoint
                 mockMvc.perform(put("/coach/patients/{patientId}/coach-email", patientId)
@@ -135,6 +135,6 @@ class CoachPatientControllerTest {
                                 .andExpect(status().isNoContent());
 
                 // verify service call
-                verify(patientService).updateCoachEmail(patientId, dto.getCoachEmail());
+                verify(patientRepository).updateCoachEmail(patientId, dto.getCoachEmail());
         }
 }

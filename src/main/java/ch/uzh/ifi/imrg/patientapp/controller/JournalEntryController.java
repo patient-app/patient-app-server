@@ -12,7 +12,7 @@ import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.JournalEntryRequestDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.JournalEntryOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.service.JournalEntryService;
-import ch.uzh.ifi.imrg.patientapp.service.PatientService;
+import ch.uzh.ifi.imrg.patientapp.service.PatientRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.GetAllJournalEntriesDTO;
@@ -22,12 +22,12 @@ import ch.uzh.ifi.imrg.patientapp.rest.dto.output.JournalChatbotOutputDTO;
 public class JournalEntryController {
 
     private final JournalEntryService journalEntryService;
-    private final PatientService patientService;
+    private final PatientRepository patientRepository;
     private final LogService logService;
 
-    JournalEntryController(JournalEntryService journalEntryService, PatientService patientService, LogService logService) {
+    JournalEntryController(JournalEntryService journalEntryService, PatientRepository patientRepository, LogService logService) {
         this.journalEntryService = journalEntryService;
-        this.patientService = patientService;
+        this.patientRepository = patientRepository;
         this.logService = logService;
     }
 
@@ -36,7 +36,7 @@ public class JournalEntryController {
     public JournalEntryOutputDTO create(@Valid @RequestBody JournalEntryRequestDTO dto,
             HttpServletRequest httpServletRequest) {
 
-        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
+        Patient loggedInPatient = patientRepository.getCurrentlyLoggedInPatient(httpServletRequest);
 
         JournalEntryOutputDTO savedEntry = journalEntryService.createEntry(dto, loggedInPatient);
 
@@ -48,7 +48,7 @@ public class JournalEntryController {
     @ResponseStatus(HttpStatus.OK)
     public Set<String> getAllTags(HttpServletRequest httpServletRequest) {
 
-        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
+        Patient loggedInPatient = patientRepository.getCurrentlyLoggedInPatient(httpServletRequest);
 
         return journalEntryService.getAllTags(loggedInPatient);
     }
@@ -56,7 +56,7 @@ public class JournalEntryController {
     @GetMapping("/patients/journal-entries")
     @ResponseStatus(HttpStatus.OK)
     public List<GetAllJournalEntriesDTO> listAll(HttpServletRequest httpServletRequest) {
-        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
+        Patient loggedInPatient = patientRepository.getCurrentlyLoggedInPatient(httpServletRequest);
 
         return journalEntryService.listEntries(loggedInPatient);
     }
@@ -64,7 +64,7 @@ public class JournalEntryController {
     @GetMapping("/patients/journal-entries/{entryId}")
     @ResponseStatus(HttpStatus.OK)
     public JournalEntryOutputDTO getOne(@PathVariable String entryId, HttpServletRequest httpServletRequest) {
-        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
+        Patient loggedInPatient = patientRepository.getCurrentlyLoggedInPatient(httpServletRequest);
 
         return journalEntryService.getEntry(loggedInPatient, entryId);
     }
@@ -73,7 +73,7 @@ public class JournalEntryController {
     @ResponseStatus(HttpStatus.OK)
     public JournalEntryOutputDTO updateJournalEntry(@Valid @RequestBody JournalEntryRequestDTO dto,
             @PathVariable String entryId, HttpServletRequest httpServletRequest) {
-        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
+        Patient loggedInPatient = patientRepository.getCurrentlyLoggedInPatient(httpServletRequest);
 
         return journalEntryService.updateJournalEntry(loggedInPatient, entryId, dto);
     }
@@ -81,7 +81,7 @@ public class JournalEntryController {
     @DeleteMapping("/patients/journal-entries/{entryId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteEntry(@PathVariable String entryId, HttpServletRequest httpServletRequest) {
-        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
+        Patient loggedInPatient = patientRepository.getCurrentlyLoggedInPatient(httpServletRequest);
         journalEntryService.deleteEntry(loggedInPatient, entryId);
     }
 
@@ -89,7 +89,7 @@ public class JournalEntryController {
     @ResponseStatus(HttpStatus.OK)
     public JournalChatbotOutputDTO getAllMessages(@PathVariable String entryId,
             HttpServletRequest httpServletRequest) {
-        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
+        Patient loggedInPatient = patientRepository.getCurrentlyLoggedInPatient(httpServletRequest);
 
         return journalEntryService.getJournalChatbot(loggedInPatient, entryId);
     }

@@ -12,7 +12,7 @@ import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreateMeetingDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.UpdateMeetingDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.MeetingOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.service.MeetingService;
-import ch.uzh.ifi.imrg.patientapp.service.PatientService;
+import ch.uzh.ifi.imrg.patientapp.service.PatientRepository;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -29,7 +29,7 @@ public class MeetingControllerTest {
     private MeetingService meetingService;
 
     @Mock
-    private PatientService patientService;
+    private PatientRepository patientRepository;
 
     @Mock
     private HttpServletRequest request;
@@ -46,7 +46,7 @@ public class MeetingControllerTest {
         Meeting meeting = new Meeting();
         meeting.setId("m1");
 
-        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
+        when(patientRepository.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
         when(meetingService.createMeeting(input, patient.getId())).thenReturn(meeting);
 
         MeetingOutputDTO result = meetingController.createMeeting(request, input);
@@ -65,7 +65,7 @@ public class MeetingControllerTest {
         Meeting m2 = new Meeting();
         m2.setId("m2");
 
-        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
+        when(patientRepository.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
         when(meetingService.getAllMeetings(patient.getId())).thenReturn(Arrays.asList(m1, m2));
 
         List<MeetingOutputDTO> results = meetingController.listMeetings(request);
@@ -83,7 +83,7 @@ public class MeetingControllerTest {
         Meeting meeting = new Meeting();
         meeting.setId("m1");
 
-        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
+        when(patientRepository.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
         when(meetingService.getMeeting("m1", "patient1")).thenReturn(meeting);
 
         MeetingOutputDTO result = meetingController.getMeeting("m1", request);
@@ -101,7 +101,7 @@ public class MeetingControllerTest {
         Meeting updatedMeeting = new Meeting();
         updatedMeeting.setId("m1");
 
-        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
+        when(patientRepository.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
         when(meetingService.updateMeeting("patient1", "m1", input)).thenReturn(updatedMeeting);
 
         MeetingOutputDTO result = meetingController.updateMeeting("m1", input, request);
@@ -115,7 +115,7 @@ public class MeetingControllerTest {
         Patient patient = new Patient();
         patient.setId("patient1");
 
-        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
+        when(patientRepository.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
 
         meetingController.deleteMeeting("m1", request);
 

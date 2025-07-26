@@ -12,7 +12,7 @@ import ch.uzh.ifi.imrg.patientapp.rest.dto.output.document.DocumentConversationO
 import ch.uzh.ifi.imrg.patientapp.service.ConversationService;
 import ch.uzh.ifi.imrg.patientapp.service.LogService;
 import ch.uzh.ifi.imrg.patientapp.service.MessageService;
-import ch.uzh.ifi.imrg.patientapp.service.PatientService;
+import ch.uzh.ifi.imrg.patientapp.service.PatientRepository;
 import ch.uzh.ifi.imrg.patientapp.utils.CryptographyUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Test;
@@ -29,7 +29,7 @@ import static org.mockito.Mockito.mockStatic;
 class DocumentConversationControllerTest {
 
     @Mock
-    private PatientService patientService;
+    private PatientRepository patientRepository;
 
     @Mock
     private MessageService messageService;
@@ -63,7 +63,7 @@ class DocumentConversationControllerTest {
         answered.setResponse("Doc says hi");
         answered.setConversation(conversation); // Fix: set the conversation on the message
 
-        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
+        when(patientRepository.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
         when(messageService.generateAnswer(patient, conversationId, "Hello Doc"))
                 .thenReturn(answered);
         doNothing().when(logService).createLog(nullable(String.class), any(LogTypes.class), anyString(), eq(""));
@@ -74,9 +74,9 @@ class DocumentConversationControllerTest {
         // Assert
         assertEquals("Hello Doc", result.getRequestMessage());
         assertEquals("Doc says hi", result.getResponseMessage());
-        verify(patientService).getCurrentlyLoggedInPatient(request);
+        verify(patientRepository).getCurrentlyLoggedInPatient(request);
         verify(messageService).generateAnswer(patient, conversationId, "Hello Doc");
-        verifyNoMoreInteractions(patientService, messageService, conversationService);
+        verifyNoMoreInteractions(patientRepository, messageService, conversationService);
     }
 
     @Test
@@ -99,7 +99,7 @@ class DocumentConversationControllerTest {
         m.setResponse("ENC_RES");
         conv.getMessages().add(m);
 
-        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
+        when(patientRepository.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
         when(conversationService.getAllMessagesFromConversation(conversationId, patient))
                 .thenReturn(conv);
 
@@ -126,9 +126,9 @@ class DocumentConversationControllerTest {
             assertEquals("DecryptedRes", msgDto.getResponseMessage());
         }
 
-        verify(patientService).getCurrentlyLoggedInPatient(request);
+        verify(patientRepository).getCurrentlyLoggedInPatient(request);
         verify(conversationService).getAllMessagesFromConversation(conversationId, patient);
-        verifyNoMoreInteractions(patientService, messageService, conversationService);
+        verifyNoMoreInteractions(patientRepository, messageService, conversationService);
     }
 
     @Test
@@ -140,15 +140,15 @@ class DocumentConversationControllerTest {
         Patient patient = new Patient();
         patient.setId("p123");
 
-        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
+        when(patientRepository.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
 
         // Act
         controller.deleteDocumentChat(request, conversationId);
 
         // Assert
-        verify(patientService).getCurrentlyLoggedInPatient(request);
+        verify(patientRepository).getCurrentlyLoggedInPatient(request);
         verify(conversationService)
                 .deleteAllMessagesFromConversation(conversationId, patient);
-        verifyNoMoreInteractions(patientService, messageService, conversationService);
+        verifyNoMoreInteractions(patientRepository, messageService, conversationService);
     }
 }

@@ -6,13 +6,12 @@ import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.*;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PatientOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.service.LogService;
-import ch.uzh.ifi.imrg.patientapp.service.PatientService;
+import ch.uzh.ifi.imrg.patientapp.service.PatientRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
@@ -31,7 +30,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class PatientControllerTest {
     @Mock
-    private PatientService patientService;
+    private PatientRepository patientRepository;
 
     @Mock
     private HttpServletRequest request;
@@ -45,7 +44,7 @@ public class PatientControllerTest {
     void getCurrentlyLoggedInPatient_shouldReturnMappedDTO() {
         HttpServletRequest request = mock(HttpServletRequest.class);
         Patient mockPatient = new Patient();
-        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
+        when(patientRepository.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
 
         PatientOutputDTO dto = patientController.getCurrentlyLoggedInPatient(request);
 
@@ -59,7 +58,7 @@ public class PatientControllerTest {
         HttpServletResponse response = mock(HttpServletResponse.class);
 
         Patient mockPatient = new Patient();
-        when(patientService.registerPatient(any(), eq(request), eq(response))).thenReturn(mockPatient);
+        when(patientRepository.registerPatient(any(), eq(request), eq(response))).thenReturn(mockPatient);
 
         PatientOutputDTO dto = patientController.registerPatient(input, request, response);
 
@@ -73,7 +72,7 @@ public class PatientControllerTest {
         HttpServletResponse response = mock(HttpServletResponse.class);
 
         Patient mockPatient = new Patient();
-        when(patientService.loginPatient(loginDTO, request, response)).thenReturn(mockPatient);
+        when(patientRepository.loginPatient(loginDTO, request, response)).thenReturn(mockPatient);
 
         PatientOutputDTO dto = patientController.loginTherapist(loginDTO, request, response);
 
@@ -86,7 +85,7 @@ public class PatientControllerTest {
 
         // No exception expected
         assertDoesNotThrow(() -> patientController.logoutTherapist(response));
-        verify(patientService).logoutPatient(response);
+        verify(patientRepository).logoutPatient(response);
     }
 
     @Test
@@ -98,14 +97,14 @@ public class PatientControllerTest {
         dto.setLanguage("en");
 
         Patient mockPatient = new Patient();
-        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
+        when(patientRepository.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
 
         // Act
         patientController.setLanguage(dto, request);
 
         // Assert
         ArgumentCaptor<Patient> patientCaptor = ArgumentCaptor.forClass(Patient.class);
-        verify(patientService).setField(patientCaptor.capture());
+        verify(patientRepository).setField(patientCaptor.capture());
 
         Patient captured = patientCaptor.getValue();
         assertNotNull(captured);
@@ -120,7 +119,7 @@ public class PatientControllerTest {
         Patient mockPatient = new Patient();
         mockPatient.setLanguage("de"); // Set some language for clarity
 
-        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
+        when(patientRepository.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
 
         // Act
         PatientOutputDTO result = patientController.getLanguage(request);
@@ -141,13 +140,13 @@ public class PatientControllerTest {
         Patient mockPatient = new Patient();
         mockPatient.setOnboarded(false); // Not onboarded
 
-        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
+        when(patientRepository.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
 
         // Act
         patientController.setOnboarded(dto, request);
 
         // Assert
-        verify(patientService).setField(mockPatient);
+        verify(patientRepository).setField(mockPatient);
         assertTrue(mockPatient.isOnboarded());
     }
 
@@ -162,13 +161,13 @@ public class PatientControllerTest {
         Patient mockPatient = new Patient();
         mockPatient.setOnboarded(true); // Already onboarded
 
-        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
+        when(patientRepository.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
 
         // Act
         patientController.setOnboarded(dto, request);
 
         // Assert
-        verify(patientService, never()).setField(any());
+        verify(patientRepository, never()).setField(any());
         assertTrue(mockPatient.isOnboarded()); // Still true
     }
 
@@ -180,7 +179,7 @@ public class PatientControllerTest {
         Patient mockPatient = new Patient();
         mockPatient.setOnboarded(true); // or false to test the other value
 
-        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
+        when(patientRepository.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
 
         // Act
         PatientOutputDTO result = patientController.getOnboarded(request);
@@ -200,14 +199,14 @@ public class PatientControllerTest {
         dto.setName(name);
 
         Patient mockPatient = new Patient();
-        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
+        when(patientRepository.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
 
         // Act
         patientController.setName(dto, request);
 
         // Assert
         ArgumentCaptor<Patient> patientCaptor = ArgumentCaptor.forClass(Patient.class);
-        verify(patientService).setField(patientCaptor.capture());
+        verify(patientRepository).setField(patientCaptor.capture());
 
         Patient captured = patientCaptor.getValue();
         assertNotNull(captured);
@@ -223,7 +222,7 @@ public class PatientControllerTest {
         Patient mockPatient = new Patient();
         mockPatient.setName(name); // Set some name for clarity
 
-        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
+        when(patientRepository.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
 
         // Act
         PatientOutputDTO result = patientController.getName(request);
@@ -241,11 +240,11 @@ public class PatientControllerTest {
         dto.setNewPassword("newPwd");
 
         Patient mockPatient = new Patient();
-        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
-        doNothing().when(patientService).changePassword(mockPatient, dto);
+        when(patientRepository.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
+        doNothing().when(patientRepository).changePassword(mockPatient, dto);
 
         assertDoesNotThrow(() -> patientController.changePassword(dto, request));
-        verify(patientService).changePassword(mockPatient, dto);
+        verify(patientRepository).changePassword(mockPatient, dto);
     }
 
     @Test
@@ -256,9 +255,9 @@ public class PatientControllerTest {
         dto.setNewPassword("newPwd");
 
         Patient mockPatient = new Patient();
-        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
+        when(patientRepository.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
         doThrow(new ResponseStatusException(HttpStatus.FORBIDDEN, "Old password is incorrect"))
-                .when(patientService).changePassword(mockPatient, dto);
+                .when(patientRepository).changePassword(mockPatient, dto);
 
         ResponseStatusException ex = assertThrows(
                 ResponseStatusException.class,
@@ -273,11 +272,11 @@ public class PatientControllerTest {
         dto.setEmail("patient@example.com");
 
         // service does nothing (void)
-        doNothing().when(patientService).resetPasswordAndNotify(dto.getEmail());
+        doNothing().when(patientRepository).resetPasswordAndNotify(dto.getEmail());
 
         // Act & Assert
         assertDoesNotThrow(() -> patientController.resetPassword(dto));
-        verify(patientService).resetPasswordAndNotify(dto.getEmail());
+        verify(patientRepository).resetPasswordAndNotify(dto.getEmail());
     }
 
     @Test
@@ -288,7 +287,7 @@ public class PatientControllerTest {
 
         // simulate not found
         doThrow(new EntityNotFoundException("No patient found with email: " + dto.getEmail()))
-                .when(patientService).resetPasswordAndNotify(dto.getEmail());
+                .when(patientRepository).resetPasswordAndNotify(dto.getEmail());
 
         // Act & Assert
         EntityNotFoundException ex = assertThrows(
@@ -305,12 +304,12 @@ public class PatientControllerTest {
         Patient patient = new Patient();
         patient.setId("p1");
 
-        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
+        when(patientRepository.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
 
         patientController.setAvatar(dto, request);
 
         assertEquals(ChatBotAvatar.ANIMALISTIC, patient.getChatBotAvatar());
-        verify(patientService).setField(patient);
+        verify(patientRepository).setField(patient);
         verify(logService).createLog("p1", LogTypes.CHATBOT_ICON_UPDATE, null, "");
     }
 
@@ -320,7 +319,7 @@ public class PatientControllerTest {
         patient.setId("p1");
         patient.setEmail("alice@example.com");
 
-        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
+        when(patientRepository.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
 
         PatientOutputDTO dto = patientController.getAvatar(request);
 

@@ -40,6 +40,8 @@ public class Meeting {
     @Column(name = "end_at", nullable = false)
     private Instant endAt;
 
+    private Instant lastReminderSentAt;
+
     @Column(nullable = true)
     private String location;
 

@@ -33,7 +33,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class ConversationControllerTest {
     @Mock
-    private PatientService patientService;
+    private PatientRepository patientRepository;
 
     @Mock
     private ConversationService conversationService;
@@ -61,13 +61,13 @@ public class ConversationControllerTest {
         conversation.setId("12345");
 
 
-        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
+        when(patientRepository.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
         when(conversationService.createConversation(patient)).thenReturn(conversation);
 
         CreateConversationOutputDTO result = conversationController.createConversation(request);
 
         assertEquals("12345", result.getId());
-        verify(patientService).addConversationToPatient(patient, conversation);
+        verify(patientRepository).addConversationToPatient(patient, conversation);
     }
 
     @Test
@@ -84,7 +84,7 @@ public class ConversationControllerTest {
         message.setResponse("Hi!");
         message.setConversation(conversation); // <-- Fix: set conversation
 
-        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
+        when(patientRepository.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
         when(messageService.generateAnswer(patient, "cid123", "Hello")).thenReturn(message);
         doNothing().when(logService).createLog(nullable(String.class), any(LogTypes.class), anyString(), eq(""));
 
@@ -108,7 +108,7 @@ public class ConversationControllerTest {
         message.setResponse("encRes");
         conversation.setMessages(Collections.singletonList(message));
 
-        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
+        when(patientRepository.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
         when(conversationService.getAllMessagesFromConversation("cid123", patient)).thenReturn(conversation);
 
         try (var cryptoMock = mockStatic(CryptographyUtil.class)) {
@@ -136,7 +136,7 @@ public class ConversationControllerTest {
 
         List<GeneralConversation> conversationList = Collections.singletonList(conversation);
 
-        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
+        when(patientRepository.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
         when(conversationService.getAllConversationsFromPatient(mockPatient)).thenReturn(conversationList);
 
         // Act
@@ -164,13 +164,13 @@ public class ConversationControllerTest {
         mockPatient.setCreatedAt(createdAt);
         mockPatient.setUpdatedAt(updatedAt);
         mockPatient.setGender(gender);
-        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
+        when(patientRepository.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
 
         // Act
         conversationController.updateSharing(dto, conversationId, request);
 
         // Assert
-        verify(patientService).getCurrentlyLoggedInPatient(request);
+        verify(patientRepository).getCurrentlyLoggedInPatient(request);
         verify(conversationService).updateSharing(dto, conversationId, mockPatient);
         assertEquals(createdAt, mockPatient.getCreatedAt(), "createdAt should not have changed");
         assertEquals(updatedAt, mockPatient.getUpdatedAt(), "updatedAt should not have changed");
@@ -184,13 +184,13 @@ public class ConversationControllerTest {
         HttpServletRequest request = mock(HttpServletRequest.class);
 
         Patient mockPatient = new Patient();
-        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
+        when(patientRepository.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
 
         // Act
         conversationController.deleteChat(request, conversationId);
 
         // Assert
-        verify(patientService).getCurrentlyLoggedInPatient(request);
+        verify(patientRepository).getCurrentlyLoggedInPatient(request);
         verify(conversationService).deleteConversation(conversationId, mockPatient);
     }
 
@@ -202,13 +202,13 @@ public class ConversationControllerTest {
         dto.setConversationName("New Name");
 
         Patient mockPatient = new Patient();
-        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
+        when(patientRepository.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
 
         // Act
         conversationController.postConversationName(dto, conversationId, request);
 
         // Assert
-        verify(patientService).getCurrentlyLoggedInPatient(request);
+        verify(patientRepository).getCurrentlyLoggedInPatient(request);
         verify(conversationService).setConversationName(dto, conversationId, mockPatient);
     }
 

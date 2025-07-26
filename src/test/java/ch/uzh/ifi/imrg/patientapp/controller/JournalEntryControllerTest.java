@@ -32,7 +32,7 @@ import ch.uzh.ifi.imrg.patientapp.rest.dto.output.GetAllJournalEntriesDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.JournalChatbotOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.JournalEntryOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.service.JournalEntryService;
-import ch.uzh.ifi.imrg.patientapp.service.PatientService;
+import ch.uzh.ifi.imrg.patientapp.service.PatientRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -51,7 +51,7 @@ public class JournalEntryControllerTest {
         private JournalEntryService journalEntryService;
 
         @Mock
-        private PatientService patientService;
+        private PatientRepository patientRepository;
 
         @Mock
         private HttpServletRequest request;
@@ -84,7 +84,7 @@ public class JournalEntryControllerTest {
                 reqDto.setAiAccessAllowed(false);
 
                 Patient mockPatient = new Patient();
-                when(patientService.getCurrentlyLoggedInPatient(any())).thenReturn(mockPatient);
+                when(patientRepository.getCurrentlyLoggedInPatient(any())).thenReturn(mockPatient);
 
                 JournalEntryOutputDTO outDto = new JournalEntryOutputDTO();
                 outDto.setId("e1");
@@ -116,7 +116,7 @@ public class JournalEntryControllerTest {
         void getAllTags_returnsTagSet() throws Exception {
                 // Arrange
                 Patient mockPatient = new Patient();
-                when(patientService.getCurrentlyLoggedInPatient(any())).thenReturn(mockPatient);
+                when(patientRepository.getCurrentlyLoggedInPatient(any())).thenReturn(mockPatient);
                 when(journalEntryService.getAllTags(mockPatient)).thenReturn(Set.of("tagA", "tagB"));
 
                 // Act & Assert
@@ -130,7 +130,7 @@ public class JournalEntryControllerTest {
         void listAll_returnsMetaList() throws Exception {
                 // Arrange
                 Patient mockPatient = new Patient();
-                when(patientService.getCurrentlyLoggedInPatient(any())).thenReturn(mockPatient);
+                when(patientRepository.getCurrentlyLoggedInPatient(any())).thenReturn(mockPatient);
 
                 GetAllJournalEntriesDTO m1 = new GetAllJournalEntriesDTO();
                 m1.setId("e1");
@@ -152,7 +152,7 @@ public class JournalEntryControllerTest {
         void getOne_returnsFullEntry() throws Exception {
                 // Arrange
                 Patient mockPatient = new Patient();
-                when(patientService.getCurrentlyLoggedInPatient(any())).thenReturn(mockPatient);
+                when(patientRepository.getCurrentlyLoggedInPatient(any())).thenReturn(mockPatient);
 
                 JournalEntryOutputDTO outDto = new JournalEntryOutputDTO();
                 outDto.setId("e2");
@@ -184,7 +184,7 @@ public class JournalEntryControllerTest {
                 reqDto.setAiAccessAllowed(true);
 
                 Patient mockPatient = new Patient();
-                when(patientService.getCurrentlyLoggedInPatient(any())).thenReturn(mockPatient);
+                when(patientRepository.getCurrentlyLoggedInPatient(any())).thenReturn(mockPatient);
 
                 JournalEntryOutputDTO outDto = new JournalEntryOutputDTO();
                 outDto.setId("e3");
@@ -213,7 +213,7 @@ public class JournalEntryControllerTest {
         void deleteEntry_returnsNoContent() throws Exception {
                 // Arrange
                 Patient mockPatient = new Patient();
-                when(patientService.getCurrentlyLoggedInPatient(any())).thenReturn(mockPatient);
+                when(patientRepository.getCurrentlyLoggedInPatient(any())).thenReturn(mockPatient);
                 doNothing().when(journalEntryService).deleteEntry(mockPatient, "e4");
 
                 // Act & Assert
@@ -225,7 +225,7 @@ public class JournalEntryControllerTest {
         void getAllMessages_returnsChatbotOutput() throws Exception {
                 // Arrange
                 Patient mockPatient = new Patient();
-                when(patientService.getCurrentlyLoggedInPatient(any()))
+                when(patientRepository.getCurrentlyLoggedInPatient(any()))
                                 .thenReturn(mockPatient);
 
                 // Build a fake JournalChatbotOutputDTO

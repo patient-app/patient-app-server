@@ -40,4 +40,6 @@ public class PsychologicalTestAssignment {
     @Column(name = "last_completed_at")
     private Instant lastCompletedAt;
 
+    private Instant lastReminderSentAt;
+
 }

@@ -8,7 +8,7 @@ import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.CompleteExerciseConve
 import ch.uzh.ifi.imrg.patientapp.service.ConversationService;
 import ch.uzh.ifi.imrg.patientapp.service.LogService;
 import ch.uzh.ifi.imrg.patientapp.service.MessageService;
-import ch.uzh.ifi.imrg.patientapp.service.PatientService;
+import ch.uzh.ifi.imrg.patientapp.service.PatientRepository;
 import ch.uzh.ifi.imrg.patientapp.utils.CryptographyUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Test;
@@ -26,7 +26,7 @@ import static org.mockito.Mockito.*;
 class ExerciseConversationControllerTest {
 
     @Mock
-    private PatientService patientService;
+    private PatientRepository patientRepository;
 
     @Mock
     private MessageService messageService;
@@ -59,7 +59,7 @@ class ExerciseConversationControllerTest {
         message.setResponse("Hi there!");
         message.setConversation(conversation); // <- important fix
 
-        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
+        when(patientRepository.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
         when(messageService.generateAnswer(patient, conversationId, "Hello Exercise")).thenReturn(message);
         doNothing().when(logService).createLog(nullable(String.class), any(LogTypes.class), anyString(), eq(""));
 
@@ -69,9 +69,9 @@ class ExerciseConversationControllerTest {
         // Assert
         assertEquals("Hello Exercise", result.getRequestMessage());
         assertEquals("Hi there!", result.getResponseMessage());
-        verify(patientService).getCurrentlyLoggedInPatient(request);
+        verify(patientRepository).getCurrentlyLoggedInPatient(request);
         verify(messageService).generateAnswer(patient, conversationId, "Hello Exercise");
-        verifyNoMoreInteractions(patientService, messageService, conversationService);
+        verifyNoMoreInteractions(patientRepository, messageService, conversationService);
     }
 
 
@@ -93,7 +93,7 @@ class ExerciseConversationControllerTest {
         conversation.setId(conversationId);
         conversation.setMessages(List.of(message));
 
-        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
+        when(patientRepository.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
         when(conversationService.getAllMessagesFromConversation(conversationId, patient))
                 .thenReturn(conversation);
 
@@ -113,9 +113,9 @@ class ExerciseConversationControllerTest {
             assertEquals("DecryptedRes", msgDTO.getResponseMessage());
         }
 
-        verify(patientService).getCurrentlyLoggedInPatient(request);
+        verify(patientRepository).getCurrentlyLoggedInPatient(request);
         verify(conversationService).getAllMessagesFromConversation(conversationId, patient);
-        verifyNoMoreInteractions(patientService, messageService, conversationService);
+        verifyNoMoreInteractions(patientRepository, messageService, conversationService);
     }
 
     @Test
@@ -127,14 +127,14 @@ class ExerciseConversationControllerTest {
         Patient patient = new Patient();
         patient.setId("p123");
 
-        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
+        when(patientRepository.getCurrentlyLoggedInPatient(request)).thenReturn(patient);
 
         // Act
         controller.deleteExerciseChat(request, conversationId);
 
         // Assert
-        verify(patientService).getCurrentlyLoggedInPatient(request);
+        verify(patientRepository).getCurrentlyLoggedInPatient(request);
         verify(conversationService).deleteAllMessagesFromConversation(conversationId, patient);
-        verifyNoMoreInteractions(patientService, messageService, conversationService);
+        verifyNoMoreInteractions(patientRepository, messageService, conversationService);
     }
 }

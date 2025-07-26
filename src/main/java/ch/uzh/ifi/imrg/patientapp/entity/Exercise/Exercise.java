@@ -40,6 +40,7 @@ public class Exercise implements Serializable {
     private int doEveryNDays;
 
     private String exerciseTitle;
+    private Instant lastReminderSentAt;
 
     @Lob
     @Column()

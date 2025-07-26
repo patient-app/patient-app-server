@@ -34,6 +34,8 @@ public class JournalEntry {
     @UpdateTimestamp
     private Instant updatedAt;
 
+    private Instant lastReminderSentAt;
+
     @Column(nullable = false)
     private String title;
 
