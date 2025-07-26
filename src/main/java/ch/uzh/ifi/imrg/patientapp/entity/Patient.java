@@ -53,6 +53,9 @@ public class Patient implements Serializable {
     @Column(nullable = true)
     private boolean onboarded;
 
+    @Column(nullable = false)
+    private boolean getNotifications;
+
     @Column(name = "private_key", unique = true)
     private String privateKey;
 
