@@ -15,6 +15,6 @@ public class ChangePasswordDTO {
 
     @NotBlank
     @Size(min = 8, message = "New password must be at least 8 characters")
-    @Pattern(regexp = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d).*$", message = "Password must contain upper, lower and digits")
+    @Pattern(regexp = "^(?=.*\\p{Lu})(?=.*\\p{Ll})(?=.*\\d).*$", message = "Password must contain upper, lower and digits")
     private String newPassword;
 }
