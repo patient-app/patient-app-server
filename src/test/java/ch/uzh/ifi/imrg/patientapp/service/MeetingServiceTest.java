@@ -4,14 +4,17 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import ch.uzh.ifi.imrg.patientapp.constant.MeetingStatus;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
@@ -32,6 +35,7 @@ class MeetingServiceTest {
     @Mock
     private PatientRepository patientRepository;
 
+    @Spy
     @InjectMocks
     private MeetingService meetingService;
 
@@ -138,6 +142,45 @@ class MeetingServiceTest {
         Meeting result = meetingService.updateMeeting(patientId, meetingId, dto);
         assertEquals(meetingId, result.getId());
         verify(meetingRepository).save(any(Meeting.class));
+    }
+    @Test
+    void updateMeeting_shouldUpdateAllFields_whenAllNonNull() {
+        // Arrange
+        String patientId = "p1";
+        String meetingId = "m1";
+
+        Meeting existingMeeting = new Meeting();
+        existingMeeting.setId(meetingId);
+
+        // Stub getMeeting to return existing meeting
+        doReturn(existingMeeting).when(meetingService).getMeeting(meetingId, patientId);
+
+        UpdateMeetingDTO update = new UpdateMeetingDTO();
+        Instant now = Instant.now();
+        Instant later = now.plusSeconds(3600);
+
+        update.setStartAt(now);
+        update.setEndAt(later);
+        update.setLocation("Therapy Room A");
+        update.setMeetingStatus(MeetingStatus.CANCELLED);
+
+        Meeting savedMeeting = new Meeting();
+        savedMeeting.setId(meetingId);
+        savedMeeting.setStartAt(now);
+        savedMeeting.setEndAt(later);
+        savedMeeting.setLocation("Therapy Room A");
+        savedMeeting.setMeetingStatus(MeetingStatus.CANCELLED);
+
+        when(meetingRepository.save(any(Meeting.class))).thenReturn(savedMeeting);
+
+        // Act
+        Meeting result = meetingService.updateMeeting(patientId, meetingId, update);
+
+        // Assert
+        assertEquals(now, result.getStartAt());
+        assertEquals(later, result.getEndAt());
+        assertEquals("Therapy Room A", result.getLocation());
+        assertEquals(MeetingStatus.CANCELLED, result.getMeetingStatus());
     }
 
     @Test

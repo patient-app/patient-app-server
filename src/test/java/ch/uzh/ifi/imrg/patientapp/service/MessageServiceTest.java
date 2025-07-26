@@ -7,6 +7,7 @@ import ch.uzh.ifi.imrg.patientapp.repository.MessageRepository;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.GetConversationSummaryInputDTO;
 import ch.uzh.ifi.imrg.patientapp.service.aiService.PromptBuilderService;
 import ch.uzh.ifi.imrg.patientapp.utils.CryptographyUtil;
+import ch.uzh.ifi.imrg.patientapp.utils.EnvironmentVariables;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
@@ -45,6 +46,9 @@ public class MessageServiceTest {
 
         @Mock
         private LogService logService;
+
+        @Mock
+        private EmailService emailService;
 
         @InjectMocks
         private MessageService messageService;
@@ -197,6 +201,40 @@ public class MessageServiceTest {
                         // Assert
                         assertNotNull(result.getCreatedAt());
                         assertEquals(presetTime, result.getCreatedAt(), "CreatedAt should not have been changed");
+                }
+        }
+
+        @Test
+        void generateAnswer_shouldCallNotifyCoach_whenHarmDetectedAndCoachEmailExists() {
+                try (MockedStatic<EnvironmentVariables> envMock = mockStatic(EnvironmentVariables.class);
+                     MockedStatic<CryptographyUtil> cryptoMock = mockStatic(CryptographyUtil.class)) {
+
+                        // Arrange
+                        String coachEmail = "coach@example.com";
+                        String conversationId = "conv123";
+                        String incomingMessage = "I want to hurt myself";
+                        String decryptedKey = "some-key";
+
+                        Patient patient = new Patient();
+                        patient.setId("p1");
+                        patient.setPrivateKey("encrypted-key");
+                        patient.setCoachEmail(coachEmail);
+
+                        Conversation conversation = new GeneralConversation();
+                        conversation.setId(conversationId);
+
+                        when(conversationRepository.findById(conversationId)).thenReturn(Optional.of(conversation));
+                        when(promptBuilderService.getHarmRating(incomingMessage)).thenReturn("true");
+
+                        // Mock cryptography
+                        cryptoMock.when(() -> CryptographyUtil.decrypt("encrypted-key")).thenReturn(decryptedKey);
+                        cryptoMock.when(() -> CryptographyUtil.encrypt(incomingMessage, decryptedKey)).thenReturn("encrypted-msg");
+
+                        // Act
+                        messageService.generateAnswer(patient, conversationId, incomingMessage);
+
+                        // Assert
+                        verify(logService, atLeastOnce()).createLog(eq("p1"), eq(LogTypes.HARMFUL_CONTENT_DETECTED), eq(conversationId), anyString());
                 }
         }
 
@@ -664,5 +702,34 @@ public class MessageServiceTest {
                         verify(conversationRepository, atLeastOnce()).findById(conversationId);
                 }
         }
+        @Test
+        void notifyCoach_shouldSendEmailWithCorrectSubjectAndBody() throws Exception {
+                // Given
+                String coachEmail = "coach@example.com";
+
+                // Use reflection to invoke private method
+                Method method = MessageService.class.getDeclaredMethod("notifyCoach", String.class);
+                method.setAccessible(true); // allow access to private method
+
+                // When
+                method.invoke(messageService, coachEmail);
+
+                // Then
+                String expectedSubject = "[PatientApp] Alert: Potential harmful content detected\n"
+                        + "[PatientApp] Увага: виявлено потенційно шкідливий контент";
+
+                String expectedBody = String.join("\n",
+                        "An incoming message from one of your patients may contain harmful content or intent.",
+                        "Please log in to the TherapistApp to review the conversation and take any necessary action.",
+                        "",
+                        "Повідомлення від одного з ваших пацієнтів може містити потенційно шкідливий вміст або наміри.",
+                        "Будь ласка, увійдіть у TherapistApp, щоб переглянути переписку та вжити необхідних заходів.",
+                        "",
+                        "— Lumina Team",
+                        "— Команда Lumina");
+
+                verify(emailService).sendSimpleMessage(coachEmail, expectedSubject, expectedBody);
+        }
+
 
 }
