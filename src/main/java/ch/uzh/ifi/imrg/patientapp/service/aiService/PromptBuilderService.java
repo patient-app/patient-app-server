@@ -49,7 +49,8 @@ public class PromptBuilderService {
 
     }
 
-    public String getJournalSystemPrompt(ChatbotTemplate chatbotTemplate, String journalTitle, String journalContent, Patient patient) {
+    public String getJournalSystemPrompt(ChatbotTemplate chatbotTemplate, String journalTitle, String journalContent,
+            Patient patient) {
         String language = extractLanguage(patient);
 
         return String.format(
@@ -180,17 +181,21 @@ public class PromptBuilderService {
         }
         return answer;
     }
+
     public String extractLanguage(Patient patient) {
         String patientLanguage = patient.getLanguage();
+        if (patientLanguage == null) {
+            return "english";
+        }
         String language;
-        if(patientLanguage.equals("uk")) {
+        if (patientLanguage.equals("uk")) {
             language = "ukrainian";
         } else if (patientLanguage.equals("de")) {
             language = "german";
-        }else {
+        } else {
             language = "english";
         }
-    return  language;
+        return language;
     }
 
 }
