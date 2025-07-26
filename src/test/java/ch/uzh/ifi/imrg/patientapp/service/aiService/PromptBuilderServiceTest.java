@@ -1,6 +1,7 @@
 package ch.uzh.ifi.imrg.patientapp.service.aiService;
 
 import ch.uzh.ifi.imrg.patientapp.entity.ChatbotTemplate;
+import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -70,9 +71,10 @@ public class PromptBuilderServiceTest {
         ChatbotTemplate template = new ChatbotTemplate();
         template.setChatbotRole("friendly coach");
         template.setChatbotTone("encouraging");
+        Patient patient = new Patient();
 
         // Act
-        String result = promptBuilderService.getSystemPrompt(template);
+        String result = promptBuilderService.getSystemPrompt(template, patient);
 
         // Assert
         assertTrue(result.contains("Act as a friendly coach, who cares about the other person."));
@@ -87,9 +89,10 @@ public class PromptBuilderServiceTest {
         template.setChatbotRole("helpful guide");
         template.setChatbotTone("warm");
         String context = "This exercise helps you reflect on gratitude.";
+        Patient patient = new Patient();
 
         // Act
-        String result = promptBuilderService.getSystemPrompt(template, context);
+        String result = promptBuilderService.getSystemPrompt(template, context,patient);
 
         // Assert
         assertTrue(result.contains("Act as a helpful guide, who cares about the other person."));
@@ -338,7 +341,7 @@ public class PromptBuilderServiceTest {
         String title = "My Day";
         String content = "Today I felt overwhelmed by work.";
 
-        String result = promptBuilderService.getJournalSystemPrompt(template, title, content);
+        String result = promptBuilderService.getJournalSystemPrompt(template, title, content, new Patient());
 
         assertTrue(result.contains("therapist"));
         assertTrue(result.contains("empathetic"));
@@ -355,7 +358,7 @@ public class PromptBuilderServiceTest {
 
         String document = "This is a patient summary with important information.";
 
-        String result = promptBuilderService.getDocumentSystemPrompt(template, document);
+        String result = promptBuilderService.getDocumentSystemPrompt(template, document, new Patient());
 
         assertTrue(result.contains("coach"));
         assertTrue(result.contains("supportive"));

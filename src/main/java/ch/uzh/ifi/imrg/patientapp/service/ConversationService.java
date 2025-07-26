@@ -39,7 +39,7 @@ public class ConversationService {
     public GeneralConversation createConversation(Patient patient) {
         GeneralConversation conversation = new GeneralConversation();
         ChatbotTemplate chatbotTemplate = chatbotTemplateRepository.findByPatientId(patient.getId()).getFirst();
-        conversation.setSystemPrompt(promptBuilderService.getSystemPrompt(chatbotTemplate));
+        conversation.setSystemPrompt(promptBuilderService.getSystemPrompt(chatbotTemplate, patient));
         conversation.setWelcomeMessage(chatbotTemplate.getWelcomeMessage());
         conversation.setPatient(patient);
         return this.conversationRepository.save(conversation);
@@ -127,7 +127,7 @@ public class ConversationService {
         ChatbotTemplate chatbotTemplate = chatbotTemplateRepository.findByPatientId(patient.getId()).getFirst();
 
         conversation.setSystemPrompt(promptBuilderService.getJournalSystemPrompt(chatbotTemplate, journalEntryTitle,
-                journalEntryContent));
+                journalEntryContent, patient));
 
         this.conversationRepository.save(conversation);
     }
