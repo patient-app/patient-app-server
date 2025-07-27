@@ -93,7 +93,7 @@ public class PromptBuilderService {
                 "role", "user",
                 "content", message));
 
-        return extractContentFromResponse(chatGPTService.getResponse(messages));
+        return chatGPTService.getResponse(messages); //extractContentFromResponse(chatGPTService.getResponse(messages));
     }
 
     public String getSummary(List<Map<String, String>> allMessages, String oldSummary) {
@@ -123,7 +123,7 @@ public class PromptBuilderService {
             messages.addAll(allMessages);
         }
 
-        return extractContentFromResponse(chatGPTService.getResponse(messages));
+        return chatGPTService.getResponse(messages); //extractContentFromResponse(chatGPTService.getResponse(messages));
     }
 
     public String getSummaryOfAllConversations(List<String> conversationSummaries) {
@@ -146,7 +146,7 @@ public class PromptBuilderService {
                 "role", "user",
                 "content", "Here are the conversation summaries:\n\n" + sb));
 
-        return extractContentFromResponse(chatGPTService.getResponse(messages));
+        return chatGPTService.getResponse(messages); //extractContentFromResponse(chatGPTService.getResponse(messages));
     }
 
     public String getHarmRating(String message) {
@@ -163,7 +163,7 @@ public class PromptBuilderService {
                 "role", "user",
                 "content", message));
 
-        return extractContentFromResponse(chatGPTService.getResponse(messages));
+        return chatGPTService.getResponse(messages); //extractContentFromResponse(chatGPTService.getResponse(messages));
     }
 
     private String extractContentFromResponse(String rawAnswer) {
