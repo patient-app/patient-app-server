@@ -128,7 +128,7 @@ public class ExerciseService {
 
         ExerciseConversation exerciseConversation = new ExerciseConversation();
         exerciseConversation.setPatient(patient);
-        exerciseConversation.setSystemPrompt(promptBuilderService.getSystemPrompt(chatbotTemplate,exerciseInputDTO.getExerciseExplanation()));
+        exerciseConversation.setSystemPrompt(promptBuilderService.getSystemPrompt(chatbotTemplate,exerciseInputDTO.getExerciseExplanation(), patient));
         exerciseConversation.setConversationName(exerciseInputDTO.getExerciseTitle()+ " - chatbot");
         exerciseConversationRepository.save(exerciseConversation);
 
