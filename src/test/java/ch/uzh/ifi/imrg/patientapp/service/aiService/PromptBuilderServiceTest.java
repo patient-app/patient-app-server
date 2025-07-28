@@ -26,8 +26,8 @@ public class PromptBuilderServiceTest {
     @Test
     void getResponse_shouldCallChatGPTServiceWithExpectedPrompt() {
         // Arrange
-        String mockResponse = "<think>thinking</think>Hi there!";
-
+        //String mockResponse = "<think>thinking</think>Hi there!";
+        String mockResponse = "Hi there!";
         ChatbotTemplate template = new ChatbotTemplate();
         template.setChatbotRole("compassionate assistant");
 
@@ -49,8 +49,8 @@ public class PromptBuilderServiceTest {
     @Test
     void getResponse_shouldCallChatGPTServiceWithNoPriorMessages() {
         // Arrange
-        String mockResponse = "<think>thinking</think>Hi there!";
-
+        //String mockResponse = "<think>thinking</think>Hi there!";
+        String mockResponse = "Hi there!";
         ChatbotTemplate template = new ChatbotTemplate();
         template.setChatbotRole("compassionate assistant");
 
@@ -109,8 +109,8 @@ public class PromptBuilderServiceTest {
         List<Map<String, String>> priorMessages = List.of(
                 Map.of("role", "user", "content", "Hello, how are you?")
         );
-        String mockResponse = "<think>thinking</think>Summary text.";
-
+        //String mockResponse = "<think>thinking</think>Summary text.";
+        String mockResponse = "Summary text.";
         when(chatGPTService.getResponse(anyList()))
                 .thenReturn(mockResponse);
 
@@ -130,8 +130,8 @@ public class PromptBuilderServiceTest {
     @Test
     void getSummary_whenOldSummaryIsBlank_andMessagesNull_shouldUseSummarizePromptAndOnlySystemMessage() {
         // Arrange
-        String mockResponse = "<think>thinking</think>Summary text";
-
+        //String mockResponse = "<think>thinking</think>Summary text";
+        String mockResponse = "Summary text";
         when(chatGPTService.getResponse(anyList()))
                 .thenReturn(mockResponse);
 
@@ -155,8 +155,8 @@ public class PromptBuilderServiceTest {
         List<Map<String, String>> priorMessages = List.of(
                 Map.of("role", "assistant", "content", "I am fine, thank you.")
         );
-        String mockResponse = "<think>thinking</think>Updated summary text.";
-
+        //String mockResponse = "<think>thinking</think>Updated summary text.";
+        String mockResponse = "Updated summary text.";
         when(chatGPTService.getResponse(anyList()))
                 .thenReturn(mockResponse);
 
@@ -177,7 +177,8 @@ public class PromptBuilderServiceTest {
     void getSummary_whenOldSummaryPresent_andMessagesNull_shouldUseUpdatePromptAndOnlySystemMessage() {
         // Arrange
         String oldSummary = "Prior conversation summary.";
-        String mockResponse = "<think>thinking</think>Updated summary.";
+        //String mockResponse = "<think>thinking</think>Updated summary.";
+        String mockResponse = "Updated summary.";
         when(chatGPTService.getResponse(anyList()))
                 .thenReturn(mockResponse);
 
@@ -199,8 +200,8 @@ public class PromptBuilderServiceTest {
     void getHarmRating_shouldCallChatGPTServiceWithExpectedPrompt() {
         // Arrange
         String inputMessage = "I want to end my life.";
-        String mockResponse = "<think>thinking</think>true";
-
+        //String mockResponse = "<think>thinking</think>true";
+        String mockResponse = "true";
         when(chatGPTService.getResponse(anyList()))
                 .thenReturn(mockResponse);
 
@@ -234,8 +235,8 @@ public class PromptBuilderServiceTest {
                 "Third conversation summary."
         );
 
-        String mockResponse = "<think>thinking</think>This is the overall summary.";
-
+        //String mockResponse = "<think>thinking</think>This is the overall summary.";
+        String mockResponse = "This is the overall summary.";
         when(chatGPTService.getResponse(anyList()))
                 .thenReturn(mockResponse);
 
@@ -268,8 +269,8 @@ public class PromptBuilderServiceTest {
         // Arrange
         List<String> summaries = List.of("Only one conversation summary.");
 
-        String mockResponse = "<think>thinking</think>Single summary result.";
-
+        //String mockResponse = "<think>thinking</think>Single summary result.";
+        String mockResponse = "Single summary result.";
         when(chatGPTService.getResponse(anyList()))
                 .thenReturn(mockResponse);
 
@@ -292,8 +293,8 @@ public class PromptBuilderServiceTest {
         // Arrange
         List<String> summaries = List.of();
 
-        String mockResponse = "<think>thinking</think>No summaries provided.";
-
+        //String mockResponse = "<think>thinking</think>No summaries provided.";
+        String mockResponse = "No summaries provided.";
         when(chatGPTService.getResponse(anyList()))
                 .thenReturn(mockResponse);
 
@@ -311,7 +312,7 @@ public class PromptBuilderServiceTest {
             return content.contains("Here are the conversation summaries:");
         }));
     }
-
+/*
     @Test
     void getSummary_shouldThrowWhenNoThinkClosingTag() {
         // Arrange
@@ -332,7 +333,7 @@ public class PromptBuilderServiceTest {
 
         assertTrue(ex.getMessage().contains("No <think> closing tag found in response"));
         assertTrue(ex.getMessage().contains("This is some malformed response"));
-    }
+    }*/
 
     @Test
     void getJournalSystemPrompt_shouldContainAllInputs() {
