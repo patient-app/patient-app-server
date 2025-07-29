@@ -19,8 +19,6 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import static ch.uzh.ifi.imrg.patientapp.utils.CryptographyUtil.decrypt;
-
 import java.util.UUID;
 
 @Service
@@ -162,10 +160,10 @@ public class PatientService {
 
         String clientName = patient.getName() != null ? patient.getName() : "Client";
 
-        switch (lang) {
-            case "uk": // Ukrainian
+        body = switch (lang) {
+            case "uk" -> {
                 subject = "Lumina — Ваш новий пароль";
-                body = String.join("\n",
+                yield String.join("\n",
                         "Привіт, " + clientName + ",",
                         "",
                         "Ваш пароль було скинуто за вашим запитом.",
@@ -177,10 +175,10 @@ public class PatientService {
                         "",
                         "З повагою,",
                         "Команда Lumina");
-                break;
-            case "de": // German
+            }
+            case "de" -> {
                 subject = "Lumina - Ihr neues Passwort";
-                body = String.join("\n",
+                yield String.join("\n",
                         "Hallo " + clientName + ",",
                         "",
                         "Ihr Passwort wurde auf Ihren Wunsch hin zurückgesetzt",
@@ -192,10 +190,10 @@ public class PatientService {
                         "",
                         "Freundliche Grüsse,",
                         "Lumina Team");
-                break;
-            default: // English (and in case of wrong strings)
+            }
+            default -> {
                 subject = "Lumina — Your new password";
-                body = String.join("\n",
+                yield String.join("\n",
                         "Dear " + clientName + ",",
                         "",
                         "Your password has been reset per your request.",
@@ -207,7 +205,8 @@ public class PatientService {
                         "",
                         "Best,",
                         "Lumina Team");
-        }
+            }
+        };
 
         emailService.sendSimpleMessage(patient.getEmail(), subject, body);
     }
