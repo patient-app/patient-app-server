@@ -160,34 +160,53 @@ public class PatientService {
         String subject;
         String body;
 
-        if ("uk".equals(lang)) {
-            subject = "Lumina — Ваш новий пароль";
-            body = String.join("\n",
-                    "Привіт, " + patient.getName() + "!",
-                    "",
-                    "Ваш пароль було скинуто за вашим запитом.",
-                    "Ваш новий пароль:",
-                    "",
-                    "    " + newPassword,
-                    "",
-                    "Будь ласка, увійдіть у систему та змініть його якнайшвидше.",
-                    "",
-                    "З повагою,",
-                    "Команда Lumina");
-        } else {
-            subject = "Lumina — Your new password";
-            body = String.join("\n",
-                    "Hello " + patient.getName() + ",",
-                    "",
-                    "Your password has been reset per your request.",
-                    "Your new password is:",
-                    "",
-                    "    " + newPassword,
-                    "",
-                    "Please log in and change it as soon as possible.",
-                    "",
-                    "Best,",
-                    "Lumina Team");
+        String clientName = patient.getName() != null ? patient.getName() : "Client";
+
+        switch (lang) {
+            case "uk": // Ukrainian
+                subject = "Lumina — Ваш новий пароль";
+                body = String.join("\n",
+                        "Привіт, " + clientName + ",",
+                        "",
+                        "Ваш пароль було скинуто за вашим запитом.",
+                        "Ваш новий пароль:",
+                        "",
+                        "    " + newPassword,
+                        "",
+                        "Будь ласка, увійдіть у систему та змініть його якнайшвидше.",
+                        "",
+                        "З повагою,",
+                        "Команда Lumina");
+                break;
+            case "de": // German
+                subject = "Lumina - Ihr neues Passwort";
+                body = String.join("\n",
+                        "Hallo " + patient.getName() + ",",
+                        "",
+                        "Ihr Passwort wurde auf Ihren Wunsch hin zurückgesetzt",
+                        "Ihr neues Passwort ist:",
+                        "",
+                        "    " + newPassword,
+                        "",
+                        "Bitte loggen Sie sich damit ein und ändern Sie es so bald wie möglich.",
+                        "",
+                        "Freundliche Grüsse,",
+                        "Lumina Team");
+                break;
+            default: // English (and in case of wrong strings)
+                subject = "Lumina — Your new password";
+                body = String.join("\n",
+                        "Dear " + patient.getName() + ",",
+                        "",
+                        "Your password has been reset per your request.",
+                        "Your new password is:",
+                        "",
+                        "    " + newPassword,
+                        "",
+                        "Please log in and change it as soon as possible.",
+                        "",
+                        "Best,",
+                        "Lumina Team");
         }
 
         emailService.sendSimpleMessage(patient.getEmail(), subject, body);
