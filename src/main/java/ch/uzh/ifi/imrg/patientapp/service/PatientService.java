@@ -181,7 +181,7 @@ public class PatientService {
             case "de": // German
                 subject = "Lumina - Ihr neues Passwort";
                 body = String.join("\n",
-                        "Hallo " + patient.getName() + ",",
+                        "Hallo " + clientName + ",",
                         "",
                         "Ihr Passwort wurde auf Ihren Wunsch hin zurückgesetzt",
                         "Ihr neues Passwort ist:",
@@ -196,7 +196,7 @@ public class PatientService {
             default: // English (and in case of wrong strings)
                 subject = "Lumina — Your new password";
                 body = String.join("\n",
-                        "Dear " + patient.getName() + ",",
+                        "Dear " + clientName + ",",
                         "",
                         "Your password has been reset per your request.",
                         "Your new password is:",
