@@ -16,6 +16,7 @@ import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestNameAndPatien
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestNameOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestsOverviewOutputDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.mapper.PsychologicalTestMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -140,7 +141,7 @@ class PsychologicalTestServiceTest {
     }
 
     @Test
-    void createPsychologicalTest_shouldThrowException_whenAssignmentIsNull() {
+    void createPsychologicalTest_shouldCreateNewAssignment_whenAssignmentIsNull() {
         // Arrange
         Patient patient = new Patient();
         patient.setId("p1");
@@ -149,16 +150,34 @@ class PsychologicalTestServiceTest {
         inputDTO.setName("TestName");
         inputDTO.setDescription("Some desc");
 
-        // Return null for assignment lookup
+        // Return null to simulate missing assignment
         when(psychologicalTestsAssignmentRepository.findByPatientIdAndTestName("p1", "TestName"))
                 .thenReturn(null);
 
-        // Act + Assert
-        Exception ex = assertThrows(Exception.class, () ->
-                service.createPsychologicalTest(patient, inputDTO));
+        // Mock the mapper
+        PsychologicalTest test = new PsychologicalTest();
+        test.setName("TestName");
+        test = PsychologicalTestMapper.INSTANCE.convertPsychologicalTestInputDTOToPsychologicalTest(inputDTO);
 
-        assertEquals("No psychological test assignment found for the given patient and test name.", ex.getMessage());
+        // Act
+        service.createPsychologicalTest(patient, inputDTO);
+
+        // Assert
+        ArgumentCaptor<PsychologicalTestAssignment> assignmentCaptor = ArgumentCaptor.forClass(PsychologicalTestAssignment.class);
+        verify(psychologicalTestsAssignmentRepository).save(assignmentCaptor.capture());
+
+        PsychologicalTestAssignment savedAssignment = assignmentCaptor.getValue();
+        assertEquals("TestName", savedAssignment.getTestName());
+        assertEquals(patient, savedAssignment.getPatient());
+        assertFalse(savedAssignment.getIsPaused());
+        assertEquals(1000, savedAssignment.getDoEveryNDays());
+
+        verify(psychologicalTestRepository).save(argThat(savedTest ->
+                savedTest.getName().equals("TestName")
+        ));
+        verify(logService).createLog(eq(patient.getId()), eq(LogTypes.PSYCHOLOGICAL_TEST_COMPLETED), eq("TestName"), eq(""));
     }
+
 
 
 

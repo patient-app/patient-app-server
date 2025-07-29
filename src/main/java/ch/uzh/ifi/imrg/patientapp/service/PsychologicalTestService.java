@@ -65,7 +65,7 @@ public class PsychologicalTestService {
         psychologicalTestsAssignmentRepository.save(psychologicalTestAssignment);
     }
 
-    public void createPsychologicalTest(Patient loggedInPatient, PsychologicalTestInputDTO psychologicalTestInputDTO) throws Exception {
+    public void createPsychologicalTest(Patient loggedInPatient, PsychologicalTestInputDTO psychologicalTestInputDTO) {
         PsychologicalTest psychologicalTest = PsychologicalTestMapper.INSTANCE.convertPsychologicalTestInputDTOToPsychologicalTest(psychologicalTestInputDTO);
 
         psychologicalTest.setPatient(loggedInPatient);
@@ -78,7 +78,13 @@ public class PsychologicalTestService {
         }
         PsychologicalTestAssignment psychologicalTestAssignment = psychologicalTestsAssignmentRepository.findByPatientIdAndTestName(loggedInPatient.getId(), psychologicalTestInputDTO.getName());
         if (psychologicalTestAssignment == null) {
-            throw new Exception("No psychological test assignment found for the given patient and test name.");
+            psychologicalTestAssignment = new PsychologicalTestAssignment();
+            psychologicalTestAssignment.setPatient(loggedInPatient);
+            psychologicalTestAssignment.setTestName(psychologicalTestInputDTO.getName());
+            psychologicalTestAssignment.setDoEveryNDays(1000);
+            psychologicalTestAssignment.setIsPaused(false);
+        } else {
+            authorizationService.checkPsychologicalTestAssignmentAccess(psychologicalTestAssignment, loggedInPatient, "You do not have access to this patient's psychological test assignment.");
         }
 
         psychologicalTestRepository.save(psychologicalTest);
