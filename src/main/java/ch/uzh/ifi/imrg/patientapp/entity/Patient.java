@@ -56,6 +56,10 @@ public class Patient implements Serializable {
     @Column(name = "private_key", unique = true)
     private String privateKey;
 
+    @Column(nullable = false)
+    private boolean getNotifications = true;
+
+
     @OneToMany(mappedBy = "patient", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<GeneralConversation> conversations;
 

@@ -14,7 +14,7 @@ import java.util.List;
 
 @Component
 @Slf4j
-public class NotificationScedulerService implements Runnable{
+public class NotificationsSchedulerService implements Runnable{
 
     private final Thread schedulerThread = new Thread(this);
     private final PatientRepository patientRepository;
@@ -24,7 +24,7 @@ public class NotificationScedulerService implements Runnable{
     private final JournalEntryRepository journalEntryRepository;
     //private final PushNotificationService pushNotificationService = new PushNotificationService();
 
-    public NotificationScedulerService(PatientRepository patientRepository, ExerciseRepository exerciseRepository, MeetingRepository meetingRepository, PsychologicalTestsAssignmentRepository psychologicalTestsAssginmentRepository, JournalEntryRepository journalEntryRepository/*, PushNotificationService pushNotificationService*/) {
+    public NotificationsSchedulerService(PatientRepository patientRepository, ExerciseRepository exerciseRepository, MeetingRepository meetingRepository, PsychologicalTestsAssignmentRepository psychologicalTestsAssginmentRepository, JournalEntryRepository journalEntryRepository/*, PushNotificationService pushNotificationService*/) {
         this.patientRepository = patientRepository;
         this.meetingRepository = meetingRepository;
         this.exerciseRepository = exerciseRepository;
@@ -61,11 +61,16 @@ public class NotificationScedulerService implements Runnable{
         }
     }
 
-    private void notifyOnePatient(Patient patient) {
+
+    public void notifyOnePatient(Patient patient) {
         if (!patient.isGetNotifications()){
             return;
         }
-        Meeting meeting = meetingRepository.findByPatientIdOrderByStartAtAsc(patient.getId()).getFirst();
+        List<Meeting> meetings = meetingRepository.findByPatientIdOrderByStartAtAsc(patient.getId());
+        if (meetings.isEmpty()) {
+            return;
+        }
+        Meeting meeting = meetings.get(0);
         if (needsNotification(meeting.getStartAt(), meeting.getLastReminderSentAt())) {
             if(patient.getLanguage().equals("en")){
                 //pushNotificationService.sendToPatient(patient.getId(),"Lumina","You have a meeting scheduled soon. Please check your app for details.");
@@ -107,7 +112,14 @@ public class NotificationScedulerService implements Runnable{
                 return;
             }
         }
-        PsychologicalTestAssignment psychologicalTestAssignment = psychologicalTestsAssginmentRepository.findByPatientIdOrderByLastCompletedAtAsc(patient.getId()).getFirst();
+        List<PsychologicalTestAssignment> testAssignments =
+                psychologicalTestsAssginmentRepository.findByPatientIdOrderByLastCompletedAtAsc(patient.getId());
+
+        if (testAssignments.isEmpty()) {
+            return;
+        }
+
+        PsychologicalTestAssignment psychologicalTestAssignment = testAssignments.get(0);
         if (needsNotification(psychologicalTestAssignment.getLastCompletedAt(), psychologicalTestAssignment.getLastReminderSentAt())) {
             if(patient.getLanguage().equals("en")){
                 //pushNotificationService.sendToPatient(patient.getId(), "Lumina", "Want to do a test?");
@@ -126,7 +138,12 @@ public class NotificationScedulerService implements Runnable{
             psychologicalTestsAssginmentRepository.save(psychologicalTestAssignment);
             return;
         }
-        JournalEntry journalEntry = journalEntryRepository.findByPatientIdOrderByUpdatedAtAsc(patient.getId()).getFirst();
+        List<JournalEntry> journalEntries =
+                journalEntryRepository.findByPatientIdOrderByUpdatedAtAsc(patient.getId());
+        if (journalEntries.isEmpty()) {
+            return;
+        }
+        JournalEntry journalEntry = journalEntries.get(0);
         if(needsNotification(journalEntry.getUpdatedAt(), journalEntry.getLastReminderSentAt())) {
             if(patient.getLanguage().equals("en")) {
                 //pushNotificationService.sendToPatient(patient.getId(), "Lumina", "You haven't journaled in a while. Why don't you give it a try?");
