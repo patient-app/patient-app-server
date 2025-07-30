@@ -6,6 +6,7 @@ import ch.uzh.ifi.imrg.patientapp.rest.dto.input.exercise.*;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.exercise.*;
 import org.mapstruct.*;
 
+import java.util.Collections;
 import java.util.List;
 
 @Mapper(componentModel = "spring", uses = ExerciseComponentMapper.class)
@@ -15,9 +16,31 @@ public interface ExerciseMapper {
     List<ExercisesOverviewOutputDTO> exercisesToExerciseOverviewOutputDTOs(List<Exercise> exercises);
     Exercise exerciseInputDTOToExercise(ExerciseInputDTO exerciseInputDTO);
 
+
+
+    SharedInputFieldOutputDTO exerciseComponentAnswerToSharedInputFieldOutputDTO(ExerciseComponentAnswer exerciseComponentAnswer);
+    List<SharedInputFieldOutputDTO> exerciseComponentAnswersToSharedInputFieldOutputDTOs(List<ExerciseComponentAnswer> exerciseComponentAnswers);
+
     @Mapping(target = "exerciseExecutionId", source = "id")
     ExerciseOutputDTO exerciseToExerciseOutputDTO(Exercise exercise);
-    List <ExerciseInformationOutputDTO> exerciseInformationsToExerciseInformationOutputDTOs(List<ExerciseCompletionInformation> exerciseInformations);
+
+    @Mapping(target = "sharedInputFields", source = "componentAnswers")
+    @Mapping(target = "moodsBefore", expression = "java(moodContainerToDTOs(entity.getExerciseMoodBefore()))")
+    @Mapping(target = "moodsAfter", expression = "java(moodContainerToDTOs(entity.getExerciseMoodAfter()))")
+    ExerciseInformationOutputDTO exerciseInformationToExerciseInformationOutputDTO(ExerciseCompletionInformation entity);
+
+    List<ExerciseInformationOutputDTO> exerciseInformationsToExerciseInformationOutputDTOs(List<ExerciseCompletionInformation> exerciseInformations);
+
+    ExerciseMoodOutputDTO exerciseMoodToExerciseMoodOutputDTO(ExerciseMood mood);
+    List<ExerciseMoodOutputDTO> exerciseMoodsToExerciseMoodOutputDTOs(List<ExerciseMood> moods);
+
+    default List<ExerciseMoodOutputDTO> moodContainerToDTOs(ExerciseMoodContainer container) {
+        if (container == null || container.getExerciseMoods() == null) {
+            return java.util.Collections.emptyList();
+        }
+        return exerciseMoodsToExerciseMoodOutputDTOs(container.getExerciseMoods());
+    }
+
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
@@ -39,44 +62,6 @@ public interface ExerciseMapper {
     ExecutionOverviewOutputDTO exerciseCompletionInformationToExecutionOverviewOutputDTO(ExerciseCompletionInformation info);
 
     List<ExecutionOverviewOutputDTO> exerciseCompletionInformationsToExecutionOverviewOutputDTOs(List<ExerciseCompletionInformation> exerciseInformations);
-
-    default ExerciseInformationOutputDTO exerciseInformationToExerciseInformationOutputDTO(ExerciseCompletionInformation entity) {
-        ExerciseInformationOutputDTO dto = new ExerciseInformationOutputDTO();
-
-        dto.setStartTime(entity.getStartTime());
-        dto.setEndTime(entity.getEndTime());
-        dto.setFeedback(entity.getFeedback());
-
-        // Map moods before
-        if (entity.getExerciseMoodBefore() != null && entity.getExerciseMoodBefore().getExerciseMoods() != null) {
-            dto.setMoodsBefore(
-                    entity.getExerciseMoodBefore().getExerciseMoods().stream()
-                            .map(m -> {
-                                ExerciseMoodOutputDTO moodDto = new ExerciseMoodOutputDTO();
-                                moodDto.setMoodName(m.getMoodName());
-                                moodDto.setMoodScore(m.getMoodScore());
-                                return moodDto;
-                            })
-                            .toList()
-            );
-        }
-
-        // Map moods after
-        if (entity.getExerciseMoodAfter() != null && entity.getExerciseMoodAfter().getExerciseMoods() != null) {
-            dto.setMoodsAfter(
-                    entity.getExerciseMoodAfter().getExerciseMoods().stream()
-                            .map(m -> {
-                                ExerciseMoodOutputDTO moodDto = new ExerciseMoodOutputDTO();
-                                moodDto.setMoodName(m.getMoodName());
-                                moodDto.setMoodScore(m.getMoodScore());
-                                return moodDto;
-                            })
-                            .toList()
-            );
-        }
-
-        return dto;
-    }
 
 }
 
