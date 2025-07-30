@@ -1629,7 +1629,8 @@ class ExerciseServiceTest {
         exercise.setExerciseCompletionInformation(List.of(info));
 
         List<Exercise> activeExercises = List.of(exercise);
-        when(exerciseRepository.findAllActiveExercisesWithinTimeAndPatientId(any())).thenReturn(activeExercises);
+        when(exerciseRepository.findAllActiveExercisesWithinTimeAndPatient(any(Instant.class), eq(patient.getId())))
+                .thenReturn(activeExercises);
 
         ExercisesOverviewOutputDTO dto = new ExercisesOverviewOutputDTO();
         when(exerciseMapper.exercisesToExerciseOverviewOutputDTOs(anyList())).thenReturn(List.of(dto));
@@ -1645,7 +1646,9 @@ class ExerciseServiceTest {
 
     @Test
     void getExercisesForDashboard_shouldReturnEmpty_whenNoCandidates() {
-        when(exerciseRepository.findAllActiveExercisesWithinTimeAndPatientId(any())).thenReturn(Collections.emptyList());
+        when(exerciseRepository.findAllActiveExercisesWithinTimeAndPatient(any(Instant.class), nullable(String.class)))
+                .thenReturn(Collections.emptyList());
+
 
         List<ExercisesOverviewOutputDTO> result = exerciseService.getExercisesForDashboard(new Patient());
 
@@ -1653,6 +1656,7 @@ class ExerciseServiceTest {
         verifyNoInteractions(authorizationService);
         verifyNoInteractions(exerciseMapper);
     }
+
 
     @Test
     void getExercisesForDashboard_shouldIncludeExercise_whenCompletionsAreNullOrEmpty() {
@@ -1671,7 +1675,8 @@ class ExerciseServiceTest {
         exerciseWithEmptyCompletions.setExerciseCompletionInformation(Collections.emptyList());
 
         List<Exercise> activeExercises = List.of(exerciseWithNullCompletions, exerciseWithEmptyCompletions);
-        when(exerciseRepository.findAllActiveExercisesWithinTimeAndPatientId(any())).thenReturn(activeExercises);
+        when(exerciseRepository.findAllActiveExercisesWithinTimeAndPatient(any(Instant.class), eq(patient.getId())))
+                .thenReturn(activeExercises);
 
         // Stub authorization and mapping
         doNothing().when(authorizationService).checkExerciseAccess(any(), any(), anyString());
@@ -1703,8 +1708,8 @@ class ExerciseServiceTest {
 
         exercise.setExerciseCompletionInformation(List.of(incomplete));
 
-        when(exerciseRepository.findAllActiveExercisesWithinTimeAndPatientId(any())).thenReturn(List.of(exercise));
-
+        when(exerciseRepository.findAllActiveExercisesWithinTimeAndPatient(any(Instant.class), eq(patient.getId())))
+                .thenReturn(List.of(exercise));
         doNothing().when(authorizationService).checkExerciseAccess(any(), any(), anyString());
 
         List<ExercisesOverviewOutputDTO> mappedDTOs = List.of(new ExercisesOverviewOutputDTO());
