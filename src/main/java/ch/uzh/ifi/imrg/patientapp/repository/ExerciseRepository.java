@@ -17,6 +17,10 @@ public interface ExerciseRepository extends JpaRepository<Exercise, String> {
 
     @Query("SELECT e FROM Exercise e " +
             "WHERE e.isPaused = false " +
-            "AND :now BETWEEN e.exerciseStart AND e.exerciseEnd")
-    List<Exercise> findAllActiveExercisesWithinTime(@Param("now") Instant now);
+            "AND :now BETWEEN e.exerciseStart AND e.exerciseEnd " +
+            "AND e.patient.id = :patientId")
+    List<Exercise> findAllActiveExercisesWithinTimeAndPatient(
+            @Param("now") Instant now,
+            @Param("patientId") String patientId);
+
 }
