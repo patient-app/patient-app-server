@@ -41,7 +41,6 @@ public class ChatbotService {
         this.authorizationService = authorizationService;
     }
 
-
     public void createChatbot(String patientId, CreateChatbotDTO createChatbotDTO) {
         Patient patient = patientRepository.getPatientById(patientId);
         if (patient == null) {
