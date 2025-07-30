@@ -13,6 +13,7 @@ public class ExerciseInformationOutputDTO {
     private Instant startTime;
     private Instant endTime;
     private String feedback;
+    private List<SharedInputFieldOutputDTO> sharedInputFields;
     private List<ExerciseMoodOutputDTO> moodsBefore;
     private List<ExerciseMoodOutputDTO> moodsAfter;
 }
