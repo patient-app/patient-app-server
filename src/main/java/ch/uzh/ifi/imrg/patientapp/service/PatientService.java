@@ -19,6 +19,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import java.util.Locale;
 import java.util.UUID;
 
 @Service
@@ -155,60 +156,15 @@ public class PatientService {
         patientRepository.save(patient);
 
         String lang = patient.getLanguage() != null ? patient.getLanguage().toLowerCase() : "en";
-        String subject;
-        String body;
+        Locale locale = switch (lang) {
+            case "de" -> Locale.GERMAN;
+            case "uk" -> Locale.forLanguageTag("uk");
+            default -> Locale.ENGLISH;
+        };
 
         String clientName = patient.getName() != null ? patient.getName() : "Client";
 
-        body = switch (lang) {
-            case "uk" -> {
-                subject = "Lumina — Ваш новий пароль";
-                yield String.join("\n",
-                        "Привіт, " + clientName + ",",
-                        "",
-                        "Ваш пароль було скинуто за вашим запитом.",
-                        "Ваш новий пароль:",
-                        "",
-                        "    " + newPassword,
-                        "",
-                        "Будь ласка, увійдіть у систему та змініть його якнайшвидше.",
-                        "",
-                        "З повагою,",
-                        "Команда Lumina");
-            }
-            case "de" -> {
-                subject = "Lumina - Ihr neues Passwort";
-                yield String.join("\n",
-                        "Hallo " + clientName + ",",
-                        "",
-                        "Ihr Passwort wurde auf Ihren Wunsch hin zurückgesetzt",
-                        "Ihr neues Passwort ist:",
-                        "",
-                        "    " + newPassword,
-                        "",
-                        "Bitte loggen Sie sich damit ein und ändern Sie es so bald wie möglich.",
-                        "",
-                        "Freundliche Grüsse,",
-                        "Lumina Team");
-            }
-            default -> {
-                subject = "Lumina — Your new password";
-                yield String.join("\n",
-                        "Dear " + clientName + ",",
-                        "",
-                        "Your password has been reset per your request.",
-                        "Your new password is:",
-                        "",
-                        "    " + newPassword,
-                        "",
-                        "Please log in and change it as soon as possible.",
-                        "",
-                        "Best,",
-                        "Lumina Team");
-            }
-        };
-
-        emailService.sendSimpleMessage(patient.getEmail(), subject, body);
+        emailService.sendPasswordReset(patient.getEmail(), clientName, newPassword, locale);
     }
 
     public void updateCoachEmail(String patientId, String coachEmail) {
