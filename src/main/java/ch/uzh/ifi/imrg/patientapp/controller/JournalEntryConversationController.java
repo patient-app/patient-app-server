@@ -37,7 +37,7 @@ public class JournalEntryConversationController {
         private final LogService logService;
 
         public JournalEntryConversationController(PatientService patientService, MessageService messageService,
-                                                  ConversationService conversationService, LogService logService) {
+                        ConversationService conversationService, LogService logService) {
                 this.patientService = patientService;
                 this.messageService = messageService;
                 this.conversationService = conversationService;
@@ -52,12 +52,13 @@ public class JournalEntryConversationController {
                 Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
 
                 conversationService.updateJournalConversationSystemPrompt(loggedInPatient, conversationId,
-                                createJournalMessageDTO.getJournalEntryTitle(),
-                                createJournalMessageDTO.getJournalEntryContent());
+                                createJournalMessageDTO.getJournalTitle(),
+                                createJournalMessageDTO.getJournalContent());
 
                 Message answeredMessage = messageService.generateAnswer(loggedInPatient, conversationId,
                                 createJournalMessageDTO.getMessage());
-                logService.createLog(loggedInPatient.getId(), LogTypes.JOURNAL_CONVERSATION_MESSAGE_CREATION, conversationId, "");
+                logService.createLog(loggedInPatient.getId(), LogTypes.JOURNAL_CONVERSATION_MESSAGE_CREATION,
+                                conversationId, "");
                 return MessageMapper.INSTANCE.convertEntityToMessageOutputDTO(answeredMessage);
         }
 
