@@ -17,8 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -355,7 +353,7 @@ public class ExerciseService {
     public List<ExercisesOverviewOutputDTO> getExercisesForDashboard(Patient patient){
         Instant now = Instant.now();
 
-        List<Exercise> candidates = exerciseRepository.findAllActiveExercisesWithinTime(now);
+        List<Exercise> candidates = exerciseRepository.findAllActiveExercisesWithinTimeAndPatient(now, patient.getId());
         if (candidates.isEmpty()) {
             return Collections.emptyList();
         }
