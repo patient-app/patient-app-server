@@ -31,7 +31,7 @@ public class Document {
     @Column(nullable = false)
     private byte[] data;
 
-    @Column(nullable = false, unique = true, length = 64)
+    @Column(nullable = false, unique = false, length = 64)
     private String sha256; // hex-encoded 32-byte hash
 
     @Column(nullable = false, updatable = false)
