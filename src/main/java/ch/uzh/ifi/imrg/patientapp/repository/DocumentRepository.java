@@ -10,8 +10,6 @@ import java.util.Optional;
 @Repository
 public interface DocumentRepository extends JpaRepository<Document, String> {
 
-    // Optional<Document> findBySha256(String sha256);
-
     Optional<Document> findBySha256AndFilename(String sha256, String filename);
 
 }
