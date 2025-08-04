@@ -104,27 +104,50 @@ public class PromptBuilderService {
         if (oldSummary == null || oldSummary.isBlank()) {
             systemPrompt = "Summarize the following conversation in a few sentences. "
                     + "Do not use bullet points or lists. Just write a short summary of the conversation. "
-                    + "The summary should be no longer than 200 characters.\n"
-                    + "Messages: ";
+                    + "The summary should be no longer than 200 characters.";
         } else {
             systemPrompt = "Update the following existing summary by including the additional messages below. "
                     + "Keep it short (no more than 200 additional characters), do not use bullet points or lists.\n\n"
                     + "Existing summary:\n" + oldSummary + "\n\n"
-                    + "Additional messages:\n";
+                    + "Additional messages:";
         }
 
-        // System prompt
+        // Add system prompt
         messages.add(Map.of(
                 "role", "system",
-                "content", systemPrompt));
+                "content", systemPrompt
+        ));
 
-        // Add prior chat history
-        if (allMessages != null) {
-            messages.addAll(allMessages);
+        // Merge all messages into a single user message
+        if (allMessages != null && !allMessages.isEmpty()) {
+            StringBuilder conversation = new StringBuilder();
+
+            for (Map<String, String> msg : allMessages) {
+                String role = msg.get("role");
+                String content = msg.get("content");
+                if (role != null && content != null) {
+                    // Replace "assistant" with "chatbot" in role in order for the summary to make more sense
+                    if (role.equalsIgnoreCase("assistant")) {
+                        role = "chatbot";
+                    }
+                    conversation.append(capitalize(role)).append(": ").append(content).append("\n");
+                }
+            }
+
+            messages.add(Map.of(
+                    "role", "user",
+                    "content", conversation.toString().trim()
+            ));
         }
-
-        return chatGPTService.getResponse(messages); //extractContentFromResponse(chatGPTService.getResponse(messages));
+        return chatGPTService.getResponse(messages);
     }
+
+
+    private String capitalize(String input) {
+        if (input == null || input.isEmpty()) return input;
+        return input.substring(0, 1).toUpperCase() + input.substring(1);
+    }
+
 
     public String getSummaryOfAllConversations(List<String> conversationSummaries) {
         List<Map<String, String>> messages = new ArrayList<>();
