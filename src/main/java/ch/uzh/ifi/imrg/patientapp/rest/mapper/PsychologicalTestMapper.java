@@ -6,6 +6,7 @@ import ch.uzh.ifi.imrg.patientapp.entity.PsychologicalTestQuestions;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PsychologicalTestAssignmentInputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PsychologicalTestInputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PsychologicalTestQuestionInputDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestAssignmentOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestQuestionOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestsOverviewOutputDTO;
@@ -38,4 +39,7 @@ public interface PsychologicalTestMapper {
 
     PsychologicalTestAssignment convertPsychologicalTestAssignmentInputDTOToPsychologicalTestAssignment(PsychologicalTestAssignmentInputDTO dto);
     void updatePsychologicalTestAssignmentFromDTO(PsychologicalTestAssignmentInputDTO dto, @MappingTarget PsychologicalTestAssignment assignment);
+
+    @Mapping(source = "patient.id", target = "patientId")
+    PsychologicalTestAssignmentOutputDTO convertPsychologicalTestAssignmentToPsychologicalTestAssignmentOutputDTO(PsychologicalTestAssignment assignment);
 }

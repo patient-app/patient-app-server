@@ -12,10 +12,7 @@ import ch.uzh.ifi.imrg.patientapp.repository.PsychologicalTestRepository;
 import ch.uzh.ifi.imrg.patientapp.repository.PsychologicalTestsAssignmentRepository;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PsychologicalTestAssignmentInputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PsychologicalTestInputDTO;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestNameAndPatientIdOutputDTO;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestNameOutputDTO;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestOutputDTO;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestsOverviewOutputDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.output.*;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.PsychologicalTestMapper;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -176,5 +173,12 @@ public class PsychologicalTestService {
         return PsychologicalTestMapper.INSTANCE.convertEntityToPsychologicalTestAssignmentOverviewDTOs(dueAssignments);
     }
 
+    public PsychologicalTestAssignmentOutputDTO getPsychologicalTestAssginment(String patientId, String psychologicalTestName) {
+        PsychologicalTestAssignment psychologicalTestAssignment = psychologicalTestsAssignmentRepository.findByPatientIdAndTestName(patientId, psychologicalTestName);
+        if (psychologicalTestAssignment == null) {
+            throw new AccessDeniedException("No psychological test assignment found for the given patient and test name.");
+        }
+        return PsychologicalTestMapper.INSTANCE.convertPsychologicalTestAssignmentToPsychologicalTestAssignmentOutputDTO(psychologicalTestAssignment);
+    }
 
 }
