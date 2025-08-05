@@ -22,6 +22,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collections;
@@ -139,16 +141,27 @@ public class PsychologicalTestService {
 
     public List<PsychologicalTestsOverviewOutputDTO> getPsychologicalTestsForDashboard(Patient patient) {
         Instant now = Instant.now();
+        LocalDate todayUtc = LocalDate.now(ZoneOffset.UTC);
+
         List<PsychologicalTestAssignment> assignments = psychologicalTestsAssignmentRepository.findActiveAssignments(patient, now);
 
         if (assignments.isEmpty()) {
             return Collections.emptyList();
         }
+
         authorizationService.checkPsychologicalTestAssignmentAccess(assignments.getFirst(), patient, "You do not have access to this patient's psychological tests.");
 
         List<PsychologicalTestAssignment> dueAssignments = assignments.stream()
                 .filter(a -> {
                     Instant lastCompleted = a.getLastCompletedAt();
+
+                    if (lastCompleted != null) {
+                        LocalDate completionDateUtc = lastCompleted.atZone(ZoneOffset.UTC).toLocalDate();
+                        if (completionDateUtc.equals(todayUtc)) {
+                            return false;
+                        }
+                    }
+
                     if (lastCompleted == null) {
                         return true;
                     }
@@ -162,5 +175,6 @@ public class PsychologicalTestService {
 
         return PsychologicalTestMapper.INSTANCE.convertEntityToPsychologicalTestAssignmentOverviewDTOs(dueAssignments);
     }
+
 
 }

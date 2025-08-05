@@ -21,4 +21,5 @@ public interface PsychologicalTestsAssignmentRepository  extends JpaRepository<P
             "AND :now BETWEEN a.exerciseStart AND a.exerciseEnd")
     List<PsychologicalTestAssignment> findActiveAssignments(@Param("patient") Patient patient, @Param("now") Instant now);
 
+    List<PsychologicalTestAssignment> findByPatientIdOrderByLastCompletedAtAsc(String patientId);
 }

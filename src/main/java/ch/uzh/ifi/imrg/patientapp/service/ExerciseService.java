@@ -17,6 +17,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -350,21 +352,32 @@ public class ExerciseService {
     }
 
 
-    public List<ExercisesOverviewOutputDTO> getExercisesForDashboard(Patient patient){
+    public List<ExercisesOverviewOutputDTO> getExercisesForDashboard(Patient patient) {
         Instant now = Instant.now();
+        LocalDate todayUtc = LocalDate.now(ZoneOffset.UTC); // default to UTC
 
         List<Exercise> candidates = exerciseRepository.findAllActiveExercisesWithinTimeAndPatient(now, patient.getId());
         if (candidates.isEmpty()) {
             return Collections.emptyList();
         }
+
         authorizationService.checkExerciseAccess(candidates.getFirst(), patient, "Patient does not have access to this exercise");
 
         List<Exercise> filtered = candidates.stream()
                 .filter(e -> {
                     List<ExerciseCompletionInformation> completions = e.getExerciseCompletionInformation();
-
                     if (completions == null || completions.isEmpty()) {
                         return true;
+                    }
+
+                    boolean completedToday = completions.stream()
+                            .map(ExerciseCompletionInformation::getEndTime)
+                            .filter(Objects::nonNull)
+                            .map(endTime -> endTime.atZone(ZoneOffset.UTC).toLocalDate())
+                            .anyMatch(date -> date.equals(todayUtc));
+
+                    if (completedToday) {
+                        return false;
                     }
 
                     ExerciseCompletionInformation latest = completions.stream()
@@ -383,6 +396,7 @@ public class ExerciseService {
 
         return exerciseMapper.exercisesToExerciseOverviewOutputDTOs(filtered);
     }
+
 
 
 }

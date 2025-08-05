@@ -27,4 +27,5 @@ public interface JournalEntryRepository extends JpaRepository<JournalEntry, Stri
             """)
     Set<String> findDistinctTagsByPatientId(@Param("patientId") String patientId);
 
+    List<JournalEntry> findByPatientIdOrderByUpdatedAtAsc(String patientId);
 }

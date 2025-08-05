@@ -41,6 +41,8 @@ public class JournalEntry {
     @Column
     private String content;
 
+    private Instant lastReminderSentAt;
+
     @ElementCollection
     @CollectionTable(name = "journal_entry_tags", joinColumns = @JoinColumn(name = "journal_entry_id"))
     @Column(name = "tag")

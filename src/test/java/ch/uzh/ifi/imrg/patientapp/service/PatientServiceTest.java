@@ -1,6 +1,5 @@
 package ch.uzh.ifi.imrg.patientapp.service;
 
-import ch.uzh.ifi.imrg.patientapp.constant.LogTypes;
 import ch.uzh.ifi.imrg.patientapp.entity.GeneralConversation;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.repository.PatientRepository;
@@ -20,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -331,7 +331,7 @@ public class PatientServiceTest {
     }
 
     @Test
-    void resetPasswordAndNotify_shouldGenerateEncodeSaveAndSendEmail_inEnglish() {
+    void resetPasswordAndNotify_shouldGenerateEncodeSaveAndCallSendPasswordReset_inEnglish() {
         // Arrange
         Patient patient = new Patient();
         patient.setEmail(EMAIL);
@@ -340,40 +340,41 @@ public class PatientServiceTest {
         when(patientRepository.findByEmail(EMAIL))
                 .thenReturn(Optional.of(patient));
 
-        // Stub the static PasswordUtil calls
-        try (MockedStatic<PasswordUtil> pwMock = mockStatic(PasswordUtil.class)) {
-            pwMock.when(() -> PasswordUtil.generatePassword(PasswordUtil.Alphabet.LATIN))
+        try (MockedStatic<PasswordUtil> pw = mockStatic(PasswordUtil.class)) {
+            pw.when(() -> PasswordUtil.generatePassword(PasswordUtil.Alphabet.LATIN))
                     .thenReturn("Abc1-Def2-Ghi3-Jkl4");
-            pwMock.when(() -> PasswordUtil.encryptPassword("Abc1-Def2-Ghi3-Jkl4"))
+            pw.when(() -> PasswordUtil.encryptPassword("Abc1-Def2-Ghi3-Jkl4"))
                     .thenReturn("encrypted");
 
             // Act
             patientService.resetPasswordAndNotify(EMAIL);
 
-            // Assert: password was set & saved
+            // Assert: password was set, encrypted & saved
             assertEquals("encrypted", patient.getPassword());
             verify(patientRepository).save(patient);
 
-            // Assert: emailService.sendSimpleMessage(...) called with correct args
+            // Assert: sendPasswordReset(...) called with the right args
+            @SuppressWarnings("unchecked")
             ArgumentCaptor<String> toCap = ArgumentCaptor.forClass(String.class);
-            ArgumentCaptor<String> subjCap = ArgumentCaptor.forClass(String.class);
-            ArgumentCaptor<String> bodyCap = ArgumentCaptor.forClass(String.class);
-            verify(emailService).sendSimpleMessage(
+            ArgumentCaptor<String> nameCap = ArgumentCaptor.forClass(String.class);
+            ArgumentCaptor<String> passCap = ArgumentCaptor.forClass(String.class);
+            ArgumentCaptor<Locale> localeCap = ArgumentCaptor.forClass(Locale.class);
+
+            verify(emailService).sendPasswordReset(
                     toCap.capture(),
-                    subjCap.capture(),
-                    bodyCap.capture());
+                    nameCap.capture(),
+                    passCap.capture(),
+                    localeCap.capture());
 
             assertEquals(EMAIL, toCap.getValue());
-            assertEquals("Lumina — Your new password", subjCap.getValue());
-            String body = bodyCap.getValue();
-            assertTrue(body.contains("Hello Alice,"));
-            assertTrue(body.contains("Your new password is:"));
-            assertTrue(body.contains("    Abc1-Def2-Ghi3-Jkl4"));
+            assertEquals("Alice", nameCap.getValue());
+            assertEquals("Abc1-Def2-Ghi3-Jkl4", passCap.getValue());
+            assertEquals(Locale.ENGLISH, localeCap.getValue());
         }
     }
 
     @Test
-    void resetPasswordAndNotify_shouldGenerateEncodeSaveAndSendEmail_inUkrainian() {
+    void resetPasswordAndNotify_shouldGenerateEncodeSaveAndCallSendPasswordReset_inUkrainian() {
         // Arrange
         Patient patient = new Patient();
         patient.setEmail(EMAIL);
@@ -382,32 +383,36 @@ public class PatientServiceTest {
         when(patientRepository.findByEmail(EMAIL))
                 .thenReturn(Optional.of(patient));
 
-        try (MockedStatic<PasswordUtil> pwMock = mockStatic(PasswordUtil.class)) {
-            pwMock.when(() -> PasswordUtil.generatePassword(PasswordUtil.Alphabet.CYRILLIC))
+        try (MockedStatic<PasswordUtil> pw = mockStatic(PasswordUtil.class)) {
+            pw.when(() -> PasswordUtil.generatePassword(PasswordUtil.Alphabet.CYRILLIC))
                     .thenReturn("Аб1г-Де2ж-Зи3к-Лм4н");
-            pwMock.when(() -> PasswordUtil.encryptPassword("Аб1г-Де2ж-Зи3к-Лм4н"))
+            pw.when(() -> PasswordUtil.encryptPassword("Аб1г-Де2ж-Зи3к-Лм4н"))
                     .thenReturn("encryptedUKR");
 
             // Act
             patientService.resetPasswordAndNotify(EMAIL);
 
-            // Assert save
+            // Assert: password was set, encrypted & saved
             assertEquals("encryptedUKR", patient.getPassword());
             verify(patientRepository).save(patient);
 
-            // Assert email params
-            ArgumentCaptor<String> subjCap = ArgumentCaptor.forClass(String.class);
-            ArgumentCaptor<String> bodyCap = ArgumentCaptor.forClass(String.class);
-            verify(emailService).sendSimpleMessage(
-                    eq(EMAIL),
-                    subjCap.capture(),
-                    bodyCap.capture());
+            // Assert: sendPasswordReset(...) called with the right args
+            @SuppressWarnings("unchecked")
+            ArgumentCaptor<String> toCap = ArgumentCaptor.forClass(String.class);
+            ArgumentCaptor<String> nameCap = ArgumentCaptor.forClass(String.class);
+            ArgumentCaptor<String> passCap = ArgumentCaptor.forClass(String.class);
+            ArgumentCaptor<Locale> localeCap = ArgumentCaptor.forClass(Locale.class);
 
-            assertEquals("Lumina — Ваш новий пароль", subjCap.getValue());
-            String body = bodyCap.getValue();
-            assertTrue(body.contains("Привіт, Олена!"));
-            assertTrue(body.contains("Ваш новий пароль:"));
-            assertTrue(body.contains("    Аб1г-Де2ж-Зи3к-Лм4н"));
+            verify(emailService).sendPasswordReset(
+                    toCap.capture(),
+                    nameCap.capture(),
+                    passCap.capture(),
+                    localeCap.capture());
+
+            assertEquals(EMAIL, toCap.getValue());
+            assertEquals("Олена", nameCap.getValue());
+            assertEquals("Аб1г-Де2ж-Зи3к-Лм4н", passCap.getValue());
+            assertEquals(Locale.forLanguageTag("uk"), localeCap.getValue());
         }
     }
 
@@ -477,8 +482,8 @@ public class PatientServiceTest {
 
         when(patientRepository.existsById(patientId)).thenReturn(false);
 
-        EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () ->
-                patientService.removePatient(patientId));
+        EntityNotFoundException ex = assertThrows(EntityNotFoundException.class,
+                () -> patientService.removePatient(patientId));
 
         assertEquals("Patient nonexistent not found", ex.getMessage());
 

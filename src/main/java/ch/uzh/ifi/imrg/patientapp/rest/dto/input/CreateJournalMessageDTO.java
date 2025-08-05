@@ -7,6 +7,6 @@ import lombok.Setter;
 @Setter
 public class CreateJournalMessageDTO {
     private String message;
-    private String journalEntryTitle;
-    private String journalEntryContent;
+    private String journalTitle;
+    private String journalContent;
 }
