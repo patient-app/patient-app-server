@@ -43,6 +43,8 @@ public class Meeting {
     @Column(nullable = true)
     private String location;
 
+    private Instant lastReminderSentAt;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private MeetingStatus meetingStatus;

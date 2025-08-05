@@ -50,6 +50,8 @@ public class Exercise implements Serializable {
     @Column()
     private String exerciseExplanation;
 
+    private Instant lastReminderSentAt;
+
     @OneToMany(mappedBy = "exercise", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ExerciseComponent> exerciseComponents;
 
