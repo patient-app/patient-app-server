@@ -2,12 +2,13 @@ package ch.uzh.ifi.imrg.patientapp.service;
 
 import ch.uzh.ifi.imrg.patientapp.entity.Exercise.Exercise;
 import ch.uzh.ifi.imrg.patientapp.entity.Exercise.ExerciseCompletionInformation;
+import ch.uzh.ifi.imrg.patientapp.entity.JournalEntry;
 import ch.uzh.ifi.imrg.patientapp.entity.Meeting;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
+import ch.uzh.ifi.imrg.patientapp.entity.PsychologicalTestAssignment;
 import ch.uzh.ifi.imrg.patientapp.repository.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -16,6 +17,8 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -26,11 +29,16 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class NotificationsSchedulerServiceTest {
 
-    @Mock private PatientRepository patientRepository;
-    @Mock private ExerciseRepository exerciseRepository;
-    @Mock private MeetingRepository meetingRepository;
+
     @Mock
-    private PsychologicalTestsAssignmentRepository psychologicalTestsAssignmentRepository;
+    private ExerciseRepository exerciseRepository;
+
+    @Mock
+    private MeetingRepository meetingRepository;
+
+    @Mock
+    private PsychologicalTestsAssignmentRepository psychologicalTestsAssginmentRepository;
+
     @Mock private JournalEntryRepository journalEntryRepository;
 
     @InjectMocks
@@ -49,14 +57,24 @@ class NotificationsSchedulerServiceTest {
     private Exercise setupExerciseForReminder() {
         Exercise exercise = new Exercise();
         exercise.setDoEveryNDays(1);
-        exercise.setLastReminderSentAt(Instant.now().minusSeconds(15 * 60 * 60)); // >13h ago
+        exercise.setLastReminderSentAt(Instant.now().minusSeconds(15 * 60 * 60)); // 15h ago
 
+        // Start time so that nextDue is slightly in the future
         ExerciseCompletionInformation info = new ExerciseCompletionInformation();
-        info.setStartTime(Instant.now().minusSeconds(2 * 86400L)); // last done 2 days ago
+        info.setStartTime(Instant.now().minusSeconds(86400L - 60)); // Due in 1 min
         exercise.setExerciseCompletionInformation(List.of(info));
 
         return exercise;
     }
+
+    private PsychologicalTestAssignment setupPsychologicalTestAssignment(Patient patient) {
+        PsychologicalTestAssignment assignment = new PsychologicalTestAssignment();
+        assignment.setLastCompletedAt(Instant.now().plusSeconds(3600));
+        assignment.setLastReminderSentAt(Instant.now().minusSeconds(14 * 60 * 60));
+        assignment.setPatient(patient);
+        return assignment;
+    }
+
 
 
     @Test
@@ -179,16 +197,22 @@ class NotificationsSchedulerServiceTest {
     @Test
     void testNotifyOnePatient_exerciseNotification_english() {
         Patient patient = basePatient("en");
+        patient.setGetNotifications(true);
+
+        // Stub meetingRepository to avoid early return
+        when(meetingRepository.findByPatientIdOrderByStartAtAsc(any()))
+                .thenReturn(Collections.emptyList());
 
         Exercise exercise = setupExerciseForReminder();
-
+        List <Exercise> exercises = List.of(exercise);
         when(exerciseRepository.getExercisesByPatientId(patient.getId()))
-                .thenReturn(List.of(exercise));
+                .thenReturn(exercises);
 
         service.notifyOnePatient(patient);
-
+        verify(meetingRepository, never()).save(any());
         verify(exerciseRepository).save(exercise);
     }
+
 
     @Test
     void testNotifyOnePatient_exerciseNotification_german() {
@@ -219,7 +243,175 @@ class NotificationsSchedulerServiceTest {
         verify(exerciseRepository).save(exercise);
     }
 
+    @Test
+    void testNotifyOnePatient_noTestAssignments() {
+        Patient patient = basePatient("en");
+        patient.setGetNotifications(true);
 
+        when(meetingRepository.findByPatientIdOrderByStartAtAsc(any())).thenReturn(Collections.emptyList());
+        when(exerciseRepository.getExercisesByPatientId(any())).thenReturn(Collections.emptyList());
+        when(psychologicalTestsAssginmentRepository.findByPatientIdOrderByLastCompletedAtAsc(any()))
+                .thenReturn(Collections.emptyList());
+
+        service.notifyOnePatient(patient);
+
+        verify(psychologicalTestsAssginmentRepository, never()).save(any());
+    }
+
+    @Test
+    void testNotifyOnePatient_testAssignmentNoReminderNeeded() {
+        Patient patient = basePatient("en");
+        patient.setGetNotifications(true);
+
+        PsychologicalTestAssignment assignment = new PsychologicalTestAssignment();
+        assignment.setLastCompletedAt(Instant.now());
+        assignment.setLastReminderSentAt(Instant.now());
+
+        when(meetingRepository.findByPatientIdOrderByStartAtAsc(any())).thenReturn(Collections.emptyList());
+        when(exerciseRepository.getExercisesByPatientId(any())).thenReturn(Collections.emptyList());
+        when(psychologicalTestsAssginmentRepository.findByPatientIdOrderByLastCompletedAtAsc(any()))
+                .thenReturn(List.of(assignment));
+
+        service.notifyOnePatient(patient);
+
+        verify(psychologicalTestsAssginmentRepository, never()).save(any());
+    }
+
+    @Test
+    void testNotifyOnePatient_testAssignmentReminderEnglish() {
+        Patient patient = basePatient("en");
+        patient.setGetNotifications(true);
+
+        PsychologicalTestAssignment assignment = setupPsychologicalTestAssignment(patient);
+        when(meetingRepository.findByPatientIdOrderByStartAtAsc(anyString())).thenReturn(Collections.emptyList());
+        when(exerciseRepository.getExercisesByPatientId(anyString())).thenReturn(Collections.emptyList());
+        when(journalEntryRepository.findByPatientIdOrderByUpdatedAtAsc(anyString())).thenReturn(Collections.emptyList());
+        when(psychologicalTestsAssginmentRepository.findByPatientIdOrderByLastCompletedAtAsc(anyString()))
+                .thenReturn(List.of(assignment));
+
+        service.notifyOnePatient(patient);
+
+        verify(psychologicalTestsAssginmentRepository).save(assignment);
+    }
+
+    @Test
+    void testNotifyOnePatient_testAssignmentReminderGerman() {
+        Patient patient = basePatient("de");
+        patient.setGetNotifications(true);
+
+        PsychologicalTestAssignment assignment = setupPsychologicalTestAssignment(patient);
+
+        when(meetingRepository.findByPatientIdOrderByStartAtAsc(any())).thenReturn(Collections.emptyList());
+        when(exerciseRepository.getExercisesByPatientId(any())).thenReturn(Collections.emptyList());
+        when(journalEntryRepository.findByPatientIdOrderByUpdatedAtAsc(any())).thenReturn(Collections.emptyList());
+        when(psychologicalTestsAssginmentRepository.findByPatientIdOrderByLastCompletedAtAsc(anyString()))
+                .thenReturn(List.of(assignment));
+
+        service.notifyOnePatient(patient);
+
+        verify(psychologicalTestsAssginmentRepository).save(assignment);
+    }
+
+    @Test
+    void testNotifyOnePatient_testAssignmentReminderFallbackLanguage() {
+        Patient patient = basePatient("uk");
+        patient.setGetNotifications(true);
+
+        PsychologicalTestAssignment assignment = setupPsychologicalTestAssignment(patient);
+
+        when(meetingRepository.findByPatientIdOrderByStartAtAsc(any())).thenReturn(Collections.emptyList());
+        when(exerciseRepository.getExercisesByPatientId(any())).thenReturn(Collections.emptyList());
+        when(journalEntryRepository.findByPatientIdOrderByUpdatedAtAsc(any())).thenReturn(Collections.emptyList());
+        when(psychologicalTestsAssginmentRepository.findByPatientIdOrderByLastCompletedAtAsc(anyString()))
+                .thenReturn(List.of(assignment));
+
+        service.notifyOnePatient(patient);
+
+        verify(psychologicalTestsAssginmentRepository).save(assignment);
+    }
+
+    @Test
+    void testNotifyOnePatient_noJournalEntries() {
+        Patient patient = basePatient("en");
+
+        when(journalEntryRepository.findByPatientIdOrderByUpdatedAtAsc(patient.getId()))
+                .thenReturn(Collections.emptyList());
+
+        service.notifyOnePatient(patient);
+
+        verify(journalEntryRepository, never()).save(any());
+    }
+
+
+    @Test
+    void testNotifyOnePatient_journalEntry_noReminderNeeded() {
+        Patient patient = basePatient("en");
+
+        JournalEntry entry = new JournalEntry();
+        entry.setUpdatedAt(Instant.now().plus(1, ChronoUnit.DAYS)); // not in past
+        entry.setLastReminderSentAt(Instant.now()); // just sent
+
+        when(journalEntryRepository.findByPatientIdOrderByUpdatedAtAsc(patient.getId()))
+                .thenReturn(List.of(entry));
+
+        service.notifyOnePatient(patient);
+
+        verify(journalEntryRepository, never()).save(any());
+    }
+
+
+    @Test
+    void testNotifyOnePatient_journalEntry_reminderNeeded_en() {
+        Patient patient = basePatient("en");
+        Instant now = Instant.now();
+
+        JournalEntry entry = new JournalEntry();
+        entry.setUpdatedAt(now.minus(1, ChronoUnit.DAYS));                  // 1 day ago
+        entry.setLastReminderSentAt(Instant.now().minus(15, ChronoUnit.HOURS));
+
+        when(journalEntryRepository.findByPatientIdOrderByUpdatedAtAsc(patient.getId()))
+                .thenReturn(List.of(entry));
+
+        service.notifyOnePatient(patient);
+
+        verify(journalEntryRepository).save(entry);
+    }
+    @Test
+    void testNotifyOnePatient_journalEntry_reminderNeeded_de() {
+        Patient patient = basePatient("de");
+
+        Instant now = Instant.now();
+
+        JournalEntry entry = new JournalEntry();
+        entry.setUpdatedAt(now.minus(1, ChronoUnit.DAYS));                  // 1 day ago
+        entry.setLastReminderSentAt(now.minus(15, ChronoUnit.HOURS));      // 15h ago
+
+
+        when(journalEntryRepository.findByPatientIdOrderByUpdatedAtAsc(patient.getId()))
+                .thenReturn(List.of(entry));
+
+        service.notifyOnePatient(patient);
+
+        verify(journalEntryRepository).save(entry);
+    }
+
+
+    @Test
+    void testNotifyOnePatient_journalEntry_reminderNeeded_otherLang() {
+        Patient patient = basePatient("uk");
+        Instant now = Instant.now();
+
+        JournalEntry entry = new JournalEntry();
+        entry.setUpdatedAt(now.minus(1, ChronoUnit.DAYS));                  // 1 day ago
+        entry.setLastReminderSentAt(Instant.now().minus(15, ChronoUnit.HOURS));
+
+        when(journalEntryRepository.findByPatientIdOrderByUpdatedAtAsc(patient.getId()))
+                .thenReturn(List.of(entry));
+
+        service.notifyOnePatient(patient);
+
+        verify(journalEntryRepository).save(entry);
+    }
 
 
 }
