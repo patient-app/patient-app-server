@@ -109,7 +109,6 @@ class ExerciseServiceTest {
     }
 
 
-
     @Test
     void testCreateExercise_WithNullExerciseElements_SavesWithoutError() {
         // Arrange
@@ -479,7 +478,7 @@ class ExerciseServiceTest {
         // Act + Assert
         ResponseStatusException ex = assertThrows(
                 ResponseStatusException.class,
-                () -> exerciseService.getExerciseChatbot(exerciseId,patient)
+                () -> exerciseService.getExerciseChatbot(exerciseId, patient)
         );
         assertEquals("404 NOT_FOUND \"No exercise found, ask coach to create one.\"", ex.getMessage());
 
@@ -500,7 +499,7 @@ class ExerciseServiceTest {
         // Act + Assert
         ResponseStatusException ex = assertThrows(
                 ResponseStatusException.class,
-                () -> exerciseService.getExerciseChatbot(exerciseId,patient)
+                () -> exerciseService.getExerciseChatbot(exerciseId, patient)
         );
         assertEquals("404 NOT_FOUND \"No conversation found, create one first.\"", ex.getMessage());
 
@@ -522,7 +521,7 @@ class ExerciseServiceTest {
         when(exerciseRepository.getExerciseById(exerciseId)).thenReturn(exercise);
         when(exerciseMapper.exerciseConversationToExerciseChatbotOutputDTO(conversation)).thenReturn(expectedDTO);
         doNothing().when(authorizationService).checkExerciseAccess(eq(exercise), eq(patient), anyString());        // Act
-        ExerciseChatbotOutputDTO result = exerciseService.getExerciseChatbot(exerciseId,patient);
+        ExerciseChatbotOutputDTO result = exerciseService.getExerciseChatbot(exerciseId, patient);
 
         // Assert
         assertEquals(expectedDTO, result);
@@ -617,6 +616,7 @@ class ExerciseServiceTest {
         verify(patientRepository).getPatientById(patientId);
         verify(authorizationService).checkExerciseAccess(eq(exercise), eq(patient), anyString());
     }
+
     @Test
     void getOneExercisesOverview_returnsDTOs_whenAuthorized() {
         // Arrange
@@ -651,7 +651,6 @@ class ExerciseServiceTest {
         verify(exerciseInformationRepository).getExerciseInformationByExerciseId(exerciseId);
         verify(authorizationService).checkExerciseAccess(eq(exercise), eq(patient), anyString());
     }
-
 
 
     @Test
@@ -864,7 +863,6 @@ class ExerciseServiceTest {
     }
 
 
-
     @Test
     void createExercise_setsExerciseInComponents_whenComponentsPresent() {
         // Arrange
@@ -889,7 +887,7 @@ class ExerciseServiceTest {
         when(exerciseMapper.exerciseInputDTOToExercise(inputDTO)).thenReturn(exercise);
         when(patientRepository.getPatientById(patientId)).thenReturn(patient);
         when(chatbotTemplateRepository.findByPatientId(patientId)).thenReturn(List.of(chatbotTemplate));
-        when(promptBuilderService.getSystemPrompt(chatbotTemplate, inputDTO.getExerciseExplanation(),patient)).thenReturn("prompt");
+        when(promptBuilderService.getSystemPrompt(chatbotTemplate, inputDTO.getExerciseExplanation(), patient)).thenReturn("prompt");
         when(exerciseConversationRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         // Act
@@ -1253,6 +1251,7 @@ class ExerciseServiceTest {
         verify(exerciseComponentRepository).getExerciseComponentById(componentId);
         verifyNoMoreInteractions(exerciseRepository, patientRepository, authorizationService, exerciseComponentRepository);
     }
+
     @Test
     void deleteExerciseComponent_deletesSuccessfully_whenValid() {
         // Arrange
@@ -1722,6 +1721,31 @@ class ExerciseServiceTest {
         assertEquals(1, result.size()); // Should include this exercise
         verify(authorizationService).checkExerciseAccess(eq(exercise), eq(patient), anyString());
         verify(exerciseMapper).exercisesToExerciseOverviewOutputDTOs(anyList());
+    }
+
+    @Test
+    void getExercisesForDashboard_alreadyCompleted_shouldReturnNothing() {
+        Patient patient = new Patient();
+        patient.setId("p1");
+
+        Exercise exercise = new Exercise();
+        exercise.setPatient(patient);
+        exercise.setDoEveryNDays(1);
+
+        ExerciseCompletionInformation completion = new ExerciseCompletionInformation();
+        completion.setEndTime(Instant.now());
+
+        exercise.setExerciseCompletionInformation(List.of(completion));
+
+        when(exerciseRepository.findAllActiveExercisesWithinTimeAndPatient(any(Instant.class), eq(patient.getId())))
+                .thenReturn(List.of(exercise));
+
+        doNothing().when(authorizationService).checkExerciseAccess(any(), any(), anyString());
+
+        List<ExercisesOverviewOutputDTO> result = exerciseService.getExercisesForDashboard(patient);
+
+        assertTrue(result.isEmpty());
+        verify(authorizationService).checkExerciseAccess(eq(exercise), eq(patient), anyString());
     }
 
 

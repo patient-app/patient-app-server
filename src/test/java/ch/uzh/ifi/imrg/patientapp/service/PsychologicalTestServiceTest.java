@@ -593,6 +593,27 @@ class PsychologicalTestServiceTest {
                 eq("You do not have access to this patient's psychological tests."));
     }
 
+    @Test
+    void getPsychologicalTestsForDashboard_alreadyCompleted_shouldReturnNothing() {
+        Patient patient = new Patient();
+        patient.setId("p1");
+
+        PsychologicalTestAssignment assignment = new PsychologicalTestAssignment();
+        assignment.setPatient(patient);
+        assignment.setTestName("TestA");
+        assignment.setLastCompletedAt(Instant.now());
+        assignment.setDoEveryNDays(1);
+
+        when(psychologicalTestsAssignmentRepository.findActiveAssignments(eq(patient), any()))
+                .thenReturn(List.of(assignment));
+
+        List<PsychologicalTestsOverviewOutputDTO> result = service.getPsychologicalTestsForDashboard(patient);
+
+        assertEquals(0, result.size());
+        verify(authorizationService).checkPsychologicalTestAssignmentAccess(eq(assignment), eq(patient),
+                eq("You do not have access to this patient's psychological tests."));
+    }
+
 
 
 }

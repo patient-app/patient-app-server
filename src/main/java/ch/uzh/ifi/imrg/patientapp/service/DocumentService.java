@@ -68,14 +68,15 @@ public class DocumentService {
         byte[] hashBytes = digest.digest(bytes);
         String sha256 = HexFormat.of().formatHex(hashBytes);
 
-        Document document = documentRepository.findBySha256(sha256).orElseGet(() -> {
-            Document d = new Document();
-            d.setFilename(file.getOriginalFilename());
-            d.setContentType(file.getContentType());
-            d.setData(bytes);
-            d.setSha256(sha256);
-            return documentRepository.save(d);
-        });
+        Document document = documentRepository.findBySha256AndFilename(sha256, file.getOriginalFilename())
+                .orElseGet(() -> {
+                    Document d = new Document();
+                    d.setFilename(file.getOriginalFilename());
+                    d.setContentType(file.getContentType());
+                    d.setData(bytes);
+                    d.setSha256(sha256);
+                    return documentRepository.save(d);
+                });
 
         PatientDocument patientDocument = new PatientDocument(patient, document);
         patientDocumentRepository.save(patientDocument);
@@ -84,7 +85,8 @@ public class DocumentService {
 
         if (result.isHumanReadable()) {
             patientDocument.getConversation().setSystemPrompt(
-                    promptBuilderService.getDocumentSystemPrompt(patient.getChatbotTemplate(), result.getText(), patient));
+                    promptBuilderService.getDocumentSystemPrompt(patient.getChatbotTemplate(), result.getText(),
+                            patient));
         } else {
             patientDocument.getConversation().setSystemPrompt(
                     promptBuilderService.getDocumentSystemPrompt(patient.getChatbotTemplate(),

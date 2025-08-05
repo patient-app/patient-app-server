@@ -78,7 +78,7 @@ public class DocumentServiceTest {
                 MultipartFile file = new MockMultipartFile("file", "foo.txt",
                                 "text/plain", content);
 
-                when(documentRepository.findBySha256(sha256))
+                when(documentRepository.findBySha256AndFilename(sha256, file.getOriginalFilename()))
                                 .thenReturn(Optional.empty());
                 Document saved = new Document();
                 saved.setId("d1");
@@ -105,7 +105,8 @@ public class DocumentServiceTest {
                 Document existing = new Document();
                 existing.setId("d2");
                 existing.setSha256(sha256);
-                when(documentRepository.findBySha256(sha256))
+                existing.setFilename(file.getOriginalFilename());
+                when(documentRepository.findBySha256AndFilename(sha256, file.getOriginalFilename()))
                                 .thenReturn(Optional.of(existing));
 
                 try (MockedStatic<DocumentUtil> mocked = mockStatic(DocumentUtil.class)) {
@@ -293,7 +294,8 @@ public class DocumentServiceTest {
                 when(patientDocumentRepository.findById(pk)).thenReturn(Optional.of(patientDocument));
 
                 DocumentChatbotOutputDTO expectedDTO = new DocumentChatbotOutputDTO();
-                when(documentMapper.documentConversationToExcerciseChatbotOutputDTO(conversation)).thenReturn(expectedDTO);
+                when(documentMapper.documentConversationToExcerciseChatbotOutputDTO(conversation))
+                                .thenReturn(expectedDTO);
 
                 // Act
                 DocumentChatbotOutputDTO result = service.getDocumentChatbot(patient, documentId);
@@ -310,11 +312,11 @@ public class DocumentServiceTest {
                 String documentId = "doc123";
 
                 when(patientDocumentRepository.findById(new PatientDocumentId("p1", "doc123")))
-                        .thenReturn(Optional.empty());
+                                .thenReturn(Optional.empty());
 
                 // Act + Assert
                 EntityNotFoundException ex = assertThrows(EntityNotFoundException.class,
-                        () -> service.getDocumentChatbot(patient, documentId));
+                                () -> service.getDocumentChatbot(patient, documentId));
 
                 assertTrue(ex.getMessage().contains("No PatientDocument for patient=p1 and document=doc123"));
         }
@@ -330,11 +332,11 @@ public class DocumentServiceTest {
                 patientDocument.setConversation(null); // explicitly null
 
                 when(patientDocumentRepository.findById(new PatientDocumentId("p1", "doc123")))
-                        .thenReturn(Optional.of(patientDocument));
+                                .thenReturn(Optional.of(patientDocument));
 
                 // Act + Assert
                 IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                        () -> service.getDocumentChatbot(patient, documentId));
+                                () -> service.getDocumentChatbot(patient, documentId));
 
                 assertEquals("No conversation found for exercise with ID: doc123", ex.getMessage());
         }
