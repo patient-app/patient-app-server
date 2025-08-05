@@ -12,10 +12,7 @@ import ch.uzh.ifi.imrg.patientapp.repository.PsychologicalTestsAssignmentReposit
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PsychologicalTestAssignmentInputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PsychologicalTestInputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PsychologicalTestQuestionInputDTO;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestNameAndPatientIdOutputDTO;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestNameOutputDTO;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestOutputDTO;
-import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestsOverviewOutputDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.output.*;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.PsychologicalTestMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -612,6 +609,50 @@ class PsychologicalTestServiceTest {
         assertEquals(0, result.size());
         verify(authorizationService).checkPsychologicalTestAssignmentAccess(eq(assignment), eq(patient),
                 eq("You do not have access to this patient's psychological tests."));
+    }
+
+    @Test
+    void getPsychologicalTestAssignment_exists_shouldReturnMappedDTO() {
+        // Arrange
+        String patientId = "p1";
+        String testName = "TestA";
+
+        Patient patient = new Patient();
+        patient.setId(patientId);
+
+        PsychologicalTestAssignment assignment = new PsychologicalTestAssignment();
+        assignment.setPatient(patient);
+        assignment.setTestName(testName);
+        assignment.setDoEveryNDays(3);
+        assignment.setIsPaused(false);
+        assignment.setExerciseStart(Instant.now());
+        assignment.setExerciseEnd(Instant.now().plus(3, ChronoUnit.DAYS));
+
+        when(psychologicalTestsAssignmentRepository.findByPatientIdAndTestName(patientId, testName))
+                .thenReturn(assignment);
+
+        // Act
+        PsychologicalTestAssignmentOutputDTO result = service.getPsychologicalTestAssginment(patientId, testName);
+
+        // Assert
+        assertEquals(patientId, result.getPatientId());
+        assertEquals(testName, result.getTestName());
+        assertEquals(3, result.getDoEveryNDays());
+        assertFalse(result.getIsPaused());
+    }
+
+    @Test
+    void getPsychologicalTestAssignment_notFound_shouldThrowAccessDeniedException() {
+        // Arrange
+        String patientId = "p1";
+        String testName = "TestX";
+
+        when(psychologicalTestsAssignmentRepository.findByPatientIdAndTestName(patientId, testName))
+                .thenReturn(null);
+
+        // Act + Assert
+        assertThrows(AccessDeniedException.class, () ->
+                service.getPsychologicalTestAssginment(patientId, testName));
     }
 
 

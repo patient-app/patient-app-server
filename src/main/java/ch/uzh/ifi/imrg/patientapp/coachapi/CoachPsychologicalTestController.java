@@ -1,6 +1,7 @@
 package ch.uzh.ifi.imrg.patientapp.coachapi;
 
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PsychologicalTestAssignmentInputDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestAssignmentOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestNameOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.service.PsychologicalTestService;
@@ -56,5 +57,13 @@ public class CoachPsychologicalTestController {
                                         @PathVariable String psychologicalTestName,
                                         @RequestBody PsychologicalTestAssignmentInputDTO psychologicalTestAssignmentInputDTO) {
         psychologicalTestService.updatePsychologicalTestAssginment(patientId, psychologicalTestName, psychologicalTestAssignmentInputDTO);
+    }
+
+    @GetMapping("/coach/patients/{patientId}/psychological-tests/{psychologicalTestName}/configuration")
+    @ResponseStatus(HttpStatus.OK)
+    @SecurityRequirement(name = "X-Coach-Key")
+    public PsychologicalTestAssignmentOutputDTO getPsychologicalTestConfiguration(@PathVariable String patientId,
+                                                                                  @PathVariable String psychologicalTestName) {
+        return psychologicalTestService.getPsychologicalTestAssginment(patientId, psychologicalTestName);
     }
 }
