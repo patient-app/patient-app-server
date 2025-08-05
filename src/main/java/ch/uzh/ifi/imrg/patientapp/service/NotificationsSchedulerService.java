@@ -49,18 +49,26 @@ public class NotificationsSchedulerService implements Runnable{
 
                 List<Patient> patients = patientRepository.findAll();
                 for (Patient patient : patients) {
-                    notifyOnePatient(patient);
+                    try {
+                        notifyOnePatient(patient);
+                    } catch (Exception e) {
+                        log.error("Error notifying patient {}", patient.getId(), e);
+                    }
                 }
 
-                Thread.sleep(3 * 60 * 60 * 1000); // Sleep for 4 hours
-            } catch (InterruptedException e) {
-                log.warn("Notification scheduler interrupted");
-                break;
             } catch (Exception e) {
                 log.error("Unexpected error in notification scheduler", e);
             }
+
+            try {
+                Thread.sleep(3 * 60 * 60 * 1000); // Sleep for 3 hours
+            } catch (InterruptedException e) {
+                log.warn("Notification scheduler interrupted");
+                break;
+            }
         }
     }
+
 
 
     public void notifyOnePatient(Patient patient) {
