@@ -1,6 +1,7 @@
 package ch.uzh.ifi.imrg.patientapp.coachapi;
 
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PsychologicalTestAssignmentInputDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestAssignmentOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestNameOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PsychologicalTestOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.service.PsychologicalTestService;
@@ -125,6 +126,30 @@ public class CoachPsychologicalTestControllerTest {
         verify(psychologicalTestService).updatePsychologicalTestAssginment(patientId, testName, dto);
         verifyNoMoreInteractions(psychologicalTestService);
     }
+
+    @Test
+    void getPsychologicalTestConfiguration_shouldCallServiceAndReturnDTO() {
+        // Arrange
+        String patientId = "patient123";
+        String testName = "PHQ9";
+
+        PsychologicalTestAssignmentOutputDTO expected = new PsychologicalTestAssignmentOutputDTO();
+        expected.setPatientId(patientId);
+        expected.setTestName(testName);
+        expected.setDoEveryNDays(7);
+        expected.setIsPaused(false);
+
+        when(psychologicalTestService.getPsychologicalTestAssginment(patientId, testName)).thenReturn(expected);
+
+        // Act
+        PsychologicalTestAssignmentOutputDTO result = controller.getPsychologicalTestConfiguration(patientId, testName);
+
+        // Assert
+        assertEquals(expected, result);
+        verify(psychologicalTestService).getPsychologicalTestAssginment(patientId, testName);
+        verifyNoMoreInteractions(psychologicalTestService);
+    }
+
 
 
 }
