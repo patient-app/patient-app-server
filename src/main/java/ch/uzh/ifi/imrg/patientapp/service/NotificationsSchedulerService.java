@@ -95,6 +95,8 @@ public class NotificationsSchedulerService implements Runnable {
         }
 
         List<Exercise> exercises = exerciseRepository.getExercisesByPatientId(patient.getId());
+        // TODO: order Liste by strat time such that first is latest start time or
+        // instead of get first geet wher start time is max.
         for (Exercise exercise : exercises) {
             Instant nextDue = exercise.getExerciseCompletionInformation().getFirst().getStartTime()
                     .plusSeconds(exercise.getDoEveryNDays() * 86400L);
@@ -106,6 +108,8 @@ public class NotificationsSchedulerService implements Runnable {
                 return;
             }
         }
+
+        // TODO:check order b
         List<PsychologicalTestAssignment> testAssignments = psychologicalTestsAssginmentRepository
                 .findByPatientIdOrderByLastCompletedAtAsc(patient.getId());
 
@@ -124,6 +128,7 @@ public class NotificationsSchedulerService implements Runnable {
             }
         }
 
+        // TODO: check order by
         List<JournalEntry> journalEntries = journalEntryRepository.findByPatientIdOrderByUpdatedAtAsc(patient.getId());
         if (!journalEntries.isEmpty()) {
 
