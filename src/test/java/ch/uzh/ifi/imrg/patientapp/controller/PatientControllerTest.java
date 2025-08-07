@@ -4,6 +4,7 @@ import ch.uzh.ifi.imrg.patientapp.constant.ChatBotAvatar;
 import ch.uzh.ifi.imrg.patientapp.constant.LogTypes;
 import ch.uzh.ifi.imrg.patientapp.entity.Patient;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.*;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.output.NotificationStatusOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PatientOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.service.LogService;
 import ch.uzh.ifi.imrg.patientapp.service.PatientService;
@@ -12,7 +13,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
@@ -329,5 +329,32 @@ public class PatientControllerTest {
         assertEquals("alice@example.com", dto.getEmail());
     }
 
+    @Test
+    void getNotificationStatus_shouldReturnCorrectStatus() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        Patient mockPatient = new Patient();
+        mockPatient.setGetNotifications(true);
+        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
+
+        NotificationStatusOutputDTO result = patientController.getNotificationStatus(request);
+
+        assertNotNull(result);
+        assertEquals(true, result.isGetNotifications());
+    }
+
+    @Test
+    void setNotificationStatus_shouldUpdateNotificationFieldAndCallService() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        PutNotificationStatusDTO dto = new PutNotificationStatusDTO();
+        dto.setGetNotifications(true);
+        Patient mockPatient = new Patient();
+        mockPatient.setGetNotifications(false);
+        when(patientService.getCurrentlyLoggedInPatient(request)).thenReturn(mockPatient);
+
+        patientController.setNotificationStatus(dto, request);
+
+        assertTrue(mockPatient.isGetNotifications());
+        verify(patientService).setField(mockPatient);
+    }
 
 }

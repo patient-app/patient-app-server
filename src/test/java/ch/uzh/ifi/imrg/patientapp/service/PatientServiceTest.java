@@ -243,7 +243,6 @@ public class PatientServiceTest {
 
         Error thrown = assertThrows(Error.class, () -> patientService.registerPatient(patient,
                 mock(HttpServletRequest.class), mock(HttpServletResponse.class)));
-        System.out.println("Actual error message: " + thrown.getMessage());
 
         assertTrue(thrown.getMessage().contains("Creating client failed because patient with this ID already exists"));
     }
