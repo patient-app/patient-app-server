@@ -96,13 +96,14 @@ public class MessageService {
         String harm = promptBuilderService.getHarmRating(message);
 
         if (harm.equals("true")) {
-            System.out.println("Message contains harmful content.");
-            logService.createLog(patient.getId(), LogTypes.HARMFUL_CONTENT_DETECTED, conversationId,"");
+
+            logService.createLog(patient.getId(), LogTypes.HARMFUL_CONTENT_DETECTED, conversationId, "");
             String coachEmail = patient.getCoachEmail();
             if (coachEmail != null) {
                 notifyCoach(coachEmail);
             }
-            logService.createLog(patient.getId(), LogTypes.HARMFUL_CONTENT_DETECTED, conversationId,"Potentially harmful message: \""+ message + "\"");
+            logService.createLog(patient.getId(), LogTypes.HARMFUL_CONTENT_DETECTED, conversationId,
+                    "Potentially harmful message: \"" + message + "\"");
         }
 
         List<Map<String, String>> priorMessages = parseMessagesFromConversation(conversation, key);

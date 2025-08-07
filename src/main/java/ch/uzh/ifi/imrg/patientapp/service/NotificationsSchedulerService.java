@@ -4,7 +4,6 @@ import ch.uzh.ifi.imrg.patientapp.constant.NotificationType;
 import ch.uzh.ifi.imrg.patientapp.entity.*;
 import ch.uzh.ifi.imrg.patientapp.entity.Exercise.Exercise;
 import ch.uzh.ifi.imrg.patientapp.repository.*;
-import ch.uzh.ifi.imrg.patientapp.repository.PatientRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -68,7 +67,9 @@ public class NotificationsSchedulerService implements Runnable {
             }
 
             try {
-                Thread.sleep(3 * 60 * 60 * 1000); // Sleep for 3 hours
+                // TODO:
+                // Thread.sleep(3 * 60 * 60 * 1000); // Sleep for 3 hours
+                Thread.sleep(5 * 60 * 1000); // Sleep for 5min for testing
             } catch (InterruptedException e) {
                 log.warn("Notification scheduler interrupted");
                 break;
@@ -86,26 +87,7 @@ public class NotificationsSchedulerService implements Runnable {
             Meeting meeting = meetings.get(0);
             if (needsNotification(meeting.getStartAt(), meeting.getLastReminderSentAt())) {
                 notificationService.sendNotification(patient, NotificationType.MEETING);
-                // if (patient.getLanguage().equals("en")) {
-                // // pushNotificationService.sendToPatient(patient.getId(),"Lumina","You have a
-                // // meeting scheduled soon. Please check your app for details.");
-                // System.out.println("You have a meeting scheduled soon. Please check your app
-                // for details.");
-                // } else if (patient.getLanguage().equals("de")) {
-                // // pushNotificationService.sendToPatient(patient.getId(),"Lumina","Du hast
-                // bald
-                // // ein Meeting. Bitte schau in der App nach.");
-                // System.out.println("You have a meeting scheduled soon. Please check your app
-                // for details.");
 
-                // } else {
-                // // pushNotificationService.sendToPatient(patient.getId(),"Lumina","У вас
-                // // незабаром запланована зустріч. Будь ласка, перевірте додаток для отримання
-                // // деталей.");
-                // System.out.println("You have a meeting scheduled soon. Please check your app
-                // for details.");
-
-                // }
                 meeting.setLastReminderSentAt(Instant.now());
                 meetingRepository.save(meeting);
                 return;
@@ -118,27 +100,7 @@ public class NotificationsSchedulerService implements Runnable {
                     .plusSeconds(exercise.getDoEveryNDays() * 86400L);
             if (needsNotification(nextDue, exercise.getLastReminderSentAt())) {
                 notificationService.sendNotification(patient, NotificationType.EXERCISE);
-                // if (patient.getLanguage().equals("en")) {
-                // // pushNotificationService.sendToPatient(patient.getId(), "Lumina", "There is
-                // a
-                // // new exercise to do.");
-                // System.out.println("You have a meeting scheduled soon. Please check your app
-                // for details.");
 
-                // } else if (patient.getLanguage().equals("de")) {
-                // // pushNotificationService.sendToPatient(patient.getId(), "Lumina", "Es gibt
-                // // eine neue Übung zu machen.");
-                // System.out.println("You have a meeting scheduled soon. Please check your app
-                // for details.");
-
-                // } else {
-                // // pushNotificationService.sendToPatient(patient.getId(), "Lumina",
-                // "З’явилася
-                // // нова вправа для виконання.");
-                // System.out.println("You have a meeting scheduled soon. Please check your app
-                // for details.");
-
-                // }
                 exercise.setLastReminderSentAt(Instant.now());
                 exerciseRepository.save(exercise);
                 return;
@@ -146,9 +108,8 @@ public class NotificationsSchedulerService implements Runnable {
         }
         List<PsychologicalTestAssignment> testAssignments = psychologicalTestsAssginmentRepository
                 .findByPatientIdOrderByLastCompletedAtAsc(patient.getId());
-        System.out.println("what");
+
         if (!testAssignments.isEmpty()) {
-            System.out.println("testAssignments = " + testAssignments);
             PsychologicalTestAssignment psychologicalTestAssignment = testAssignments.getFirst();
 
             Instant nextDue = psychologicalTestAssignment.getLastCompletedAt()
@@ -156,28 +117,7 @@ public class NotificationsSchedulerService implements Runnable {
 
             if (needsNotification(nextDue, psychologicalTestAssignment.getLastReminderSentAt())) {
                 notificationService.sendNotification(patient, NotificationType.QUESTIONNAIRES);
-                // System.out.println("hi");
-                // if (patient.getLanguage().equals("en")) {
-                // // pushNotificationService.sendToPatient(patient.getId(), "Lumina", "Want to
-                // do
-                // // a test?");
-                // System.out.println("You have a assignment scheduled soon. Please check your
-                // app for details.");
 
-                // } else if (patient.getLanguage().equals("de")) {
-                // // pushNotificationService.sendToPatient(patient.getId(), "Lumina", "Möchtest
-                // du
-                // // einen Test machen?");
-                // System.out.println("You have a meeting scheduled soon. Please check your app
-                // for details.");
-
-                // } else {
-                // // pushNotificationService.sendToPatient(patient.getId(), "Lumina", "Хочете
-                // // пройти тест?");
-                // System.out.println("You have a meeting scheduled soon. Please check your app
-                // for details.");
-
-                // }
                 psychologicalTestAssignment.setLastReminderSentAt(Instant.now());
                 psychologicalTestsAssginmentRepository.save(psychologicalTestAssignment);
                 return;
@@ -188,35 +128,12 @@ public class NotificationsSchedulerService implements Runnable {
         if (!journalEntries.isEmpty()) {
 
             JournalEntry journalEntry = journalEntries.getFirst();
-            System.out.println("journalEntry = " + journalEntry);
 
             Instant nextDue = journalEntry.getUpdatedAt()
                     .plus(2, ChronoUnit.DAYS);
             if (needsNotification(nextDue, journalEntry.getLastReminderSentAt())) {
                 notificationService.sendNotification(patient, NotificationType.JOURNAL);
-                // if (patient.getLanguage().equals("en")) {
-                // // pushNotificationService.sendToPatient(patient.getId(), "Lumina", "You
-                // haven't
-                // // journaled in a while. Why don't you give it a try?");
-                // System.out.println("You have a meeting scheduled soon. Please check your app
-                // for details.");
 
-                // } else if (patient.getLanguage().equals("de")) {
-                // // pushNotificationService.sendToPatient(patient.getId(), "Lumina", "Du hast
-                // // schon lange nicht mehr Tagebuch geschrieben. Warum versuchst du es nicht
-                // mal
-                // // wieder?");
-                // System.out.println("You have a meeting scheduled soon. Please check your app
-                // for details.");
-
-                // } else {
-                // // pushNotificationService.sendToPatient(patient.getId(), "Lumina", "Ви давно
-                // не
-                // // вели щоденник. Чому б не спробувати зараз?");
-                // System.out.println("You have a meeting scheduled soon. Please check your app
-                // for details.");
-
-                // }
                 journalEntry.setLastReminderSentAt(Instant.now());
                 journalEntryRepository.save(journalEntry);
             }

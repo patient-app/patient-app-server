@@ -18,14 +18,13 @@ public class ChatGPTService {
         this.restTemplate = restTemplate;
     }
 
-
     public String getResponse(List<Map<String, String>> messages) {
         String content = "content";
         // Prepare the request bodyRequest
         Map<String, Object> bodyRequest = new HashMap<>();
         bodyRequest.put("model", "gemma3:12b");
         bodyRequest.put("messages", messages);
-        //bodyRequest.put("max_tokens", 170);
+        // bodyRequest.put("max_tokens", 170);
         bodyRequest.put("temperature", 0);
 
         // Set headers
@@ -47,8 +46,7 @@ public class ChatGPTService {
                     if (message != null) {
                         String text = (String) message.get("content");
                         if (text != null && !text.isEmpty()) {
-                            System.out.println("Returned response:");
-                            System.out.println(text);
+
                             return text;
                         }
                     }

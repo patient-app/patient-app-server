@@ -38,7 +38,6 @@ public class ChatGPTServiceTest {
         Map<String, Object> responseBody = Map.of("choices", List.of(choice));
         ResponseEntity<Map> response = new ResponseEntity<>(responseBody, HttpStatus.OK);
 
-
         when(restTemplate.postForEntity(anyString(), any(HttpEntity.class), eq(Map.class)))
                 .thenReturn(response);
 
@@ -46,7 +45,7 @@ public class ChatGPTServiceTest {
 
         // Act
         String result = chatGPTService.getResponse(messages);
-        System.out.println(result);
+
         // Assert
         assertEquals("Hello!", result);
     }
@@ -60,7 +59,7 @@ public class ChatGPTServiceTest {
                 .thenReturn(response);
 
         String result = chatGPTService.getResponse(List.of(Map.of("role", "user", "content", "Hi")));
-        System.out.println(result);
+
         assertEquals("No content found in LLM response.", result);
     }
 
@@ -72,7 +71,7 @@ public class ChatGPTServiceTest {
                 .thenReturn(response);
 
         String result = chatGPTService.getResponse(List.of(Map.of("role", "user", "content", "Hi")));
-        System.out.println(result);
+
         assertEquals("OpenAI API returned non-OK status: 400 BAD_REQUEST", result);
     }
 
@@ -82,8 +81,7 @@ public class ChatGPTServiceTest {
                 .thenThrow(new RuntimeException("Connection refused"));
 
         String result = chatGPTService.getResponse(List.of(Map.of("role", "user", "content", "Hi")));
-        System.out.println(result);
+
         assertEquals("Error calling OpenAI API: Connection refused", result);
     }
 }
-
