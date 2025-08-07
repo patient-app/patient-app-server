@@ -1,7 +1,0 @@
-[
-    {
-        "op": "replace",
-        "path": "/spec/rules/0/host",
-        "value": "backend-patient-app-production.jonas-blum.ch"
-    }
-]

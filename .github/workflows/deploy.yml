@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - production
 
 jobs:
   build-and-restart:
@@ -20,12 +19,6 @@ jobs:
 
             echo "BRANCH=main" >> $GITHUB_ENV
             echo "BACKEND_IMAGE=jonasblum/patient-app-backend-main:latest" >> $GITHUB_ENV
-
-          elif [[ "${{ github.ref }}" == "refs/heads/production" ]]; then
-
-            echo "BRANCH=production" >> $GITHUB_ENV
-            echo "BACKEND_IMAGE=jonasblum/patient-app-backend-production:latest" >> $GITHUB_ENV
-
           fi
 
       - name: Build Backend Image
@@ -36,12 +29,10 @@ jobs:
         run: |
           docker push ${{ env.BACKEND_IMAGE }}
 
-      - name: Restart Kubernetes Deployments
+      - name: Restart Kubernetes Deployment
         env:
           DB_PASSWORD_MAIN: ${{ secrets.DB_PASSWORD_MAIN }}
-          DB_PASSWORD_PRODUCTION: ${{ secrets.DB_PASSWORD_PRODUCTION }}
           JWT_SECRET_KEY_MAIN: ${{ secrets.JWT_SECRET_KEY_MAIN }}
-          JWT_SECRET_KEY_PRODUCTION: ${{ secrets.JWT_SECRET_KEY_PRODUCTION }}
           CHATGPT_API_KEY: ${{ secrets.CHATGPT_API_KEY }}
           LOCAL_AI_API_KEY: ${{secrets.LOCAL_AI_API_KEY}}
           MAIL_USERNAME: ${{secrets.MAIL_USERNAME}}
@@ -60,19 +51,4 @@ jobs:
 
             kubectl apply -k .kubernetes/overlays/main
             kubectl rollout restart deployment/patient-app-backend -n patient-app-main
-
-          elif [[ "${{ github.ref }}" == "refs/heads/production" ]]; then 
-            
-
-            echo "DB_PASSWORD=$DB_PASSWORD_PRODUCTION" > .kubernetes/overlays/production/env.secrets
-            echo "JWT_SECRET_KEY=$JWT_SECRET_KEY_PRODUCTION" >> .kubernetes/overlays/production/env.secrets
-            echo "CHATGPT_API_KEY=$CHATGPT_API_KEY" >> .kubernetes/overlays/production/env.secrets
-            echo "LOCAL_AI_API_KEY=$LOCAL_AI_API_KEY" >> .kubernetes/overlays/production/env.secrets
-            echo "MAIL_USERNAME=$MAIL_USERNAME" >> .kubernetes/overlays/production/env.secrets
-            echo "MAIL_PASSWORD=$MAIL_PASSWORD" >> .kubernetes/overlays/production/env.secrets
-            
-
-            kubectl apply -k .kubernetes/overlays/production
-            kubectl rollout restart deployment/patient-app-backend -n patient-app-production
-            
           fi
