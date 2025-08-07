@@ -5,6 +5,7 @@ import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutLanguageDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutNameDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutOnboardedDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.ResetPasswordDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutNotificationStatusDTO;
 import ch.uzh.ifi.imrg.patientapp.service.LogService;
 
 import org.springframework.http.HttpStatus;
@@ -16,6 +17,7 @@ import ch.uzh.ifi.imrg.patientapp.rest.dto.input.CreatePatientDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.LoginPatientDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.input.PutAvatarDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.dto.output.PatientOutputDTO;
+import ch.uzh.ifi.imrg.patientapp.rest.dto.output.NotificationStatusOutputDTO;
 import ch.uzh.ifi.imrg.patientapp.rest.mapper.PatientMapper;
 import ch.uzh.ifi.imrg.patientapp.service.PatientService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -161,4 +163,26 @@ public class PatientController {
     public void resetPassword(@Valid @RequestBody ResetPasswordDTO dto) {
         patientService.resetPasswordAndNotify(dto.getEmail());
     }
+
+    @GetMapping("patients/notifications")
+    @ResponseStatus(HttpStatus.OK)
+    public NotificationStatusOutputDTO getNotificationStatus(HttpServletRequest httpServletRequest) {
+        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
+
+        NotificationStatusOutputDTO dto = new NotificationStatusOutputDTO();
+        dto.setGetNotifications(loggedInPatient.isGetNotifications());
+
+        return dto;
+    }
+
+    @PutMapping("patients/notifications")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void setNotificationStatus(
+            @Valid @RequestBody PutNotificationStatusDTO dto,
+            HttpServletRequest httpServletRequest) {
+        Patient loggedInPatient = patientService.getCurrentlyLoggedInPatient(httpServletRequest);
+        loggedInPatient.setGetNotifications(dto.isGetNotifications());
+        patientService.setField(loggedInPatient);
+    }
+
 }
