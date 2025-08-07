@@ -86,14 +86,16 @@ public class NotificationsSchedulerService implements Runnable {
         List<Meeting> meetings = meetingRepository.findByPatientIdOrderByStartAtAsc(patient.getId());
         if (!meetings.isEmpty()) {
 
-            Meeting meeting = meetings.get(0);
-            if (needsNotification(meeting.getStartAt(), meeting.getLastReminderSentAt())) {
-                notificationService.sendNotification(patient, NotificationType.MEETING);
+            for (Meeting meeting : meetings) {
+                if (needsNotification(meeting.getStartAt(), meeting.getLastReminderSentAt())) {
+                    notificationService.sendNotification(patient, NotificationType.MEETING);
 
-                meeting.setLastReminderSentAt(Instant.now());
-                meetingRepository.save(meeting);
-                return;
+                    meeting.setLastReminderSentAt(Instant.now());
+                    meetingRepository.save(meeting);
+                    return;
+                }
             }
+
         }
 
         List<Exercise> exercises = exerciseRepository.getExercisesByPatientId(patient.getId());
