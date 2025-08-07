@@ -11,7 +11,7 @@ import java.time.Instant;
 import java.util.List;
 
 @Repository
-public interface PsychologicalTestsAssignmentRepository  extends JpaRepository<PsychologicalTestAssignment, String> {
+public interface PsychologicalTestsAssignmentRepository extends JpaRepository<PsychologicalTestAssignment, String> {
 
     PsychologicalTestAssignment findByPatientIdAndTestName(String patientId, String testName);
 
@@ -19,7 +19,8 @@ public interface PsychologicalTestsAssignmentRepository  extends JpaRepository<P
             "WHERE a.patient = :patient " +
             "AND a.isPaused = false " +
             "AND :now BETWEEN a.exerciseStart AND a.exerciseEnd")
-    List<PsychologicalTestAssignment> findActiveAssignments(@Param("patient") Patient patient, @Param("now") Instant now);
+    List<PsychologicalTestAssignment> findActiveAssignments(@Param("patient") Patient patient,
+            @Param("now") Instant now);
 
-    List<PsychologicalTestAssignment> findByPatientIdOrderByLastCompletedAtAsc(String patientId);
+    List<PsychologicalTestAssignment> findByPatientIdOrderByLastCompletedAtDesc(String patientId);
 }
