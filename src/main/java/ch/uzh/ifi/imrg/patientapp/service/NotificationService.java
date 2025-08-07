@@ -54,76 +54,76 @@ public class NotificationService {
             case MEETING -> {
                 return switch (locale.getLanguage()) {
                     case "de" -> new NotificationContent(
-                            "Anstehende Sitzung",
-                            "Sie haben in Ihrer Lumina-App eine anstehende Sitzung. Bitte öffnen Sie die App, um die Details zu sehen.",
-                            "Zur Sitzung",
+                            "Erinnerung: Sitzung",
+                            "Bald findet Ihre nächste Sitzung statt. Die Uhrzeit und Details finden Sie in der Lumina-App.",
+                            "Sitzung ansehen",
                             baseUrl + "/");
                     case "uk" -> new NotificationContent(
-                            "Наближається сеанс",
-                            "У вашому додатку Lumina наближається сеанс. Будь ласка, відкрийте додаток, щоб переглянути деталі.",
-                            "До сеансу",
+                            "Нагадування про зустріч",
+                            "Незабаром у вас запланована зустріч. Переглянути час та деталі можна в додатку Lumina.",
+                            "Переглянути зустріч",
                             baseUrl + "/");
                     default -> new NotificationContent(
-                            "Upcoming Session",
-                            "You have an upcoming session in your Lumina app. Please open the app to view the details.",
-                            "Go to Session",
+                            "Upcoming Meeting",
+                            "You’ve got a meeting coming up soon. You can check the time and details anytime in your Lumina app.",
+                            "See meeting info",
                             baseUrl + "/");
                 };
             }
             case EXERCISE -> {
                 return switch (locale.getLanguage()) {
                     case "de" -> new NotificationContent(
-                            "Neue Übung verfügbar",
-                            "Eine neue Übung wartet in Ihrer Lumina-App auf Sie. Bitte öffnen Sie die App, um zu beginnen.",
-                            "Zur Übung",
+                            "Zeit für Ihre Übung",
+                            "In Ihrer Lumina-App wartet eine Übung auf Sie. Öffnen Sie die App, wenn Sie bereit sind, loszulegen.",
+                            "Übung starten",
                             baseUrl + "/exercise");
                     case "uk" -> new NotificationContent(
-                            "Нова вправа доступна",
-                            "Нова вправа чекає на вас у додатку Lumina. Будь ласка, відкрийте додаток, щоб розпочати.",
-                            "До вправи",
+                            "Час для вправи",
+                            "У додатку Lumina на вас чекає вправа. Відкрийте додаток, коли будете готові почати.",
+                            "Виконати вправу",
                             baseUrl + "/exercise");
                     default -> new NotificationContent(
-                            "New Exercise Available",
-                            "A new exercise is waiting in your Lumina app. Please open the app to get started.",
-                            "Go to Exercise",
+                            "Time for your exercise",
+                            "You’ve got an exercise waiting for you in Lumina. Open the app whenever you’re ready to give it a go.",
+                            "Do the exercise",
                             baseUrl + "/exercise");
                 };
             }
             case QUESTIONNAIRES -> {
                 return switch (locale.getLanguage()) {
                     case "de" -> new NotificationContent(
-                            "Neuer Fragebogen",
-                            "Ein neuer Fragebogen wurde in Ihrer Lumina-App für Sie bereitgestellt. Bitte öffnen Sie die App, um ihn auszufüllen.",
-                            "Zum Fragebogen",
+                            "Fragebogen fällig",
+                            "Ein Fragebogen wartet in Ihrer Lumina-App. Es dauert nur einen Moment – füllen Sie ihn aus, wenn es passt.",
+                            "Ausfüllen",
                             baseUrl + "/questionnaires");
                     case "uk" -> new NotificationContent(
-                            "Новий опитувальник",
-                            "У вашому додатку Lumina призначено новий опитувальник. Будь ласка, відкрийте додаток, щоб заповнити його.",
-                            "До опитувальника",
+                            "Анкета чекає",
+                            "У додатку Lumina доступна анкета. Це займе всього кілька хвилин — заповніть, коли буде зручно.",
+                            "Заповнити анкету",
                             baseUrl + "/questionnaires");
                     default -> new NotificationContent(
-                            "New Questionnaire",
-                            "A new questionnaire has been assigned in your Lumina app. Please open the app to complete it.",
-                            "Go to Questionnaire",
+                            "Questionnaire due",
+                            "One of your questionnaires is ready in the Lumina app. It only takes a moment — complete it when you’re ready.",
+                            "Fill it out",
                             baseUrl + "/questionnaires");
                 };
             }
             case JOURNAL -> {
                 return switch (locale.getLanguage()) {
                     case "de" -> new NotificationContent(
-                            "Journaling-Erinnerung",
-                            "Ihre Journaling-Aufgabe wartet in der Lumina-App. Bitte öffnen Sie die App, um zu schreiben.",
-                            "Zum Journal",
+                            "Möchten Sie etwas festhalten?",
+                            "Ihr Journal ist jederzeit in der Lumina-App für Sie da. Nehmen Sie sich ein paar Minuten zum Reflektieren oder einfach zum Schreiben.",
+                            "Journal öffnen",
                             baseUrl + "/journal");
                     case "uk" -> new NotificationContent(
-                            "Нагадування про щоденник",
-                            "Ваше завдання з ведення щоденника чекає в додатку Lumina. Будь ласка, відкрийте додаток, щоб писати.",
-                            "До щоденника",
+                            "Хочете щось записати?",
+                            "Ваш журнал завжди поруч у додатку Lumina. Приділіть кілька хвилин, щоб подумати, виразитись або просто заспокоїтись.",
+                            "Відкрити щоденник",
                             baseUrl + "/journal");
                     default -> new NotificationContent(
-                            "Journaling Reminder",
-                            "Your journaling task is waiting in the Lumina app. Please open the app to write.",
-                            "Go to Journal",
+                            "Want to write something down?",
+                            "Your journal is always there for you in the Lumina app. Take a few minutes to reflect, express, or just clear your mind.",
+                            "Open journal",
                             baseUrl + "/journal");
                 };
             }
