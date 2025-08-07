@@ -3,6 +3,7 @@ package ch.uzh.ifi.imrg.patientapp.service;
 import ch.uzh.ifi.imrg.patientapp.constant.NotificationType;
 import ch.uzh.ifi.imrg.patientapp.entity.*;
 import ch.uzh.ifi.imrg.patientapp.entity.Exercise.Exercise;
+import ch.uzh.ifi.imrg.patientapp.entity.Exercise.ExerciseCompletionInformation;
 import ch.uzh.ifi.imrg.patientapp.repository.*;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
@@ -10,7 +11,9 @@ import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @Slf4j
@@ -67,9 +70,8 @@ public class NotificationsSchedulerService implements Runnable {
             }
 
             try {
-                // TODO:
-                // Thread.sleep(3 * 60 * 60 * 1000); // Sleep for 3 hours
-                Thread.sleep(5 * 60 * 1000); // Sleep for 5min for testing
+                Thread.sleep(3 * 60 * 60 * 1000); // Sleep for 3 hours
+                // Thread.sleep(5 * 60 * 1000); // Sleep for 5min for testing
             } catch (InterruptedException e) {
                 log.warn("Notification scheduler interrupted");
                 break;
@@ -95,23 +97,28 @@ public class NotificationsSchedulerService implements Runnable {
         }
 
         List<Exercise> exercises = exerciseRepository.getExercisesByPatientId(patient.getId());
-        // TODO: order Liste by strat time such that first is latest start time or
-        // instead of get first geet wher start time is max.
         for (Exercise exercise : exercises) {
-            Instant nextDue = exercise.getExerciseCompletionInformation().getFirst().getStartTime()
-                    .plusSeconds(exercise.getDoEveryNDays() * 86400L);
-            if (needsNotification(nextDue, exercise.getLastReminderSentAt())) {
-                notificationService.sendNotification(patient, NotificationType.EXERCISE);
+            Optional<ExerciseCompletionInformation> lastCompOpt = exercise.getExerciseCompletionInformation().stream()
+                    .max(Comparator.comparing(ExerciseCompletionInformation::getStartTime));
 
-                exercise.setLastReminderSentAt(Instant.now());
-                exerciseRepository.save(exercise);
-                return;
+            if (lastCompOpt.isPresent()) {
+
+                Instant lastStart = lastCompOpt.get().getStartTime();
+
+                Instant nextDue = lastStart.plusSeconds((long) exercise.getDoEveryNDays() * 86400L);
+
+                if (needsNotification(nextDue, exercise.getLastReminderSentAt())) {
+                    notificationService.sendNotification(patient, NotificationType.EXERCISE);
+
+                    exercise.setLastReminderSentAt(Instant.now());
+                    exerciseRepository.save(exercise);
+                    return;
+                }
             }
         }
 
-        // TODO:check order b
         List<PsychologicalTestAssignment> testAssignments = psychologicalTestsAssginmentRepository
-                .findByPatientIdOrderByLastCompletedAtAsc(patient.getId());
+                .findByPatientIdOrderByLastCompletedAtDesc(patient.getId());
 
         if (!testAssignments.isEmpty()) {
             PsychologicalTestAssignment psychologicalTestAssignment = testAssignments.getFirst();
@@ -128,8 +135,7 @@ public class NotificationsSchedulerService implements Runnable {
             }
         }
 
-        // TODO: check order by
-        List<JournalEntry> journalEntries = journalEntryRepository.findByPatientIdOrderByUpdatedAtAsc(patient.getId());
+        List<JournalEntry> journalEntries = journalEntryRepository.findByPatientIdOrderByUpdatedAtDesc(patient.getId());
         if (!journalEntries.isEmpty()) {
 
             JournalEntry journalEntry = journalEntries.getFirst();

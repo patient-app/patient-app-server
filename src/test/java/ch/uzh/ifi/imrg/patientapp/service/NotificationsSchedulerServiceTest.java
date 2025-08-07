@@ -248,7 +248,7 @@ class NotificationsSchedulerServiceTest {
 
         when(meetingRepository.findByPatientIdOrderByStartAtAsc(any())).thenReturn(Collections.emptyList());
         when(exerciseRepository.getExercisesByPatientId(any())).thenReturn(Collections.emptyList());
-        when(psychologicalTestsAssginmentRepository.findByPatientIdOrderByLastCompletedAtAsc(any()))
+        when(psychologicalTestsAssginmentRepository.findByPatientIdOrderByLastCompletedAtDesc(any()))
                 .thenReturn(Collections.emptyList());
 
         service.notifyOnePatient(patient);
@@ -267,7 +267,7 @@ class NotificationsSchedulerServiceTest {
 
         when(meetingRepository.findByPatientIdOrderByStartAtAsc(any())).thenReturn(Collections.emptyList());
         when(exerciseRepository.getExercisesByPatientId(any())).thenReturn(Collections.emptyList());
-        when(psychologicalTestsAssginmentRepository.findByPatientIdOrderByLastCompletedAtAsc(any()))
+        when(psychologicalTestsAssginmentRepository.findByPatientIdOrderByLastCompletedAtDesc(any()))
                 .thenReturn(List.of(assignment));
 
         service.notifyOnePatient(patient);
@@ -283,9 +283,9 @@ class NotificationsSchedulerServiceTest {
         PsychologicalTestAssignment assignment = setupPsychologicalTestAssignment(patient);
         when(meetingRepository.findByPatientIdOrderByStartAtAsc(anyString())).thenReturn(Collections.emptyList());
         when(exerciseRepository.getExercisesByPatientId(anyString())).thenReturn(Collections.emptyList());
-        when(journalEntryRepository.findByPatientIdOrderByUpdatedAtAsc(anyString()))
+        when(journalEntryRepository.findByPatientIdOrderByUpdatedAtDesc(anyString()))
                 .thenReturn(Collections.emptyList());
-        when(psychologicalTestsAssginmentRepository.findByPatientIdOrderByLastCompletedAtAsc(anyString()))
+        when(psychologicalTestsAssginmentRepository.findByPatientIdOrderByLastCompletedAtDesc(anyString()))
                 .thenReturn(List.of(assignment));
 
         service.notifyOnePatient(patient);
@@ -302,8 +302,8 @@ class NotificationsSchedulerServiceTest {
 
         when(meetingRepository.findByPatientIdOrderByStartAtAsc(any())).thenReturn(Collections.emptyList());
         when(exerciseRepository.getExercisesByPatientId(any())).thenReturn(Collections.emptyList());
-        when(journalEntryRepository.findByPatientIdOrderByUpdatedAtAsc(any())).thenReturn(Collections.emptyList());
-        when(psychologicalTestsAssginmentRepository.findByPatientIdOrderByLastCompletedAtAsc(anyString()))
+        when(journalEntryRepository.findByPatientIdOrderByUpdatedAtDesc(any())).thenReturn(Collections.emptyList());
+        when(psychologicalTestsAssginmentRepository.findByPatientIdOrderByLastCompletedAtDesc(anyString()))
                 .thenReturn(List.of(assignment));
 
         service.notifyOnePatient(patient);
@@ -320,8 +320,8 @@ class NotificationsSchedulerServiceTest {
 
         when(meetingRepository.findByPatientIdOrderByStartAtAsc(any())).thenReturn(Collections.emptyList());
         when(exerciseRepository.getExercisesByPatientId(any())).thenReturn(Collections.emptyList());
-        when(journalEntryRepository.findByPatientIdOrderByUpdatedAtAsc(any())).thenReturn(Collections.emptyList());
-        when(psychologicalTestsAssginmentRepository.findByPatientIdOrderByLastCompletedAtAsc(anyString()))
+        when(journalEntryRepository.findByPatientIdOrderByUpdatedAtDesc(any())).thenReturn(Collections.emptyList());
+        when(psychologicalTestsAssginmentRepository.findByPatientIdOrderByLastCompletedAtDesc(anyString()))
                 .thenReturn(List.of(assignment));
 
         service.notifyOnePatient(patient);
@@ -333,7 +333,7 @@ class NotificationsSchedulerServiceTest {
     void testNotifyOnePatient_noJournalEntries() {
         Patient patient = basePatient("en");
 
-        when(journalEntryRepository.findByPatientIdOrderByUpdatedAtAsc(patient.getId()))
+        when(journalEntryRepository.findByPatientIdOrderByUpdatedAtDesc(patient.getId()))
                 .thenReturn(Collections.emptyList());
 
         service.notifyOnePatient(patient);
@@ -349,7 +349,7 @@ class NotificationsSchedulerServiceTest {
         entry.setUpdatedAt(Instant.now().plus(1, ChronoUnit.DAYS)); // not in past
         entry.setLastReminderSentAt(Instant.now()); // just sent
 
-        when(journalEntryRepository.findByPatientIdOrderByUpdatedAtAsc(patient.getId()))
+        when(journalEntryRepository.findByPatientIdOrderByUpdatedAtDesc(patient.getId()))
                 .thenReturn(List.of(entry));
 
         service.notifyOnePatient(patient);
@@ -366,7 +366,7 @@ class NotificationsSchedulerServiceTest {
         entry.setUpdatedAt(now.minus(1, ChronoUnit.DAYS)); // 1 day ago
         entry.setLastReminderSentAt(Instant.now().minus(15, ChronoUnit.HOURS));
 
-        when(journalEntryRepository.findByPatientIdOrderByUpdatedAtAsc(patient.getId()))
+        when(journalEntryRepository.findByPatientIdOrderByUpdatedAtDesc(patient.getId()))
                 .thenReturn(List.of(entry));
 
         service.notifyOnePatient(patient);
@@ -384,7 +384,7 @@ class NotificationsSchedulerServiceTest {
         entry.setUpdatedAt(now.minus(1, ChronoUnit.DAYS)); // 1 day ago
         entry.setLastReminderSentAt(now.minus(15, ChronoUnit.HOURS)); // 15h ago
 
-        when(journalEntryRepository.findByPatientIdOrderByUpdatedAtAsc(patient.getId()))
+        when(journalEntryRepository.findByPatientIdOrderByUpdatedAtDesc(patient.getId()))
                 .thenReturn(List.of(entry));
 
         service.notifyOnePatient(patient);
@@ -401,7 +401,7 @@ class NotificationsSchedulerServiceTest {
         entry.setUpdatedAt(now.minus(1, ChronoUnit.DAYS)); // 1 day ago
         entry.setLastReminderSentAt(Instant.now().minus(15, ChronoUnit.HOURS));
 
-        when(journalEntryRepository.findByPatientIdOrderByUpdatedAtAsc(patient.getId()))
+        when(journalEntryRepository.findByPatientIdOrderByUpdatedAtDesc(patient.getId()))
                 .thenReturn(List.of(entry));
 
         service.notifyOnePatient(patient);
