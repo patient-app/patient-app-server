@@ -66,4 +66,24 @@ public class EmailService {
         sendHtmlEmail(to, subject, htmlContent);
     }
 
+    public void sendEmailNotification(String to, String notificationSubject, String clientName,
+            String notificationMessage, String ctaText,
+            String appUrl, Locale locale) {
+
+        String lang = locale.getLanguage().toLowerCase();
+        String templateName = "notification-email_" + lang;
+
+        Context ctx = new Context(locale);
+        ctx.setVariable("notificationSubject", notificationSubject);
+        ctx.setVariable("clientName", clientName);
+        ctx.setVariable("notificationMessage", notificationMessage);
+        ctx.setVariable("ctaText", ctaText);
+        ctx.setVariable("appUrl", appUrl);
+        ctx.setVariable("supportEmail", "lumina.ifi@gmail.com");
+
+        String htmlContent = templateEngine.process(templateName, ctx);
+
+        sendHtmlEmail(to, notificationSubject, htmlContent);
+    }
+
 }

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="x-apple-disable-message-reformatting">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lumina – Ihre Benachrichtigung</title>
+    <style>
+        .preheader {
+            display: none !important;
+            visibility: hidden;
+            mso-hide: all;
+            font-size: 1px;
+            line-height: 1px;
+            max-height: 0;
+            max-width: 0;
+            opacity: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body style="margin:0; padding:1em; font-family:sans-serif; font-size:16px; line-height:1.5;
+             -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%;">
+    <span class="preheader" th:text="${notificationSubject} + ' – bitte öffnen Sie die App.'">
+        Ihre Benachrichtigung – bitte öffnen Sie die App.
+    </span>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+            <td align="center">
+                <table role="presentation" width="600" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <td style="padding:1em;">
+                            <!-- Logo -->
+                            <div style="font-size:0; font-weight:bold; text-transform:uppercase;
+                      margin-bottom:2em; line-height:1;">
+                                <span style="font-size:1.875rem; line-height:1;">L</span>
+                                <span style="font-size:1.5rem;   line-height:1;">umina</span>
+                            </div>
+
+                            <!-- Greeting -->
+                            <p style="margin:1em 0 1em;">
+                                Hallo <span th:text="${clientName}">Client</span>,
+                            </p>
+
+                            <!-- Variable Message -->
+                            <p style="margin:0 0 1.5em;" th:text="${notificationMessage}">
+                                Hier steht Ihre Nachricht.
+                            </p>
+
+                            <!-- CTA button -->
+                            <div style="text-align:center; margin:2em 0;">
+                                <a th:href="${appUrl}" style="display:inline-block; padding:0.5rem 1rem; background:#059669;
+                      color:#ffffff; text-decoration:none; border-radius:0.375rem;" th:text="${ctaText}">
+                                    Zur App
+                                </a>
+                            </div>
+
+                            <!-- Sign-off -->
+                            <p style="margin:0 0 0.5em;">Freundliche Grüsse,<br />Lumina</p>
+
+                            <!-- Footer -->
+                            <hr style="border:none; border-top:1px solid #eee; margin:2em 0;">
+                            <p style="font-size:12px; color:#888; line-height:1.4; margin:0;">
+                                Bei Fragen kontaktieren Sie bitte&nbsp;
+                                <a th:href="'mailto:' + ${supportEmail}" style="color:#888; text-decoration:underline;"
+                                    th:text="${supportEmail}">
+                                    support@lumina.com
+                                </a>.
+                                <br />Binzmühlestrasse 14, 8050 Zürich
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+
+</html>
