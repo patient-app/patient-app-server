@@ -1,5 +1,6 @@
 package ch.uzh.ifi.imrg.patientapp.service;
 
+import ch.uzh.ifi.imrg.patientapp.constant.ExerciseComponentType;
 import ch.uzh.ifi.imrg.patientapp.constant.LogTypes;
 import ch.uzh.ifi.imrg.patientapp.entity.ChatbotTemplate;
 import ch.uzh.ifi.imrg.patientapp.entity.Exercise.*;
@@ -333,7 +334,34 @@ public class ExerciseService {
         }
         authorizationService.checkExerciseAccess(exercise, patientRepository.getPatientById(patientId), "Patient does not have access to this exercise");
         List<ExerciseCompletionInformation> exerciseCompletionInformations = exerciseInformationRepository.getExerciseInformationByExerciseId(exercise.getId());
-        return exerciseMapper.exerciseInformationsToExerciseInformationOutputDTOs(exerciseCompletionInformations);
+        List<ExerciseInformationOutputDTO> DTOWithPrivateInput= exerciseMapper.exerciseInformationsToExerciseInformationOutputDTOs(exerciseCompletionInformations);
+
+        List<ExerciseInformationOutputDTO> DTOWithoutPrivateInput = new ArrayList<>();
+
+        for (ExerciseInformationOutputDTO exerciseInformationOutputDTO : DTOWithPrivateInput) {
+            List<SharedInputFieldOutputDTO> sharedInputFieldOutputDTOs = new ArrayList<>();
+
+            for (SharedInputFieldOutputDTO sharedInputFieldOutputDTO : exerciseInformationOutputDTO.getSharedInputFields()) {
+                ExerciseComponent exerciseComponent = exerciseComponentRepository
+                        .getExerciseComponentById(sharedInputFieldOutputDTO.getExerciseComponentId());
+
+                if (!exerciseComponent.getExerciseComponentType().equals(ExerciseComponentType.INPUT_FIELD_PRIVATE)) {
+                    sharedInputFieldOutputDTOs.add(sharedInputFieldOutputDTO);
+                }
+            }
+
+            ExerciseInformationOutputDTO filteredDTO = new ExerciseInformationOutputDTO();
+            filteredDTO.setStartTime(exerciseInformationOutputDTO.getStartTime());
+            filteredDTO.setEndTime(exerciseInformationOutputDTO.getEndTime());
+            filteredDTO.setFeedback(exerciseInformationOutputDTO.getFeedback());
+            filteredDTO.setMoodsBefore(exerciseInformationOutputDTO.getMoodsBefore());
+            filteredDTO.setMoodsAfter(exerciseInformationOutputDTO.getMoodsAfter());
+            filteredDTO.setSharedInputFields(sharedInputFieldOutputDTOs);
+
+            DTOWithoutPrivateInput.add(filteredDTO);
+        }
+
+        return DTOWithoutPrivateInput;
     }
 
     private ExerciseMoodContainer toContainer(List<ExerciseMoodInputDTO> input) {
