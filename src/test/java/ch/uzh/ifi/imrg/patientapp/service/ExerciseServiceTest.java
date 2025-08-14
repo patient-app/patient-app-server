@@ -380,7 +380,6 @@ class ExerciseServiceTest {
         verifyNoMoreInteractions(exerciseRepository, exerciseMapper, exerciseInformationRepository);
     }
 
-
     @Test
     void testGetExerciseInformation_ReturnsDTOList() {
         // Arrange
