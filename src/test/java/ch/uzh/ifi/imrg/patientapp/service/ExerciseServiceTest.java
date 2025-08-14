@@ -397,23 +397,54 @@ class ExerciseServiceTest {
         exercise.setId(exerciseId);
         exercise.setPatient(patient);
 
-        List<ExerciseCompletionInformation> exerciseInfoList = List.of(new ExerciseCompletionInformation(), new ExerciseCompletionInformation());
-        List<ExerciseInformationOutputDTO> expectedDTOs = List.of(new ExerciseInformationOutputDTO(), new ExerciseInformationOutputDTO());
+        List<ExerciseCompletionInformation> exerciseInfoList =
+                List.of(new ExerciseCompletionInformation(), new ExerciseCompletionInformation());
+
+        ExerciseInformationOutputDTO dto1 = new ExerciseInformationOutputDTO();
+        dto1.setSharedInputFields(new ArrayList<>()); // ensure non-null for iteration
+
+        ExerciseInformationOutputDTO dto2 = new ExerciseInformationOutputDTO();
+        dto2.setSharedInputFields(new ArrayList<>()); // ensure non-null for iteration
+
+        List<ExerciseInformationOutputDTO> expectedDTOs = List.of(dto1, dto2);
 
         when(exerciseRepository.getExerciseById(exerciseId)).thenReturn(exercise);
         when(exerciseInformationRepository.getExerciseInformationByExerciseId(exerciseId)).thenReturn(exerciseInfoList);
-        when(exerciseMapper.exerciseInformationsToExerciseInformationOutputDTOs(exerciseInfoList)).thenReturn(expectedDTOs);
+        when(exerciseMapper.exerciseInformationsToExerciseInformationOutputDTOs(exerciseInfoList))
+                .thenReturn(expectedDTOs);
 
         // Act
-        List<ExerciseInformationOutputDTO> result = exerciseService.getExerciseInformation(patientId, exerciseId);
+        List<ExerciseInformationOutputDTO> result =
+                exerciseService.getExerciseInformation(patientId, exerciseId);
 
-        // Assert
-        assertEquals(expectedDTOs, result);
+        // Assert (compare fields, not object identity)
+        assertEquals(expectedDTOs.size(), result.size(), "Result list size should match mapped list size.");
+
+        for (int i = 0; i < expectedDTOs.size(); i++) {
+            ExerciseInformationOutputDTO expected = expectedDTOs.get(i);
+            ExerciseInformationOutputDTO actual = result.get(i);
+
+            // Service should return a copy, not the same instance
+            assertNotSame(expected, actual, "Expected a copied DTO, not the same instance at index " + i);
+
+            // Field-by-field checks (add more fields here if needed)
+            assertNotNull(actual.getSharedInputFields(), "sharedInputFields must be non-null at index " + i);
+            assertEquals(
+                    expected.getSharedInputFields().size(),
+                    actual.getSharedInputFields().size(),
+                    "sharedInputFields size mismatch at index " + i
+            );
+
+            // If you want to be stricter: both are empty as arranged above
+            assertTrue(expected.getSharedInputFields().isEmpty(), "Expected sharedInputFields to be empty (test setup).");
+            assertTrue(actual.getSharedInputFields().isEmpty(), "Actual sharedInputFields should be empty at index " + i);
+        }
         verify(exerciseRepository).getExerciseById(exerciseId);
         verify(exerciseInformationRepository).getExerciseInformationByExerciseId(exerciseId);
         verify(exerciseMapper).exerciseInformationsToExerciseInformationOutputDTOs(exerciseInfoList);
         verifyNoMoreInteractions(exerciseRepository, exerciseInformationRepository, exerciseMapper);
     }
+
 
     @Test
     void testGetExerciseInformation_ThrowsWhenExerciseNotFound() {

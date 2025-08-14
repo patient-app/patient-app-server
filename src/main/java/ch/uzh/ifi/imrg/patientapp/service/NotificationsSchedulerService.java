@@ -1,21 +1,23 @@
 package ch.uzh.ifi.imrg.patientapp.service;
 
-
+import ch.uzh.ifi.imrg.patientapp.constant.NotificationType;
 import ch.uzh.ifi.imrg.patientapp.entity.*;
 import ch.uzh.ifi.imrg.patientapp.entity.Exercise.Exercise;
+import ch.uzh.ifi.imrg.patientapp.entity.Exercise.ExerciseCompletionInformation;
 import ch.uzh.ifi.imrg.patientapp.repository.*;
-import ch.uzh.ifi.imrg.patientapp.repository.PatientRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @Slf4j
-public class NotificationsSchedulerService implements Runnable{
+public class NotificationsSchedulerService implements Runnable {
 
     private final Thread schedulerThread = new Thread(this);
     private final PatientRepository patientRepository;
@@ -23,15 +25,22 @@ public class NotificationsSchedulerService implements Runnable{
     private final MeetingRepository meetingRepository;
     private final PsychologicalTestsAssignmentRepository psychologicalTestsAssginmentRepository;
     private final JournalEntryRepository journalEntryRepository;
-    //private final PushNotificationService pushNotificationService = new PushNotificationService();
+    private final NotificationService notificationService;
+    // private final PushNotificationService pushNotificationService = new
+    // PushNotificationService();
 
-    public NotificationsSchedulerService(PatientRepository patientRepository, ExerciseRepository exerciseRepository, MeetingRepository meetingRepository, PsychologicalTestsAssignmentRepository psychologicalTestsAssginmentRepository, JournalEntryRepository journalEntryRepository/*, PushNotificationService pushNotificationService*/) {
+    public NotificationsSchedulerService(PatientRepository patientRepository, ExerciseRepository exerciseRepository,
+            MeetingRepository meetingRepository,
+            PsychologicalTestsAssignmentRepository psychologicalTestsAssginmentRepository,
+            JournalEntryRepository journalEntryRepository,
+            NotificationService notificationService/* , PushNotificationService pushNotificationService */) {
         this.patientRepository = patientRepository;
         this.meetingRepository = meetingRepository;
         this.exerciseRepository = exerciseRepository;
         this.psychologicalTestsAssginmentRepository = psychologicalTestsAssginmentRepository;
         this.journalEntryRepository = journalEntryRepository;
-        //this.pushNotificationService = pushNotificationService;
+        this.notificationService = notificationService;
+        // this.pushNotificationService = pushNotificationService;
     }
 
     @PostConstruct
@@ -62,6 +71,7 @@ public class NotificationsSchedulerService implements Runnable{
 
             try {
                 Thread.sleep(3 * 60 * 60 * 1000); // Sleep for 3 hours
+                // Thread.sleep(5 * 60 * 1000); // Sleep for 5min for testing
             } catch (InterruptedException e) {
                 log.warn("Notification scheduler interrupted");
                 break;
@@ -69,112 +79,74 @@ public class NotificationsSchedulerService implements Runnable{
         }
     }
 
-
-
     public void notifyOnePatient(Patient patient) {
-        if (!patient.isGetNotifications()){
+        if (!patient.isGetNotifications()) {
             return;
         }
         List<Meeting> meetings = meetingRepository.findByPatientIdOrderByStartAtAsc(patient.getId());
         if (!meetings.isEmpty()) {
 
-            Meeting meeting = meetings.get(0);
-            if (needsNotification(meeting.getStartAt(), meeting.getLastReminderSentAt())) {
-                if (patient.getLanguage().equals("en")) {
-                    //pushNotificationService.sendToPatient(patient.getId(),"Lumina","You have a meeting scheduled soon. Please check your app for details.");
-                    System.out.println("You have a meeting scheduled soon. Please check your app for details.");
-                } else if (patient.getLanguage().equals("de")) {
-                    //pushNotificationService.sendToPatient(patient.getId(),"Lumina","Du hast bald ein Meeting. Bitte schau in der App nach.");
-                    System.out.println("You have a meeting scheduled soon. Please check your app for details.");
+            for (Meeting meeting : meetings) {
+                if (needsNotification(meeting.getStartAt(), meeting.getLastReminderSentAt())) {
+                    notificationService.sendNotification(patient, NotificationType.MEETING);
 
-                } else {
-                    //pushNotificationService.sendToPatient(patient.getId(),"Lumina","У вас незабаром запланована зустріч. Будь ласка, перевірте додаток для отримання деталей.");
-                    System.out.println("You have a meeting scheduled soon. Please check your app for details.");
-
+                    meeting.setLastReminderSentAt(Instant.now());
+                    meetingRepository.save(meeting);
+                    return;
                 }
-                meeting.setLastReminderSentAt(Instant.now());
-                meetingRepository.save(meeting);
-                return;
             }
+
         }
 
         List<Exercise> exercises = exerciseRepository.getExercisesByPatientId(patient.getId());
         for (Exercise exercise : exercises) {
-            Instant nextDue = exercise.getExerciseCompletionInformation().getFirst().getStartTime()
-                    .plusSeconds(exercise.getDoEveryNDays() * 86400L);
-            if (needsNotification(nextDue, exercise.getLastReminderSentAt())) {
-                if(patient.getLanguage().equals("en")){
-                    // pushNotificationService.sendToPatient(patient.getId(), "Lumina", "There is a new exercise to do.");
-                    System.out.println("You have a meeting scheduled soon. Please check your app for details.");
+            Optional<ExerciseCompletionInformation> lastCompOpt = exercise.getExerciseCompletionInformation().stream()
+                    .max(Comparator.comparing(ExerciseCompletionInformation::getStartTime));
 
-                }else if (patient.getLanguage().equals("de")){
-                    //pushNotificationService.sendToPatient(patient.getId(), "Lumina", "Es gibt eine neue Übung zu machen.");
-                    System.out.println("You have a meeting scheduled soon. Please check your app for details.");
+            if (lastCompOpt.isPresent()) {
 
-                } else {
-                    //pushNotificationService.sendToPatient(patient.getId(), "Lumina", "З’явилася нова вправа для виконання.");
-                    System.out.println("You have a meeting scheduled soon. Please check your app for details.");
+                Instant lastStart = lastCompOpt.get().getStartTime();
 
+                Instant nextDue = lastStart.plusSeconds((long) exercise.getDoEveryNDays() * 86400L);
+
+                if (needsNotification(nextDue, exercise.getLastReminderSentAt())) {
+                    notificationService.sendNotification(patient, NotificationType.EXERCISE);
+
+                    exercise.setLastReminderSentAt(Instant.now());
+                    exerciseRepository.save(exercise);
+                    return;
                 }
-                exercise.setLastReminderSentAt(Instant.now());
-                exerciseRepository.save(exercise);
-                return;
             }
         }
-        List<PsychologicalTestAssignment> testAssignments =
-                psychologicalTestsAssginmentRepository.findByPatientIdOrderByLastCompletedAtAsc(patient.getId());
-        System.out.println("what");
+
+        List<PsychologicalTestAssignment> testAssignments = psychologicalTestsAssginmentRepository
+                .findByPatientIdOrderByLastCompletedAtDesc(patient.getId());
+
         if (!testAssignments.isEmpty()) {
-            System.out.println("testAssignments = " + testAssignments);
             PsychologicalTestAssignment psychologicalTestAssignment = testAssignments.getFirst();
 
             Instant nextDue = psychologicalTestAssignment.getLastCompletedAt()
                     .plusSeconds(psychologicalTestAssignment.getDoEveryNDays() * 86400L);
 
             if (needsNotification(nextDue, psychologicalTestAssignment.getLastReminderSentAt())) {
-                System.out.println("hi");
-                if (patient.getLanguage().equals("en")) {
-                    //pushNotificationService.sendToPatient(patient.getId(), "Lumina", "Want to do a test?");
-                    System.out.println("You have a assignment scheduled soon. Please check your app for details.");
+                notificationService.sendNotification(patient, NotificationType.QUESTIONNAIRES);
 
-                } else if (patient.getLanguage().equals("de")) {
-                    //pushNotificationService.sendToPatient(patient.getId(), "Lumina", "Möchtest du einen Test machen?");
-                    System.out.println("You have a meeting scheduled soon. Please check your app for details.");
-
-                } else {
-                    //pushNotificationService.sendToPatient(patient.getId(), "Lumina", "Хочете пройти тест?");
-                    System.out.println("You have a meeting scheduled soon. Please check your app for details.");
-
-                }
                 psychologicalTestAssignment.setLastReminderSentAt(Instant.now());
                 psychologicalTestsAssginmentRepository.save(psychologicalTestAssignment);
                 return;
             }
         }
 
-        List<JournalEntry> journalEntries =
-                journalEntryRepository.findByPatientIdOrderByUpdatedAtAsc(patient.getId());
+        List<JournalEntry> journalEntries = journalEntryRepository.findByPatientIdOrderByUpdatedAtDesc(patient.getId());
         if (!journalEntries.isEmpty()) {
 
             JournalEntry journalEntry = journalEntries.getFirst();
-            System.out.println("journalEntry = " + journalEntry);
 
             Instant nextDue = journalEntry.getUpdatedAt()
-                    .plus(2,ChronoUnit.DAYS);
+                    .plus(2, ChronoUnit.DAYS);
             if (needsNotification(nextDue, journalEntry.getLastReminderSentAt())) {
-                if (patient.getLanguage().equals("en")) {
-                    //pushNotificationService.sendToPatient(patient.getId(), "Lumina", "You haven't journaled in a while. Why don't you give it a try?");
-                    System.out.println("You have a meeting scheduled soon. Please check your app for details.");
+                notificationService.sendNotification(patient, NotificationType.JOURNAL);
 
-                } else if (patient.getLanguage().equals("de")) {
-                    //pushNotificationService.sendToPatient(patient.getId(), "Lumina", "Du hast schon lange nicht mehr Tagebuch geschrieben. Warum versuchst du es nicht mal wieder?");
-                    System.out.println("You have a meeting scheduled soon. Please check your app for details.");
-
-                } else {
-                    //pushNotificationService.sendToPatient(patient.getId(), "Lumina", "Ви давно не вели щоденник. Чому б не спробувати зараз?");
-                    System.out.println("You have a meeting scheduled soon. Please check your app for details.");
-
-                }
                 journalEntry.setLastReminderSentAt(Instant.now());
                 journalEntryRepository.save(journalEntry);
             }

@@ -23,12 +23,12 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @MockitoSettings(strictness = Strictness.LENIENT)
 @ExtendWith(MockitoExtension.class)
 class NotificationsSchedulerServiceTest {
-
 
     @Mock
     private ExerciseRepository exerciseRepository;
@@ -39,7 +39,11 @@ class NotificationsSchedulerServiceTest {
     @Mock
     private PsychologicalTestsAssignmentRepository psychologicalTestsAssginmentRepository;
 
-    @Mock private JournalEntryRepository journalEntryRepository;
+    @Mock
+    private JournalEntryRepository journalEntryRepository;
+
+    @Mock
+    private NotificationService notificationService;
 
     @InjectMocks
     private NotificationsSchedulerService service;
@@ -74,8 +78,6 @@ class NotificationsSchedulerServiceTest {
         assignment.setPatient(patient);
         return assignment;
     }
-
-
 
     @Test
     void testNotifyOnePatient_notificationsDisabled() {
@@ -172,7 +174,6 @@ class NotificationsSchedulerServiceTest {
         verify(exerciseRepository, never()).save(any());
     }
 
-
     @Test
     void testNotifyOnePatient_exerciseNeedsNotificationFalse() {
         Patient patient = basePatient("en");
@@ -193,7 +194,6 @@ class NotificationsSchedulerServiceTest {
         verify(exerciseRepository, never()).save(any());
     }
 
-
     @Test
     void testNotifyOnePatient_exerciseNotification_english() {
         Patient patient = basePatient("en");
@@ -204,7 +204,7 @@ class NotificationsSchedulerServiceTest {
                 .thenReturn(Collections.emptyList());
 
         Exercise exercise = setupExerciseForReminder();
-        List <Exercise> exercises = List.of(exercise);
+        List<Exercise> exercises = List.of(exercise);
         when(exerciseRepository.getExercisesByPatientId(patient.getId()))
                 .thenReturn(exercises);
 
@@ -212,7 +212,6 @@ class NotificationsSchedulerServiceTest {
         verify(meetingRepository, never()).save(any());
         verify(exerciseRepository).save(exercise);
     }
-
 
     @Test
     void testNotifyOnePatient_exerciseNotification_german() {
@@ -227,7 +226,6 @@ class NotificationsSchedulerServiceTest {
 
         verify(exerciseRepository).save(exercise);
     }
-
 
     @Test
     void testNotifyOnePatient_exerciseNotification_otherLang() {
@@ -250,7 +248,7 @@ class NotificationsSchedulerServiceTest {
 
         when(meetingRepository.findByPatientIdOrderByStartAtAsc(any())).thenReturn(Collections.emptyList());
         when(exerciseRepository.getExercisesByPatientId(any())).thenReturn(Collections.emptyList());
-        when(psychologicalTestsAssginmentRepository.findByPatientIdOrderByLastCompletedAtAsc(any()))
+        when(psychologicalTestsAssginmentRepository.findByPatientIdOrderByLastCompletedAtDesc(any()))
                 .thenReturn(Collections.emptyList());
 
         service.notifyOnePatient(patient);
@@ -269,7 +267,7 @@ class NotificationsSchedulerServiceTest {
 
         when(meetingRepository.findByPatientIdOrderByStartAtAsc(any())).thenReturn(Collections.emptyList());
         when(exerciseRepository.getExercisesByPatientId(any())).thenReturn(Collections.emptyList());
-        when(psychologicalTestsAssginmentRepository.findByPatientIdOrderByLastCompletedAtAsc(any()))
+        when(psychologicalTestsAssginmentRepository.findByPatientIdOrderByLastCompletedAtDesc(any()))
                 .thenReturn(List.of(assignment));
 
         service.notifyOnePatient(patient);
@@ -285,8 +283,9 @@ class NotificationsSchedulerServiceTest {
         PsychologicalTestAssignment assignment = setupPsychologicalTestAssignment(patient);
         when(meetingRepository.findByPatientIdOrderByStartAtAsc(anyString())).thenReturn(Collections.emptyList());
         when(exerciseRepository.getExercisesByPatientId(anyString())).thenReturn(Collections.emptyList());
-        when(journalEntryRepository.findByPatientIdOrderByUpdatedAtAsc(anyString())).thenReturn(Collections.emptyList());
-        when(psychologicalTestsAssginmentRepository.findByPatientIdOrderByLastCompletedAtAsc(anyString()))
+        when(journalEntryRepository.findByPatientIdOrderByUpdatedAtDesc(anyString()))
+                .thenReturn(Collections.emptyList());
+        when(psychologicalTestsAssginmentRepository.findByPatientIdOrderByLastCompletedAtDesc(anyString()))
                 .thenReturn(List.of(assignment));
 
         service.notifyOnePatient(patient);
@@ -303,8 +302,8 @@ class NotificationsSchedulerServiceTest {
 
         when(meetingRepository.findByPatientIdOrderByStartAtAsc(any())).thenReturn(Collections.emptyList());
         when(exerciseRepository.getExercisesByPatientId(any())).thenReturn(Collections.emptyList());
-        when(journalEntryRepository.findByPatientIdOrderByUpdatedAtAsc(any())).thenReturn(Collections.emptyList());
-        when(psychologicalTestsAssginmentRepository.findByPatientIdOrderByLastCompletedAtAsc(anyString()))
+        when(journalEntryRepository.findByPatientIdOrderByUpdatedAtDesc(any())).thenReturn(Collections.emptyList());
+        when(psychologicalTestsAssginmentRepository.findByPatientIdOrderByLastCompletedAtDesc(anyString()))
                 .thenReturn(List.of(assignment));
 
         service.notifyOnePatient(patient);
@@ -321,8 +320,8 @@ class NotificationsSchedulerServiceTest {
 
         when(meetingRepository.findByPatientIdOrderByStartAtAsc(any())).thenReturn(Collections.emptyList());
         when(exerciseRepository.getExercisesByPatientId(any())).thenReturn(Collections.emptyList());
-        when(journalEntryRepository.findByPatientIdOrderByUpdatedAtAsc(any())).thenReturn(Collections.emptyList());
-        when(psychologicalTestsAssginmentRepository.findByPatientIdOrderByLastCompletedAtAsc(anyString()))
+        when(journalEntryRepository.findByPatientIdOrderByUpdatedAtDesc(any())).thenReturn(Collections.emptyList());
+        when(psychologicalTestsAssginmentRepository.findByPatientIdOrderByLastCompletedAtDesc(anyString()))
                 .thenReturn(List.of(assignment));
 
         service.notifyOnePatient(patient);
@@ -334,14 +333,13 @@ class NotificationsSchedulerServiceTest {
     void testNotifyOnePatient_noJournalEntries() {
         Patient patient = basePatient("en");
 
-        when(journalEntryRepository.findByPatientIdOrderByUpdatedAtAsc(patient.getId()))
+        when(journalEntryRepository.findByPatientIdOrderByUpdatedAtDesc(patient.getId()))
                 .thenReturn(Collections.emptyList());
 
         service.notifyOnePatient(patient);
 
         verify(journalEntryRepository, never()).save(any());
     }
-
 
     @Test
     void testNotifyOnePatient_journalEntry_noReminderNeeded() {
@@ -351,7 +349,7 @@ class NotificationsSchedulerServiceTest {
         entry.setUpdatedAt(Instant.now().plus(1, ChronoUnit.DAYS)); // not in past
         entry.setLastReminderSentAt(Instant.now()); // just sent
 
-        when(journalEntryRepository.findByPatientIdOrderByUpdatedAtAsc(patient.getId()))
+        when(journalEntryRepository.findByPatientIdOrderByUpdatedAtDesc(patient.getId()))
                 .thenReturn(List.of(entry));
 
         service.notifyOnePatient(patient);
@@ -359,23 +357,23 @@ class NotificationsSchedulerServiceTest {
         verify(journalEntryRepository, never()).save(any());
     }
 
-
     @Test
     void testNotifyOnePatient_journalEntry_reminderNeeded_en() {
         Patient patient = basePatient("en");
         Instant now = Instant.now();
 
         JournalEntry entry = new JournalEntry();
-        entry.setUpdatedAt(now.minus(1, ChronoUnit.DAYS));                  // 1 day ago
+        entry.setUpdatedAt(now.minus(1, ChronoUnit.DAYS)); // 1 day ago
         entry.setLastReminderSentAt(Instant.now().minus(15, ChronoUnit.HOURS));
 
-        when(journalEntryRepository.findByPatientIdOrderByUpdatedAtAsc(patient.getId()))
+        when(journalEntryRepository.findByPatientIdOrderByUpdatedAtDesc(patient.getId()))
                 .thenReturn(List.of(entry));
 
         service.notifyOnePatient(patient);
 
         verify(journalEntryRepository).save(entry);
     }
+
     @Test
     void testNotifyOnePatient_journalEntry_reminderNeeded_de() {
         Patient patient = basePatient("de");
@@ -383,18 +381,16 @@ class NotificationsSchedulerServiceTest {
         Instant now = Instant.now();
 
         JournalEntry entry = new JournalEntry();
-        entry.setUpdatedAt(now.minus(1, ChronoUnit.DAYS));                  // 1 day ago
-        entry.setLastReminderSentAt(now.minus(15, ChronoUnit.HOURS));      // 15h ago
+        entry.setUpdatedAt(now.minus(1, ChronoUnit.DAYS)); // 1 day ago
+        entry.setLastReminderSentAt(now.minus(15, ChronoUnit.HOURS)); // 15h ago
 
-
-        when(journalEntryRepository.findByPatientIdOrderByUpdatedAtAsc(patient.getId()))
+        when(journalEntryRepository.findByPatientIdOrderByUpdatedAtDesc(patient.getId()))
                 .thenReturn(List.of(entry));
 
         service.notifyOnePatient(patient);
 
         verify(journalEntryRepository).save(entry);
     }
-
 
     @Test
     void testNotifyOnePatient_journalEntry_reminderNeeded_otherLang() {
@@ -402,10 +398,10 @@ class NotificationsSchedulerServiceTest {
         Instant now = Instant.now();
 
         JournalEntry entry = new JournalEntry();
-        entry.setUpdatedAt(now.minus(1, ChronoUnit.DAYS));                  // 1 day ago
+        entry.setUpdatedAt(now.minus(1, ChronoUnit.DAYS)); // 1 day ago
         entry.setLastReminderSentAt(Instant.now().minus(15, ChronoUnit.HOURS));
 
-        when(journalEntryRepository.findByPatientIdOrderByUpdatedAtAsc(patient.getId()))
+        when(journalEntryRepository.findByPatientIdOrderByUpdatedAtDesc(patient.getId()))
                 .thenReturn(List.of(entry));
 
         service.notifyOnePatient(patient);
@@ -413,6 +409,4 @@ class NotificationsSchedulerServiceTest {
         verify(journalEntryRepository).save(entry);
     }
 
-
 }
-

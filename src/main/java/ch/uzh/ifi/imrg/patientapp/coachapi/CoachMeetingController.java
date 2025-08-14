@@ -28,7 +28,6 @@ public class CoachMeetingController {
     @SecurityRequirement(name = "X-Coach-Key")
     public MeetingOutputDTO createMeeting(@PathVariable String patientId,
             @RequestBody CreateMeetingDTO createMeeting) {
-        System.out.println("someone wants to create a meeting for patient: " + patientId);
         Meeting newMeeting = meetingService.createMeeting(createMeeting, patientId);
         return MeetingMapper.INSTANCE.convertEntityToMeetingOutputDTO(newMeeting);
     }

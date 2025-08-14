@@ -22,21 +22,21 @@
 ###  Secret Environment Variables
 
 1. To add a new non-secret environment variable, add it to the `application-dev.properties.example`, `application-dev.properties` and `application-prod.properties` files in the `src/main/resources` folder.
-2. Additionally add the .env variable as a repository secret in Github under `Settings` -> `Secrets and variables` -> `New repository secret`. Add it for both main and production environments. E.g. `DB_PASSWORD_MAIN` and `DB_PASSWORD_PRODUCTION`
-3. In the `.github/workflows/deploy.yml` file under the `Restart Kubernetes Deployments` section add the new secret to env section and echo it to the kubernetes overlays file in the main and production environments (see current implementation for reference)
+2. Additionally add the .env variable as a repository secret in Github under `Settings` -> `Secrets and variables` -> `New repository secret`.
+3. In the `.github/workflows/deploy.yml` file under the `Restart Kubernetes Deployments` section add the new secret to env section and echo it to the kubernetes overlays file in the main environment (see current implementation for reference)
 4. Add the new environment variable to the `src/main/java/ch/uzh/ifi/imrg/patientapp/utils/EnvironmentVariables.java` file so it can be easily accessed in the code
 
-## Main and Production Environments
+## Main and UZH Environments
 
 ###  Main Environment
 
 - The "main" environment shows the latest changes on the main branch
 - <https://backend-patient-app-main.jonas-blum.ch/>
 
-### Production Environment
+### UZH Environment
 
-- The "production" environment shows the latest changes on the production branch
-- <https://backend-patient-app-production.jonas-blum.ch/>
+- The "uzh" environment shows the latest changes on the production branch
+- <https://vllm-imrg.ifi.uzh.ch/client-backend/>
 
 ## Workflow: How to implement an issue
 
