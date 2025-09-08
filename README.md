@@ -1,4 +1,4 @@
-# Patient App Server
+# Lumina Backend
 
 ## How to run
 
@@ -65,3 +65,4 @@
 1. `git checkout main`
 2. `git pull` (or `git reset --hard origin/main` if you have some local changes)
 3. `git push --force origin main:production`
+
